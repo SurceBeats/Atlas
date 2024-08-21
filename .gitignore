@@ -1,0 +1,8 @@
+# Excluir el directorio 'data' en la raíz
+/data/
+
+# Excluir el directorio 'logs' en la raíz
+/logs/
+
+# Excluir todos los directorios '__pycache__' en cualquier lugar del proyecto
+**/__pycache__/

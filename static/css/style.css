@@ -1,0 +1,296 @@
+/* Estilos generales */
+body {
+  font-family: "Arial", sans-serif;
+  background-color: #0b1d2b;
+  color: #d1e7f2;
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+/* Encabezados con tamaño ajustado y transiciones */
+h1 {
+  color: #72c3dc;
+  font-size: 1em;
+  margin-bottom: 30px;
+  transition: color 0.3s ease;
+}
+
+h2 {
+  color: #72c3dc;
+  font-size: 1em;
+  margin-top: 30px;
+  margin-bottom: 15px;
+  transition: color 0.3s ease;
+}
+
+h1:hover,
+h2:hover {
+  color: #a1d9f2;
+}
+
+/* Estilos para el formulario */
+form {
+  background-color: #102d44;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+  max-width: 90%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: box-shadow 0.3s ease;
+}
+
+form:hover {
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
+}
+
+.coordinate-inputs {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+label {
+  color: #a1d9f2;
+  margin-bottom: 5px;
+  flex: none;
+}
+
+input[type="number"] {
+  padding: 8px;
+  border: none;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.navigate-button {
+  background-color: #4b9eaf;
+  color: #fff;
+}
+
+.navigate-button:hover {
+  background-color: #39869a;
+  transform: scale(1.05);
+}
+
+.back-button {
+  width: 100%;
+  background-color: #4b9eaf;
+  color: #fff;
+}
+
+.back-button:hover {
+  background-color: #39869a;
+}
+
+.random-button {
+  background-color: #72c3dc;
+  color: #fff;
+}
+
+.random-button:hover {
+  background-color: #5a9db1;
+  transform: scale(1.05);
+}
+
+/* Estilos para mensajes de error */
+.error {
+  color: red;
+  margin-top: 20px;
+  font-weight: bold;
+}
+
+/* Estilos para mostrar la información de la galaxia */
+.galaxy-info {
+  background-color: #102d44;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+  max-width: 90%;
+  width: 100%;
+  transition: box-shadow 0.3s ease;
+}
+
+.galaxy-info:hover {
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
+}
+
+.galaxy-info p {
+  font-size: 1.1em;
+  margin: 10px 0;
+  transition: color 0.3s ease;
+}
+
+.galaxy-info p strong {
+  color: #a1d9f2;
+}
+
+.galaxy-info p:hover {
+  color: #a1d9f2;
+}
+
+/* Estilos para la imagen de la galaxia */
+.galaxy-image {
+  display: block;
+  margin: 0 auto;
+  border-radius: 10px;
+  border: 2px solid #72c3dc;
+  max-width: 300px;
+  height: auto;
+}
+
+/* Estilos para la lista de sistemas solares */
+.solar-systems-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 20px 0;
+  width: 100%;
+  line-height: 0;
+}
+
+.solar-systems-list a {
+  text-decoration: none;
+  color: #d1e7f2;
+  font-size: 1.1em;
+  display: block;
+  transition: color 0.3s ease;
+}
+
+.solar-systems-list li {
+  background-color: #153b58;
+  border-radius: 5px;
+  margin: 10px 0;
+  padding: 15px;
+  transition: background-color 0.3s ease;
+}
+
+.solar-systems-list li:hover {
+  background-color: #1d506b;
+}
+
+.solar-systems-list li a:hover {
+  color: #a1d9f2;
+}
+
+/* Estilos para la navegación entre páginas */
+.page-navigation a {
+  text-decoration: none;
+  color: #72c3dc;
+  font-size: 1.2em;
+  margin: 0 10px;
+  transition: color 0.3s ease;
+}
+
+.page-navigation a:hover {
+  color: #a1d9f2;
+  text-decoration: underline;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* Estilos para mostrar el resumen del sistema solar */
+.solar-system-info {
+    background-color: #102d44;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    max-width: 90%;
+    width: 100%;
+    transition: box-shadow 0.3s ease;
+  }
+  
+  .solar-system-info:hover {
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
+  }
+  
+  .solar-system-info p {
+    font-size: 1.1em;
+    margin: 10px 0;
+    transition: color 0.3s ease;
+  }
+  
+  .solar-system-info p strong {
+    color: #a1d9f2;
+  }
+  
+  .solar-system-info p:hover {
+    color: #a1d9f2;
+  }
+  
+  /* Estilos para la imagen del sistema solar */
+  .solar-system-image {
+    display: block;
+    margin: 0 auto;
+    border-radius: 10px;
+    border: 2px solid #72c3dc;
+    max-width: 300px;
+    height: auto;
+  }
+  
+  /* Estilos para la lista de planetas */
+  .planets-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 20px 0;
+    width: 100%;
+    line-height: 0;
+  }
+  
+  .planets-list li {
+    background-color: #153b58;
+    border-radius: 5px;
+    margin: 10px 0;
+    padding: 15px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .planets-list li:hover {
+    background-color: #1d506b;
+  }
+  
+  .planets-list a {
+    text-decoration: none;
+    color: #d1e7f2;
+    font-size: 1.1em;
+    display: block;
+    transition: color 0.3s ease;
+  }
+  
+  .planets-list li a:hover {
+    color: #a1d9f2;
+  }

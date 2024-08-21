@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css"
+            href="{{ url_for('static', filename='css/style.css') }}">
+        <title>Galaxy: {{ galaxy.name }}</title>
+    </head>
+    <body>
+        <h1>Galaxy '{{ galaxy.name }}' at Coordinates {{ galaxy.coordinates
+            }}</h1>
+
+        <!-- Mostrar el resumen de la galaxia -->
+        <div class="galaxy-info">
+            <p><strong>Type:</strong> {{ galaxy.galaxy_type }}</p>
+            <p><strong>Number of Solar Systems:</strong> {{ galaxy.num_systems
+                }}</p>
+            <p><strong>Black Holes:</strong> {{ galaxy.black_holes }}</p>
+            <p><strong>Pulsars:</strong> {{ galaxy.pulsars }}</p>
+            <p><strong>Quasars:</strong> {{ galaxy.quasars }}</p>
+        </div>
+
+        <!-- Botón para volver al índice -->
+        <div class="galaxy-info">
+            <a href="/"><button class="back-button">Go Back to Planetary
+                    Index</button></a>
+        </div>
+
+        <!-- Mostrar la imagen de la galaxia -->
+        <div class="galaxy-info">
+            <img class="galaxy-image" src="{{ image_url }}"
+                alt="Image of {{ galaxy.name }}" />
+        </div>
+
+        <!-- Listar los sistemas solares en la galaxia -->
+        <h2>Solar Systems in this galaxy:</h2>
+        <div class="galaxy-info">
+
+            <ul class="solar-systems-list">
+                {% for system in systems %}
+                <a
+                    href="{{ url_for('view_system', system_index=system.index) }}"><li>
+                        #{{ system.number }} - {{ system.name }}
+                    </li></a>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Navegación entre páginas -->
+        <div class="page-navigation">
+            {% if prev_page %}
+            <a href="{{ url_for('view_galaxy', page=prev_page) }}">Previous</a>
+            {% endif %}
+            {% if next_page %}
+            <a href="{{ url_for('view_galaxy', page=next_page) }}">Next</a>
+            {% endif %}
+        </div>
+    </body>
+</html>

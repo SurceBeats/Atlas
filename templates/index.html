@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>The ATLAS</title>
+</head>
+<body>
+    <h1>Welcome to The ATLAS</h1>
+    
+    <form action="{{ url_for('navigate') }}" method="POST">
+        <div class="coordinate-inputs">
+            <label for="x">X:</label>
+            <input type="number" name="x" required>
+            <label for="y">Y:</label>
+            <input type="number" name="y" required>
+            <label for="z">Z:</label>
+            <input type="number" name="z" required>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="navigate-button">Navigate</button>
+            <button type="button" class="random-button" onclick="getRandomCoordinates()">Get me somewhere!</button>
+        </div>
+    </form>
+    
+    {% if error %}
+    <p class="error">{{ error }}</p>
+    {% endif %}
+    
+    <script>
+        function getRandomCoordinates() {
+            const maxCoordinate = 10000000;
+            const randomX = Math.floor(Math.random() * (maxCoordinate + 1));
+            const randomY = Math.floor(Math.random() * (maxCoordinate + 1));
+            const randomZ = Math.floor(Math.random() * (maxCoordinate + 1));
+            
+            document.querySelector('input[name="x"]').value = randomX;
+            document.querySelector('input[name="y"]').value = randomY;
+            document.querySelector('input[name="z"]').value = randomZ;
+        }
+    </script>
+</body>
+</html>

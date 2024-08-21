@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Planet: {{ planet['Name'] }}</title>
+    </head>
+    <body>
+        <h1>Planet '{{ planet['Name'] }}'</h1>
+        <p>Type: {{ planet['Type'] }}</p>
+        <p>Atmosphere: {{ planet['Atmosphere'] }}</p>
+        <p>Life Forms: {{ planet['Life Forms'] }}</p>
+        <p>Mass: {{ planet['Mass'] }} kg</p>
+        <p>Diameter: {{ planet['Diameter'] }} km</p>
+        <p>Density: {{ planet['Density'] }} kg/m³</p>
+        <p>Gravity: {{ planet['Gravity'] }} m/s²</p>
+        <p>Orbital Radius: {{ planet['Orbital Radius'] }} AU</p>
+        <p>Orbital Period: {{ planet['Orbital Period'] }} Earth years</p>
+        <p>Orbital Speed: {{ planet['Orbital Speed'] }} m/s</p>
+        <p>Axial Tilt: {{ planet['Axial Tilt'] }} degrees</p>
+        <p>Rotation Period: {{ planet['Rotation Period'] }} hours</p>
+        <p>Surface Temperature: {{ planet['Surface Temperature'] }} °C</p>
+        <p>Elements: {{ ", ".join(planet['Elements']) }}</p>
+    </body>
+</html>
