@@ -2,126 +2,143 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 import math
 import random
 
-
-def generate_solar_system_image(solar_system):
-    img_size = 800  # Tamaño de la imagen para acomodar órbitas más grandes
+def generate_planet_image(planet):
+    img_size = 800  # Tamaño de la imagen
     image = Image.new("RGB", (img_size, img_size), "black")
     draw = ImageDraw.Draw(image)
 
     try:
-        font = ImageFont.truetype("arial.ttf", 12)
+        font = ImageFont.truetype("arial.ttf", 14)
     except IOError:
         font = ImageFont.load_default()
 
     center_x = img_size // 2
     center_y = img_size // 2
 
-    # Configuración para estrellas
-    star_positions = []
-    separation = 50  # Mayor separación entre estrellas en binarios/terciarios
-    if solar_system.star_system_type == "single":
-        star_positions.append((center_x, center_y))
-    elif solar_system.star_system_type == "binary":
-        star_positions.append((center_x - separation, center_y))
-        star_positions.append((center_x + separation, center_y))
-    elif solar_system.star_system_type == "tertiary":
-        star_positions.append((center_x - separation, center_y))
-        star_positions.append((center_x + separation, center_y))
-        star_positions.append((center_x, center_y - separation))
+    # Usar el seed para asegurar consistencia en la generación
+    random.seed(hash(planet["Name"]))
 
-    # Dibujar las estrellas con un tamaño máximo limitado
-    max_star_radius = 50  # Tamaño máximo de la estrella
-    for i, star in enumerate(solar_system.stars):
-        star_x, star_y = star_positions[i]
-        star_radius = min(int(15 * star["Radius Factor"]), max_star_radius)
+    # Ajustar el tamaño del planeta en función de su masa y diámetro
+    planet_radius = int(150 * (planet["Diameter"] / max(planet["Diameter"], 1)))
+
+    # Determinar el color de la superficie según la temperatura
+    surface_temp = planet["Surface Temperature"]
+    if surface_temp > 1000:
+        surface_color = "red"
+    elif surface_temp > 500:
+        surface_color = "orange"
+    elif surface_temp > 0:
+        surface_color = "yellow"
+    elif surface_temp > -50:
+        surface_color = "blue"
+    else:
+        surface_color = "lightblue"
+
+    # Dibujar la superficie básica del planeta
+    draw.ellipse(
+        (
+            center_x - planet_radius,
+            center_y - planet_radius,
+            center_x + planet_radius,
+            center_y + planet_radius,
+        ),
+        fill=surface_color,
+    )
+
+    # Añadir detalles basados en el tipo de planeta
+    if planet["Type"] in ["Oceanic", "Swamp", "Aquifer"]:
+        water_color = "blue"
+        land_color = "green" if planet["Type"] == "Swamp" else "brown"
+        num_water_bodies = random.randint(3, 7)
+        for _ in range(num_water_bodies):
+            body_radius = random.randint(10, int(planet_radius * 0.5))
+            # Asegurarse de que el cuerpo de agua/lava esté completamente dentro del planeta
+            max_offset = planet_radius - body_radius
+            body_x = center_x + random.randint(-max_offset, max_offset)
+            body_y = center_y + random.randint(-max_offset, max_offset)
+            draw.ellipse(
+                (body_x - body_radius, body_y - body_radius, body_x + body_radius, body_y + body_radius),
+                fill=water_color,
+            )
+            if random.random() < 0.5:  # 50% de probabilidad de añadir tierra cerca del agua
+                draw.ellipse(
+                    (body_x - body_radius - 10, body_y - body_radius - 10, body_x + body_radius + 10, body_y + body_radius + 10),
+                    outline=land_color, width=3,
+                )
+
+    elif planet["Type"] in ["Gas Giant", "Frozen Gas Giant", "Nebulous"]:
+        num_cloud_bands = random.randint(3, 6)
+        for i in range(num_cloud_bands):
+            band_width = planet_radius // 10
+            band_offset = (i - num_cloud_bands // 2) * band_width * 2
+            band_color = "orange" if planet["Type"] == "Gas Giant" else "lightblue"
+            draw.ellipse(
+                (
+                    center_x - planet_radius,
+                    center_y - band_width + band_offset,
+                    center_x + planet_radius,
+                    center_y + band_width + band_offset,
+                ),
+                fill=band_color,
+            )
+
+    elif planet["Type"] == "Lava":
+        num_lava_flows = random.randint(5, 10)
+        for _ in range(num_lava_flows):
+            flow_radius = random.randint(5, int(planet_radius * 0.3))
+            # Asegurarse de que el flujo de lava esté completamente dentro del planeta
+            max_offset = planet_radius - flow_radius
+            flow_x = center_x + random.randint(-max_offset, max_offset)
+            flow_y = center_y + random.randint(-max_offset, max_offset)
+            draw.ellipse(
+                (flow_x - flow_radius, flow_y - flow_radius, flow_x + flow_radius, flow_y + flow_radius),
+                fill="red",
+            )
+
+    # Añadir atmósfera si tiene
+    if planet["Atmosphere"] != "None":
+        atmosphere_color = "lightgreen" if "Breathable" in planet["Atmosphere"] else "gray"
         draw.ellipse(
             (
-                star_x - star_radius,
-                star_y - star_radius,
-                star_x + star_radius,
-                star_y + star_radius,
+                center_x - planet_radius - 10,
+                center_y - planet_radius - 10,
+                center_x + planet_radius + 10,
+                center_y + planet_radius + 10,
             ),
-            fill=star["Color"],
+            outline=atmosphere_color,
+            width=2,
         )
 
-    num_planets = solar_system.num_planets
-    min_orbit_radius = star_radius * 2 + 50  # Separación inicial desde la estrella
-    max_orbit_radius = img_size // 2 - 50  # Tamaño máximo de la órbita
+    # Añadir inclinación axial
+    tilt_angle = planet["Axial Tilt"]
+    draw.line(
+        (
+            center_x - planet_radius * math.sin(math.radians(tilt_angle)),
+            center_y - planet_radius * math.cos(math.radians(tilt_angle)),
+            center_x + planet_radius * math.sin(math.radians(tilt_angle)),
+            center_y + planet_radius * math.cos(math.radians(tilt_angle)),
+        ),
+        fill="white",
+        width=2,
+    )
 
-    for i in range(1, num_planets + 1):
-        planet = solar_system.get_planet(i - 1)
-        if planet:
-            # Determinar el radio orbital usando la constante física
-            relative_orbit_radius = planet["Orbital Radius"] / max(
-                [p["Orbital Radius"] for p in solar_system.planets.values()]
-            )
-            orbit_radius = min_orbit_radius + int(
-                relative_orbit_radius * (max_orbit_radius - min_orbit_radius)
-            )
-
-            # Ajustar la excentricidad de la órbita (debe ser menor para planetas interiores)
-            eccentricity = random.uniform(0.0, 0.3) * (1 - relative_orbit_radius)
-
-            # Calcular los semiejes mayor y menor de la órbita
-            semi_major_axis = orbit_radius
-            semi_minor_axis = semi_major_axis * math.sqrt(1 - eccentricity**2)
-
-            # Dibujar la órbita como una elipse
+    # Añadir satélites si tiene vida inteligente
+    if planet["Life Forms"] == "Intelligent":
+        num_satellites = random.randint(1, 5)
+        for _ in range(num_satellites):
+            satellite_distance = planet_radius + random.randint(20, 40)
+            satellite_angle = random.uniform(0, 2 * math.pi)
+            satellite_x = center_x + int(satellite_distance * math.cos(satellite_angle))
+            satellite_y = center_y + int(satellite_distance * math.sin(satellite_angle))
             draw.ellipse(
-                (
-                    center_x - semi_major_axis,
-                    center_y - semi_minor_axis,
-                    center_x + semi_major_axis,
-                    center_y + semi_minor_axis,
-                ),
-                outline="white",
-                width=1,
+                (satellite_x - 3, satellite_y - 3, satellite_x + 3, satellite_y + 3),
+                fill="white",
             )
 
-            # Determinar la posición del planeta en la órbita usando la velocidad orbital
-            angle = random.uniform(0, 2 * math.pi)
-            planet_x = center_x + semi_major_axis * math.cos(angle)
-            planet_y = center_y + semi_minor_axis * math.sin(angle)
-
-            # Determinar el color del planeta según su tipo
-            planet_color = {
-                "Gas Giant": "orange",
-                "Rocky": "gray",
-                "Oceanic": "blue",
-                "Lava": "red",
-                "Icy": "lightblue",
-                "Desert": "yellow",
-                "Arid": "brown",
-                "Swamp": "green",
-                "Crystalline": "cyan",
-                "Metallic": "silver",
-                "Toxic": "purple",
-                "Radioactive": "lime",
-                "Super Earth": "lightgreen",
-                "Sub Earth": "darkgreen",
-                "Frozen Gas Giant": "lightblue",
-                "Nebulous": "pink",
-                "Aquifer": "aqua",
-                "Exotic": "magenta",
-            }.get(planet["Type"], "white")
-
-            # Ajustar el tamaño del planeta según su diámetro y características
-            max_diameter = max([p["Diameter"] for p in solar_system.planets.values()])
-            planet_radius = int(5 * (planet["Diameter"] / max_diameter))
-
-            draw.ellipse(
-                (
-                    planet_x - planet_radius,
-                    planet_y - planet_radius,
-                    planet_x + planet_radius,
-                    planet_y + planet_radius,
-                ),
-                fill=planet_color,
-            )
-
-            text_x = planet_x + planet_radius + 5
-            text_y = planet_y - planet_radius / 2
-            draw.text((text_x, text_y), planet["Name"], font=font, fill="white")
+    # Escribir el nombre del planeta, ajustar el texto más abajo
+    text_x = center_x
+    text_y = center_y + planet_radius + 40  # Ajuste de 40 píxeles en lugar de 20 para mayor separación
+    draw.text((text_x, text_y), planet["Name"], font=font, fill="white", anchor="mm")
 
     return image
 

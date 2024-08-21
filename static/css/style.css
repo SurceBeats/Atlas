@@ -160,7 +160,7 @@ button {
   margin: 0 auto;
   border-radius: 10px;
   border: 2px solid #72c3dc;
-  max-width: 300px;
+  max-width: 100%;
   height: auto;
 }
 
@@ -258,7 +258,7 @@ button {
     margin: 0 auto;
     border-radius: 10px;
     border: 2px solid #72c3dc;
-    max-width: 300px;
+    max-width: 100%;
     height: auto;
   }
   
@@ -294,3 +294,29 @@ button {
   .planets-list li a:hover {
     color: #a1d9f2;
   }
+
+  /* Info Container */
+.planet-info {
+  background-color: #102d44;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+  max-width: 90%;
+  width: 100%;
+  transition: box-shadow 0.3s ease;
+}
+
+.planet-info p {
+  margin: 5px 0;
+}
+
+/* Image Styles */
+.planet-image {
+  display: block;
+  margin: 0 auto;
+  border-radius: 10px;
+  border: 2px solid #72c3dc;
+  max-width: 100%;
+  height: auto;
+}

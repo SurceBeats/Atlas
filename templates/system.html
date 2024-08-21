@@ -16,20 +16,19 @@
                 }}</p>
             <p><strong>Number of Planets:</strong> {{
                 summary['Number of Planets'] }}</p>
-            <p><strong>Stars:</strong></p>
+            <p><strong>Stars ({{ summary['Stars']|length }}):</strong></p>
             {% for star in summary['Stars'] %}
             <p>
-                <strong>Type:</strong> {{ star['Type'] }}<br>
-                <strong>Size:</strong> {{ star['Size'] }}<br>
-                <strong>Color:</strong> {{ star['Color'] }}
+                <strong>Star Type {{ loop.index }}:</strong> {{ star['Type']
+                }}<br>
+                <strong>Star Size {{ loop.index }}:</strong> {{ star['Size']
+                }}<br>
+                <strong>Star Color {{ loop.index }}:</strong> {{ star['Color']
+                }}
             </p>
             {% endfor %}
         </div>
 
-        <div class="solar-system-info">
-            <button onclick="window.history.back()"
-                class="back-button">Back to Galaxy '{{ galaxy.name }}'</button>
-        </div>
 
         <div class="solar-system-info">
             <div>
@@ -38,16 +37,25 @@
             </div>
         </div>
 
-        <h2>Planets in {{ system.name }}:</h2>
+        <h2>Planets in '{{ system.name }}':</h2>
         <div class="solar-system-info">
             <ul class="planets-list">
                 {% for planet in system.planets.values() %}
                 <a
-                    href="{{ url_for('view_planet', planet_name=planet['Name'].lower()) }}">
+                    href="{{ url_for('view_planet', planet_name=planet['Name'].lower(), page=request.args.get('page', 1)) }}">
                     <li>{{ planet['Name'] }}</li>
                 </a>
                 {% endfor %}
             </ul>
+        </div>
+
+
+        <div class="solar-system-info">
+            <a
+                href="{{ url_for('view_galaxy', page=request.args.get('page', 1)) }}">
+                <button class="back-button">Back to Galaxy
+                    '{{ galaxy.name }}'</button>
+            </a>
         </div>
 
     </body>

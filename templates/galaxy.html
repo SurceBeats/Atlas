@@ -21,11 +21,6 @@
             <p><strong>Quasars:</strong> {{ galaxy.quasars }}</p>
         </div>
 
-        <!-- Botón para volver al índice -->
-        <div class="galaxy-info">
-            <a href="/"><button class="back-button">Go Back to Planetary
-                    Index</button></a>
-        </div>
 
         <!-- Mostrar la imagen de la galaxia -->
         <div class="galaxy-info">
@@ -40,11 +35,19 @@
             <ul class="solar-systems-list">
                 {% for system in systems %}
                 <a
-                    href="{{ url_for('view_system', system_index=system.index) }}"><li>
+                    href="{{ url_for('view_system', system_index=system.index, page=page) }}">
+                    <li>
                         #{{ system.number }} - {{ system.name }}
-                    </li></a>
+                    </li>
+                </a>
                 {% endfor %}
             </ul>
+        </div>
+
+        <!-- Botón para volver al índice -->
+        <div class="galaxy-info">
+            <a href="/"><button class="back-button">Go Back to Planetary
+                    Index</button></a>
         </div>
 
         <!-- Navegación entre páginas -->

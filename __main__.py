@@ -6,7 +6,7 @@ from logging.handlers import RotatingFileHandler
 
 from pymodules.constants import PhysicalConstants
 from pymodules.universe import Universe
-from pymodules.image_utils import generate_solar_system_image
+from pymodules.image_utils import generate_solar_system_image, generate_planet_image
 
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 
@@ -33,6 +33,7 @@ current_system = None
 # Data
 galaxy_dir = os.path.join(os.getcwd(), "data/galaxy")
 system_dir = os.path.join(os.getcwd(), "data/system")
+planet_dir = os.path.join(os.getcwd(), "data/planet")
 
 @app.route("/data/galaxy/<filename>")
 def galaxy_image(filename):
@@ -42,6 +43,9 @@ def galaxy_image(filename):
 def system_image(filename):
     return send_from_directory(system_dir, filename)
 
+@app.route("/data/planet/<filename>")
+def planet_image(filename):
+    return send_from_directory(planet_dir, filename)
 
 @app.route("/")
 def index():
@@ -150,10 +154,41 @@ def view_system(system_index):
 def view_planet(planet_name):
     if not current_system:
         return redirect(url_for("view_galaxy"))
+
     planet_name = planet_name.lower()
     for planet in current_system.planets.values():
         if planet["Name"].lower() == planet_name:
-            return render_template("planet.html", planet=planet, system=current_system)
+            # Generar la imagen del planeta si no existe
+            planet_image_path = os.path.join('data/planet', f'{planet["Name"]}.png')
+            if not os.path.exists(planet_image_path):
+                image = generate_planet_image(planet)
+                image.save(planet_image_path)
+
+            # Generar la URL para la imagen del planeta
+            image_url = url_for("planet_image", filename=f"{planet['Name']}.png")
+
+            # Crear un resumen del planeta
+            planet_summary = {
+                "Type": planet["Type"],
+                "Atmosphere": planet["Atmosphere"],
+                "Mass": f"{planet['Mass']:.2e} kg",
+                "Diameter": f"{planet['Diameter'] / 1000:.2f} km",
+                "Gravity": f"{planet['Gravity']:.2f} m/s²",
+                "Orbital Radius": f"{planet['Orbital Radius']:.2f} AU",
+                "Orbital Period": f"{planet['Orbital Period']:.2f} years",
+                "Surface Temperature": f"{planet['Surface Temperature']:.2f} K",
+                "Elements": ", ".join(planet["Elements"]),
+                "Life Forms": planet["Life Forms"],
+            }
+
+            return render_template(
+                "planet.html",
+                planet=planet,
+                system=current_system,
+                image_url=image_url,
+                summary=planet_summary
+            )
+
     return redirect(url_for("view_system", system_index=current_system.index))
 
 

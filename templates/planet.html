@@ -3,23 +3,51 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css"
+            href="{{ url_for('static', filename='css/style.css') }}">
         <title>Planet: {{ planet['Name'] }}</title>
     </head>
     <body>
         <h1>Planet '{{ planet['Name'] }}'</h1>
-        <p>Type: {{ planet['Type'] }}</p>
-        <p>Atmosphere: {{ planet['Atmosphere'] }}</p>
-        <p>Life Forms: {{ planet['Life Forms'] }}</p>
-        <p>Mass: {{ planet['Mass'] }} kg</p>
-        <p>Diameter: {{ planet['Diameter'] }} km</p>
-        <p>Density: {{ planet['Density'] }} kg/m³</p>
-        <p>Gravity: {{ planet['Gravity'] }} m/s²</p>
-        <p>Orbital Radius: {{ planet['Orbital Radius'] }} AU</p>
-        <p>Orbital Period: {{ planet['Orbital Period'] }} Earth years</p>
-        <p>Orbital Speed: {{ planet['Orbital Speed'] }} m/s</p>
-        <p>Axial Tilt: {{ planet['Axial Tilt'] }} degrees</p>
-        <p>Rotation Period: {{ planet['Rotation Period'] }} hours</p>
-        <p>Surface Temperature: {{ planet['Surface Temperature'] }} °C</p>
-        <p>Elements: {{ ", ".join(planet['Elements']) }}</p>
+
+        <!-- Mostrar el resumen del planeta -->
+        <div class="planet-info">
+            <p><strong>Type:</strong> {{ planet['Type'] }}</p>
+            <p><strong>Atmosphere:</strong> {{ planet['Atmosphere'] }}</p>
+            <p><strong>Life Forms:</strong> {{ planet['Life Forms'] }}</p>
+            <p><strong>Mass:</strong> {{ planet['Mass'] }} kg</p>
+            <p><strong>Diameter:</strong> {{ planet['Diameter'] }} km</p>
+            <p><strong>Density:</strong> {{ planet['Density'] }} kg/m³</p>
+            <p><strong>Gravity:</strong> {{ planet['Gravity'] }} m/s²</p>
+            <p><strong>Orbital Radius:</strong> {{ planet['Orbital Radius'] }}
+                AU</p>
+            <p><strong>Orbital Period:</strong> {{ planet['Orbital Period'] }}
+                Earth years</p>
+            <p><strong>Orbital Speed:</strong> {{ planet['Orbital Speed'] }}
+                m/s</p>
+            <p><strong>Axial Tilt:</strong> {{ planet['Axial Tilt'] }}
+                degrees</p>
+            <p><strong>Rotation Period:</strong> {{ planet['Rotation Period'] }}
+                hours</p>
+            <p><strong>Surface Temperature:</strong> {{
+                planet['Surface Temperature'] }} °C</p>
+            <p><strong>Elements:</strong> {{ ", ".join(planet['Elements'])
+                }}</p>
+        </div>
+
+
+        <!-- Mostrar la imagen del planeta -->
+        <div class="planet-info">
+            <img class="planet-image" src="{{ image_url }}"
+                alt="Image of {{ planet['Name'] }}" />
+        </div>
+
+                <!-- Botón para volver al sistema -->
+                <div class="planet-info">
+                    <a href="{{ url_for('view_system', system_index=system.index, page=request.args.get('page', 1)) }}">
+                        <button class="back-button">Go Back to System '{{system.name}}'</button>
+                    </a>
+                </div>
+        
     </body>
 </html>
