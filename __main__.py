@@ -10,7 +10,14 @@ from pymodules.constants import PhysicalConstants
 from pymodules.universe import Universe
 from pymodules.image_utils import generate_solar_system_image, generate_planet_image
 
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    send_from_directory,
+)
 
 app = Flask(__name__)
 
@@ -37,17 +44,21 @@ galaxy_dir = os.path.join(os.getcwd(), "data/galaxy")
 system_dir = os.path.join(os.getcwd(), "data/system")
 planet_dir = os.path.join(os.getcwd(), "data/planet")
 
+
 @app.route("/data/galaxy/<filename>")
 def galaxy_image(filename):
     return send_from_directory(galaxy_dir, filename)
+
 
 @app.route("/data/system/<filename>")
 def system_image(filename):
     return send_from_directory(system_dir, filename)
 
+
 @app.route("/data/planet/<filename>")
 def planet_image(filename):
     return send_from_directory(planet_dir, filename)
+
 
 @app.route("/")
 def index():
@@ -79,7 +90,7 @@ def view_galaxy():
 
     # Obtener el parámetro 'page' de la URL; por defecto, se usa la página 1
     page = int(request.args.get("page", 1))
-    per_page = 100
+    per_page = 50
     start = (page - 1) * per_page
     end = start + per_page
 
@@ -117,20 +128,20 @@ def view_system(system_index):
         current_system = current_galaxy.get_solar_system(system_index)
 
         # Generar la imagen del sistema solar si no existe
-        system_image_path = os.path.join('data/system', f'{current_system.name}.png')
+        system_image_path = os.path.join("data/system", f"{current_system.name}.png")
         if not os.path.exists(system_image_path):
             image = generate_solar_system_image(current_system)
             image.save(system_image_path)
 
         # Generar la URL para la imagen del sistema solar
         image_url = url_for("system_image", filename=f"{current_system.name}.png")
-        
+
         # Crear un resumen del sistema solar
         star_summary = [
             {
-                "Type": star['Type'],
-                "Color": star['Color'],
-                "Size": f"{star['Radius Factor']:.2f} solar radii"
+                "Type": star["Type"],
+                "Color": star["Color"],
+                "Size": f"{star['Radius Factor']:.2f} solar radii",
             }
             for star in current_system.stars
         ]
@@ -138,15 +149,15 @@ def view_system(system_index):
         system_summary = {
             "Star System Type": current_system.star_system_type.capitalize(),
             "Number of Planets": current_system.num_planets,
-            "Stars": star_summary
+            "Stars": star_summary,
         }
-        
+
         return render_template(
-            "system.html", 
-            system=current_system, 
+            "system.html",
+            system=current_system,
             galaxy=current_galaxy,
             image_url=image_url,  # Pasar la URL de la imagen a la plantilla
-            summary=system_summary  # Pasar el resumen a la plantilla
+            summary=system_summary,  # Pasar el resumen a la plantilla
         )
     except ValueError as e:
         return render_template("error.html", message=str(e), galaxy=current_galaxy)
@@ -161,7 +172,7 @@ def view_planet(planet_name):
     for planet in current_system.planets.values():
         if planet["Name"].lower() == planet_name:
             # Generar la imagen del planeta si no existe
-            planet_image_path = os.path.join('data/planet', f'{planet["Name"]}.png')
+            planet_image_path = os.path.join("data/planet", f'{planet["Name"]}.png')
             if not os.path.exists(planet_image_path):
                 image = generate_planet_image(planet)
                 image.save(planet_image_path)
@@ -188,13 +199,13 @@ def view_planet(planet_name):
                 planet=planet,
                 system=current_system,
                 image_url=image_url,
-                summary=planet_summary
+                summary=planet_summary,
             )
 
     return redirect(url_for("view_system", system_index=current_system.index))
 
 
 if __name__ == "__main__":
-    
+
     print(f"Seed: {seed}")
     app.run(debug=True)
