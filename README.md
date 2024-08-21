@@ -24,6 +24,14 @@ In "The Atlas," you can explore a universe of staggering proportions. Here's a g
 
 These numbers highlight the incredible scale and richness of "The Atlas," where every exploration reveals new galaxies, stars, and worlds within a nearly infinite cosmos.
 
+## Galaxy Screenshots
+<p align="center"><img src="https://github.com/SurceBeats/Atlas/blob/main/public/galaxy.png" width="400" alt="The Atlas Logo"></p>
+<p align="center"><img src="https://github.com/SurceBeats/Atlas/blob/main/public/galaxy-systems.png" width="400" alt="The Atlas Logo"></p>
+
+## Solar Systems Screenshots
+<p align="center"><img src="https://github.com/SurceBeats/Atlas/blob/main/public/system.png" width="400" alt="The Atlas Logo"></p>
+<p align="center"><img src="https://github.com/SurceBeats/Atlas/blob/main/public/planets-system.png" width="400" alt="The Atlas Logo"></p>
+
 ## Contributing
 
 We welcome contributions to The Atlas! Whether you're fixing bugs, adding features, or improving documentation, your help is greatly appreciated.
