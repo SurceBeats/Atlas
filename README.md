@@ -2,7 +2,7 @@
 
 ## About The Atlas
 
-The Atlas is a procedural generation engine designed to create vast, complex galaxies and universes. Built with advanced algorithms and some astrophysical phenomena, The Atlas offers an unparalleled toolset for generating realistic and immersive cosmic environments.
+The Atlas is a procedural generation engine designed to create vast, complex galaxies and universes. Built with advanced algorithms and some astrophysical phenomena, The Atlas offers an unparalleled toolset for generating realistic and immersive cosmic environments. It has been widely inspired by the team behind No Man's Sky.
 
 ## Key Features
 
