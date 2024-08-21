@@ -1,4 +1,4 @@
-<p align="center"><img src="https://github.com/SurceBeats/Atlas/blob/main/public/atlas-logo.png" width="400" alt="The Atlas Logo"></p>
+<p align="center"><img src="https://github.com/SurceBeats/Atlas/blob/main/public/atlas-logo.png" width="400"></p>
 
 ## About The Atlas
 
