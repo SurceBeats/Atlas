@@ -2,10 +2,13 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 import math
 import random
 
+from PIL import Image, ImageDraw, ImageFont, ImageOps
+
 def generate_planet_image(planet):
     img_size = 800  # Tamaño de la imagen
     image = Image.new("RGB", (img_size, img_size), "black")
-    draw = ImageDraw.Draw(image)
+    planet_surface = Image.new("RGBA", (img_size, img_size), (0, 0, 0, 0))  # Crear una imagen con transparencia para la superficie
+    draw = ImageDraw.Draw(planet_surface)
 
     try:
         font = ImageFont.truetype("arial.ttf", 14)
@@ -52,10 +55,9 @@ def generate_planet_image(planet):
         num_water_bodies = random.randint(3, 7)
         for _ in range(num_water_bodies):
             body_radius = random.randint(10, int(planet_radius * 0.5))
-            # Asegurarse de que el cuerpo de agua/lava esté completamente dentro del planeta
-            max_offset = planet_radius - body_radius
-            body_x = center_x + random.randint(-max_offset, max_offset)
-            body_y = center_y + random.randint(-max_offset, max_offset)
+            # Permitir que el cuerpo de agua/lava sobresalga
+            body_x = center_x + random.randint(-planet_radius, planet_radius)
+            body_y = center_y + random.randint(-planet_radius, planet_radius)
             draw.ellipse(
                 (body_x - body_radius, body_y - body_radius, body_x + body_radius, body_y + body_radius),
                 fill=water_color,
@@ -86,18 +88,34 @@ def generate_planet_image(planet):
         num_lava_flows = random.randint(5, 10)
         for _ in range(num_lava_flows):
             flow_radius = random.randint(5, int(planet_radius * 0.3))
-            # Asegurarse de que el flujo de lava esté completamente dentro del planeta
-            max_offset = planet_radius - flow_radius
-            flow_x = center_x + random.randint(-max_offset, max_offset)
-            flow_y = center_y + random.randint(-max_offset, max_offset)
+            # Permitir que el flujo de lava sobresalga
+            flow_x = center_x + random.randint(-planet_radius, planet_radius)
+            flow_y = center_y + random.randint(-planet_radius, planet_radius)
             draw.ellipse(
                 (flow_x - flow_radius, flow_y - flow_radius, flow_x + flow_radius, flow_y + flow_radius),
                 fill="red",
             )
 
+    # Crear una máscara circular para recortar lo que sobresalga del planeta
+    mask = Image.new("L", (img_size, img_size), 0)
+    mask_draw = ImageDraw.Draw(mask)
+    mask_draw.ellipse(
+        (
+            center_x - planet_radius,
+            center_y - planet_radius,
+            center_x + planet_radius,
+            center_y + planet_radius,
+        ),
+        fill=255
+    )
+
+    # Aplicar la máscara a la superficie del planeta
+    planet_surface = Image.composite(planet_surface, Image.new("RGBA", planet_surface.size, (0, 0, 0, 0)), mask)
+
     # Añadir atmósfera si tiene
     if planet["Atmosphere"] != "None":
         atmosphere_color = "lightgreen" if "Breathable" in planet["Atmosphere"] else "gray"
+        draw = ImageDraw.Draw(planet_surface)
         draw.ellipse(
             (
                 center_x - planet_radius - 10,
@@ -110,13 +128,12 @@ def generate_planet_image(planet):
         )
 
     # Añadir inclinación axial
-    tilt_angle = planet["Axial Tilt"]
     draw.line(
         (
-            center_x - planet_radius * math.sin(math.radians(tilt_angle)),
-            center_y - planet_radius * math.cos(math.radians(tilt_angle)),
-            center_x + planet_radius * math.sin(math.radians(tilt_angle)),
-            center_y + planet_radius * math.cos(math.radians(tilt_angle)),
+            center_x - planet_radius * math.sin(math.radians(planet["Axial Tilt"])),
+            center_y - planet_radius * math.cos(math.radians(planet["Axial Tilt"])),
+            center_x + planet_radius * math.sin(math.radians(planet["Axial Tilt"])),
+            center_y + planet_radius * math.cos(math.radians(planet["Axial Tilt"])),
         ),
         fill="white",
         width=2,
@@ -135,10 +152,138 @@ def generate_planet_image(planet):
                 fill="white",
             )
 
+    # Combinar la superficie del planeta con la imagen final
+    image.paste(planet_surface, (0, 0), planet_surface)
+
     # Escribir el nombre del planeta, ajustar el texto más abajo
     text_x = center_x
     text_y = center_y + planet_radius + 40  # Ajuste de 40 píxeles en lugar de 20 para mayor separación
+    draw = ImageDraw.Draw(image)
     draw.text((text_x, text_y), planet["Name"], font=font, fill="white", anchor="mm")
+
+    return image
+
+
+
+def generate_solar_system_image(solar_system):
+    img_size = 800  # Tamaño de la imagen para acomodar órbitas más grandes
+    image = Image.new("RGB", (img_size, img_size), "black")
+    draw = ImageDraw.Draw(image)
+
+    try:
+        font = ImageFont.truetype("arial.ttf", 12)
+    except IOError:
+        font = ImageFont.load_default()
+
+    center_x = img_size // 2
+    center_y = img_size // 2
+
+    # Configuración para estrellas
+    star_positions = []
+    separation = 50  # Mayor separación entre estrellas en binarios/terciarios
+    if solar_system.star_system_type == "single":
+        star_positions.append((center_x, center_y))
+    elif solar_system.star_system_type == "binary":
+        star_positions.append((center_x - separation, center_y))
+        star_positions.append((center_x + separation, center_y))
+    elif solar_system.star_system_type == "tertiary":
+        star_positions.append((center_x - separation, center_y))
+        star_positions.append((center_x + separation, center_y))
+        star_positions.append((center_x, center_y - separation))
+
+    # Dibujar las estrellas con un tamaño máximo limitado
+    max_star_radius = 50  # Tamaño máximo de la estrella
+    for i, star in enumerate(solar_system.stars):
+        star_x, star_y = star_positions[i]
+        star_radius = min(int(15 * star["Radius Factor"]), max_star_radius)
+        draw.ellipse(
+            (
+                star_x - star_radius,
+                star_y - star_radius,
+                star_x + star_radius,
+                star_y + star_radius,
+            ),
+            fill=star["Color"],
+        )
+
+    num_planets = solar_system.num_planets
+    min_orbit_radius = star_radius * 2 + 50  # Separación inicial desde la estrella
+    max_orbit_radius = img_size // 2 - 50  # Tamaño máximo de la órbita
+
+    for i in range(1, num_planets + 1):
+        planet = solar_system.get_planet(i - 1)
+        if planet:
+            # Determinar el radio orbital usando la constante física
+            relative_orbit_radius = planet["Orbital Radius"] / max(
+                [p["Orbital Radius"] for p in solar_system.planets.values()]
+            )
+            orbit_radius = min_orbit_radius + int(
+                relative_orbit_radius * (max_orbit_radius - min_orbit_radius)
+            )
+
+            # Ajustar la excentricidad de la órbita (debe ser menor para planetas interiores)
+            eccentricity = random.uniform(0.0, 0.3) * (1 - relative_orbit_radius)
+
+            # Calcular los semiejes mayor y menor de la órbita
+            semi_major_axis = orbit_radius
+            semi_minor_axis = semi_major_axis * math.sqrt(1 - eccentricity**2)
+
+            # Dibujar la órbita como una elipse
+            draw.ellipse(
+                (
+                    center_x - semi_major_axis,
+                    center_y - semi_minor_axis,
+                    center_x + semi_major_axis,
+                    center_y + semi_minor_axis,
+                ),
+                outline="white",
+                width=1,
+            )
+
+            # Determinar la posición del planeta en la órbita usando la velocidad orbital
+            angle = random.uniform(0, 2 * math.pi)
+            planet_x = center_x + semi_major_axis * math.cos(angle)
+            planet_y = center_y + semi_minor_axis * math.sin(angle)
+
+            # Determinar el color del planeta según su tipo
+            planet_color = {
+                "Gas Giant": "orange",
+                "Rocky": "gray",
+                "Oceanic": "blue",
+                "Lava": "red",
+                "Icy": "lightblue",
+                "Desert": "yellow",
+                "Arid": "brown",
+                "Swamp": "green",
+                "Crystalline": "cyan",
+                "Metallic": "silver",
+                "Toxic": "purple",
+                "Radioactive": "lime",
+                "Super Earth": "lightgreen",
+                "Sub Earth": "darkgreen",
+                "Frozen Gas Giant": "lightblue",
+                "Nebulous": "pink",
+                "Aquifer": "aqua",
+                "Exotic": "magenta",
+            }.get(planet["Type"], "white")
+
+            # Ajustar el tamaño del planeta según su diámetro y características
+            max_diameter = max([p["Diameter"] for p in solar_system.planets.values()])
+            planet_radius = int(5 * (planet["Diameter"] / max_diameter))
+
+            draw.ellipse(
+                (
+                    planet_x - planet_radius,
+                    planet_y - planet_radius,
+                    planet_x + planet_radius,
+                    planet_y + planet_radius,
+                ),
+                fill=planet_color,
+            )
+
+            text_x = planet_x + planet_radius + 5
+            text_y = planet_y - planet_radius / 2
+            draw.text((text_x, text_y), planet["Name"], font=font, fill="white")
 
     return image
 
