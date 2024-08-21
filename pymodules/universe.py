@@ -90,18 +90,6 @@ class Galaxy:
             self.solar_systems[index] = SolarSystem(system_seed, index, self.constants)
         return self.solar_systems[index]
 
-    def summary(self):
-        print(f"Galaxy '{self.name}': Type: {self.galaxy_type}")
-        print(f" - Number of Solar Systems: {self.num_systems}")
-        print(f" - Black Holes: {self.black_holes}")
-        print(f" - Pulsars: {self.pulsars}")
-        print(f" - Quasars: {self.quasars}")
-        for i in range(
-            min(self.num_systems, 50)
-        ):  # Solo mostrar un resumen de los primeros 50
-            system = self.get_solar_system(i)
-            print(f"   Solar System #{i - 1}: {system.num_planets} planets")
-
 
 class SolarSystem:
     def __init__(self, seed, index, constants):
@@ -171,15 +159,3 @@ class SolarSystem:
 
     def get_planet(self, index):
         return self.planets.get(index, None)
-
-    def summary(self):
-        print(f"Solar System '{self.name}':")
-        print(f" - Star System Type: {self.star_system_type.capitalize()}")
-        for i, star in enumerate(self.stars):
-            print(
-                f"     Star #{i + 1}: Type: {star['Type']}, Color: {star['Color']}, Radius Factor: {star['Radius Factor']}"
-            )
-        for i in range(self.num_planets):
-            planet = self.get_planet(i)
-            if planet:
-                print(f"     Planet #{i}: '{planet['Name']}':")

@@ -16,7 +16,6 @@ def generate_abstract_shape(
     # Crear un generador de números aleatorios independiente
     planet_seed = consistent_hash(f"{global_seed}-{planet_name}")
     rng = random.Random(planet_seed)
-    print(planet_seed)
 
     # Convertir el color a RGB si es una cadena de texto
     if isinstance(color, str):
@@ -126,8 +125,6 @@ def generate_planet_image(planet):
     image.paste(
         gradient, (center_x - planet_radius, center_y - planet_radius), gradient
     )
-
-    print(planet["Name"])
 
     # Dibujar los elementos abstractos en el planeta
     if planet["Type"] == "Gas Giant":
@@ -970,7 +967,10 @@ def generate_planet_image(planet):
             # Dibujar la atmósfera con un borde difuminado y opacidad
             atmosphere_draw.ellipse(
                 (
-                    center_x - planet_radius - atmosphere_width - 5,  # Separar más del planeta
+                    center_x
+                    - planet_radius
+                    - atmosphere_width
+                    - 5,  # Separar más del planeta
                     center_y - planet_radius - atmosphere_width - 5,
                     center_x + planet_radius + atmosphere_width + 5,
                     center_y + planet_radius + atmosphere_width + 5,

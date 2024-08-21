@@ -24,6 +24,9 @@ In "The Atlas," you can explore a universe of staggering proportions. Here's a g
 
 These numbers highlight the incredible scale and richness of "The Atlas," where every exploration reveals new galaxies, stars, and worlds within a nearly infinite cosmos.
 
+## How to run it?
+First, install Pillow to enable image generation at runtime. You can do this by running pip install Pillow, which should work on most systems. After that, run python3 __main__.py to start a simple Flask web server. Then, open your browser and navigate to the localhost URL. You're all set!
+
 ## Galaxy Screenshots
 <p align="center"><img src="https://github.com/SurceBeats/Atlas/blob/main/public/galaxy.png" width="400" alt="The Atlas Logo"></p>
 <p align="center"><img src="https://github.com/SurceBeats/Atlas/blob/main/public/galaxy-systems.png" width="400" alt="The Atlas Logo"></p>

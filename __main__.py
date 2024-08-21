@@ -72,9 +72,6 @@ def navigate():
     y = int(request.form["y"])
     z = int(request.form["z"])
 
-    # Verificar si 'os' está disponible
-    print("os module:", os)
-
     try:
         current_galaxy = universe.get_galaxy(x, y, z)
         current_system = None
@@ -206,6 +203,6 @@ def view_planet(planet_name):
 
 
 if __name__ == "__main__":
-
-    print(f"Seed: {seed}")
-    app.run(debug=True)
+    app.config['ENV'] = 'production' # lmao
+    app.config['DEBUG'] = False
+    app.run()
