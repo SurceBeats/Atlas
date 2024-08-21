@@ -12,6 +12,12 @@ body {
   min-height: 100vh;
 }
 
+.logo {
+  max-width: 230px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+}
+
 /* Encabezados con tamaño ajustado y transiciones */
 h1 {
   color: #72c3dc;
@@ -34,7 +40,8 @@ h2:hover {
 }
 
 /* Estilos para el formulario */
-form {
+form,
+.interfaceinit {
   background-color: #102d44;
   padding: 20px;
   border-radius: 10px;
@@ -45,6 +52,10 @@ form {
   flex-direction: column;
   align-items: center;
   transition: box-shadow 0.3s ease;
+}
+
+.interfaceinit {
+  margin-bottom: 20px;
 }
 
 form:hover {

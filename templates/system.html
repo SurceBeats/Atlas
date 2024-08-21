@@ -1,62 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" type="text/css"
-            href="{{ url_for('static', filename='css/style.css') }}">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        <title>System: {{ system.name }}</title>
-    </head>
-    <body>
-        <h1>System: '{{ system.name }}' at Galaxy '{{ galaxy.name }}'</h1>
+    <link rel="apple-touch-icon" sizes="57x57" href="/static/favicon/apple-icon-57x57.png" />
+    <link rel="apple-touch-icon" sizes="60x60" href="/static/favicon/apple-icon-60x60.png" />
+    <link rel="apple-touch-icon" sizes="72x72" href="/static/favicon/apple-icon-72x72.png" />
+    <link rel="apple-touch-icon" sizes="76x76" href="/static/favicon/apple-icon-76x76.png" />
+    <link rel="apple-touch-icon" sizes="114x114" href="/static/favicon/apple-icon-114x114.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="/static/favicon/apple-icon-120x120.png" />
+    <link rel="apple-touch-icon" sizes="144x144" href="/static/favicon/apple-icon-144x144.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/static/favicon/apple-icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/favicon/apple-icon-180x180.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/favicon/android-icon-192x192.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/static/favicon/favicon-96x96.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon/favicon-16x16.png" />
+    <link rel="manifest" href="/static/favicon/manifest.json" />
+    <meta name="msapplication-TileColor" content="#ffffff" />
+    <meta name="msapplication-TileImage" content="/static/favicon/ms-icon-144x144.png" />
+    <meta name="theme-color" content="#ffffff" />
 
-        <div class="solar-system-info">
-            <p><strong>Star System Type:</strong> {{ summary['Star System Type']
-                }}</p>
-            <p><strong>Number of Planets:</strong> {{
-                summary['Number of Planets'] }}</p>
-            <p><strong>Stars ({{ summary['Stars']|length }}):</strong></p>
-            {% for star in summary['Stars'] %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}" />
 
-            <p><strong class="info-bulked">Star Type {{ loop.index }}:</strong>
-                {{ star['Type']
-                }}</p>
-            <p><strong class="info-bulked">Star Size {{ loop.index }}:</strong>
-                {{ star['Size']
-                }}</p>
-            <p><strong class="info-bulked">Star Color {{ loop.index }}:</strong>
-                {{ star['Color']
-                }}</p>
-            {% endfor %}
-        </div>
+    <title>System: {{ system.name }}</title>
+  </head>
+  <body>
+    <h1>System: '{{ system.name }}' at Galaxy '{{ galaxy.name }}'</h1>
 
-        <div class="solar-system-info">
-            <div>
-                <img class="solar-system-image" src="{{ image_url }}"
-                    alt="Imagen del Sistema Solar {{ system.name }}">
-            </div>
-        </div>
+    <div class="solar-system-info">
+      <p><strong>Star System Type:</strong> {{ summary['Star System Type'] }}</p>
+      <p><strong>Number of Planets:</strong> {{ summary['Number of Planets'] }}</p>
+      <p><strong>Stars ({{ summary['Stars']|length }}):</strong></p>
+      {% for star in summary['Stars'] %}
 
-        <h2>Planets in '{{ system.name }}':</h2>
-        <div class="solar-system-info">
-            <ul class="planets-list">
-                {% for planet in system.planets.values() %}
-                <a
-                    href="{{ url_for('view_planet', planet_name=planet['Name'].lower(), page=request.args.get('page', 1)) }}">
-                    <li>{{ planet['Name'] }}</li>
-                </a>
-                {% endfor %}
-            </ul>
-        </div>
+      <p><strong class="info-bulked">Star Type {{ loop.index }}:</strong> {{ star['Type'] }}</p>
+      <p><strong class="info-bulked">Star Size {{ loop.index }}:</strong> {{ star['Size'] }}</p>
+      <p><strong class="info-bulked">Star Color {{ loop.index }}:</strong> {{ star['Color'] }}</p>
+      {% endfor %}
+    </div>
 
-        <div class="solar-system-info">
-            <a
-                href="{{ url_for('view_galaxy', page=request.args.get('page', 1)) }}">
-                <button class="back-button">Back to Galaxy
-                    '{{ galaxy.name }}'</button>
-            </a>
-        </div>
+    <div class="solar-system-info">
+      <div>
+        <img class="solar-system-image" src="{{ image_url }}" alt="Imagen del Sistema Solar {{ system.name }}" />
+      </div>
+    </div>
 
-    </body>
+    <h2>Planets in '{{ system.name }}':</h2>
+    <div class="solar-system-info">
+      <ul class="planets-list">
+        {% for planet in system.planets.values() %}
+        <a href="{{ url_for('view_planet', planet_name=planet['Name'].lower(), page=request.args.get('page', 1)) }}">
+          <li>{{ planet['Name'] }}</li>
+        </a>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="solar-system-info">
+      <a href="{{ url_for('view_galaxy', page=request.args.get('page', 1)) }}">
+        <button class="back-button">Back to Galaxy '{{ galaxy.name }}'</button>
+      </a>
+    </div>
+  </body>
 </html>
