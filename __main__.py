@@ -1,9 +1,11 @@
 import os
 import pymodules.__folders
+
 import logging
 
 from logging.handlers import RotatingFileHandler
 
+from pymodules.__config import seed
 from pymodules.constants import PhysicalConstants
 from pymodules.universe import Universe
 from pymodules.image_utils import generate_solar_system_image, generate_planet_image
@@ -193,4 +195,6 @@ def view_planet(planet_name):
 
 
 if __name__ == "__main__":
+    
+    print(f"Seed: {seed}")
     app.run(debug=True)

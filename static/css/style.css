@@ -140,20 +140,6 @@ button {
   box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
 }
 
-.galaxy-info p {
-  font-size: 1.1em;
-  margin: 10px 0;
-  transition: color 0.3s ease;
-}
-
-.galaxy-info p strong {
-  color: #a1d9f2;
-}
-
-.galaxy-info p:hover {
-  color: #a1d9f2;
-}
-
 /* Estilos para la imagen de la galaxia */
 .galaxy-image {
   display: block;
@@ -211,91 +197,66 @@ button {
   text-decoration: underline;
 }
 
-
-
-
-
-
-
-
-
-
-
-
 /* Estilos para mostrar el resumen del sistema solar */
 .solar-system-info {
-    background-color: #102d44;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-    max-width: 90%;
-    width: 100%;
-    transition: box-shadow 0.3s ease;
-  }
-  
-  .solar-system-info:hover {
-    box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
-  }
-  
-  .solar-system-info p {
-    font-size: 1.1em;
-    margin: 10px 0;
-    transition: color 0.3s ease;
-  }
-  
-  .solar-system-info p strong {
-    color: #a1d9f2;
-  }
-  
-  .solar-system-info p:hover {
-    color: #a1d9f2;
-  }
-  
-  /* Estilos para la imagen del sistema solar */
-  .solar-system-image {
-    display: block;
-    margin: 0 auto;
-    border-radius: 10px;
-    border: 2px solid #72c3dc;
-    max-width: 100%;
-    height: auto;
-  }
-  
-  /* Estilos para la lista de planetas */
-  .planets-list {
-    list-style-type: none;
-    padding: 0;
-    margin: 20px 0;
-    width: 100%;
-    line-height: 0;
-  }
-  
-  .planets-list li {
-    background-color: #153b58;
-    border-radius: 5px;
-    margin: 10px 0;
-    padding: 15px;
-    transition: background-color 0.3s ease;
-  }
-  
-  .planets-list li:hover {
-    background-color: #1d506b;
-  }
-  
-  .planets-list a {
-    text-decoration: none;
-    color: #d1e7f2;
-    font-size: 1.1em;
-    display: block;
-    transition: color 0.3s ease;
-  }
-  
-  .planets-list li a:hover {
-    color: #a1d9f2;
-  }
+  background-color: #102d44;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+  max-width: 90%;
+  width: 100%;
+  transition: box-shadow 0.3s ease;
+}
 
-  /* Info Container */
+.solar-system-info:hover {
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
+}
+
+/* Estilos para la imagen del sistema solar */
+.solar-system-image {
+  display: block;
+  margin: 0 auto;
+  border-radius: 10px;
+  border: 2px solid #72c3dc;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Estilos para la lista de planetas */
+.planets-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 20px 0;
+  width: 100%;
+  line-height: 0;
+}
+
+.planets-list li {
+  background-color: #153b58;
+  border-radius: 5px;
+  margin: 10px 0;
+  padding: 15px;
+  transition: background-color 0.3s ease;
+}
+
+.planets-list li:hover {
+  background-color: #1d506b;
+}
+
+.planets-list a {
+  text-decoration: none;
+  color: #d1e7f2;
+  font-size: 1.1em;
+  display: block;
+  transition: color 0.3s ease;
+}
+
+.planets-list li a:hover {
+  color: #a1d9f2;
+}
+
+/* Info Container */
 .planet-info {
   background-color: #102d44;
   border-radius: 10px;
@@ -307,10 +268,6 @@ button {
   transition: box-shadow 0.3s ease;
 }
 
-.planet-info p {
-  margin: 5px 0;
-}
-
 /* Image Styles */
 .planet-image {
   display: block;
@@ -319,4 +276,29 @@ button {
   border: 2px solid #72c3dc;
   max-width: 100%;
   height: auto;
+}
+
+.planet-info p,
+.solar-system-info p,
+.galaxy-info p {
+  line-height: 6px;
+  font-size: 0.8em;
+  margin: 10px 0;
+  transition: color 0.3s ease;
+}
+
+.planet-info p strong,
+.solar-system-info p strong,
+.galaxy-info p strong {
+  color: #a1d9f2;
+}
+
+.planet-info p:hover,
+.solar-system-info p:hover,
+.galaxy-info p:hover {
+  color: #a1d9f2;
+}
+
+.info-bulked {
+  color: #5f7e8d !important;
 }

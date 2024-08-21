@@ -18,17 +18,18 @@
                 summary['Number of Planets'] }}</p>
             <p><strong>Stars ({{ summary['Stars']|length }}):</strong></p>
             {% for star in summary['Stars'] %}
-            <p>
-                <strong>Star Type {{ loop.index }}:</strong> {{ star['Type']
-                }}<br>
-                <strong>Star Size {{ loop.index }}:</strong> {{ star['Size']
-                }}<br>
-                <strong>Star Color {{ loop.index }}:</strong> {{ star['Color']
-                }}
-            </p>
+
+            <p><strong class="info-bulked">Star Type {{ loop.index }}:</strong>
+                {{ star['Type']
+                }}</p>
+            <p><strong class="info-bulked">Star Size {{ loop.index }}:</strong>
+                {{ star['Size']
+                }}</p>
+            <p><strong class="info-bulked">Star Color {{ loop.index }}:</strong>
+                {{ star['Color']
+                }}</p>
             {% endfor %}
         </div>
-
 
         <div class="solar-system-info">
             <div>
@@ -48,7 +49,6 @@
                 {% endfor %}
             </ul>
         </div>
-
 
         <div class="solar-system-info">
             <a
