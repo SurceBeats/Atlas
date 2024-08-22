@@ -998,8 +998,16 @@ def generate_planet_image(planet):
         width=2,
     )
 
+    # Crear una imagen separada para los satélites y sus órbitas
+    satellite_layer = Image.new("RGBA", (img_size, img_size), (0, 0, 0, 0))
+    satellite_draw = ImageDraw.Draw(satellite_layer)
+
     if planet["Life Forms"] == "Intelligent Life":
-        rng = random.Random(seed)
+        # Crear un seed único para cada planeta basado en el seed global y el nombre del planeta
+        planet_seed = f"{seed}-{planet['Name']}"
+        rng = random.Random(
+            consistent_hash(planet_seed)
+        )  # Usar un hash consistente para el seed
 
         num_satellites = rng.randint(1, 5)
         for i in range(num_satellites):
@@ -1017,15 +1025,382 @@ def generate_planet_image(planet):
                 start_y = center_y + satellite_distance * math.sin(start_angle)
                 end_x = center_x + satellite_distance * math.cos(end_angle)
                 end_y = center_y + satellite_distance * math.sin(end_angle)
-                draw.line(
-                    (start_x, start_y, end_x, end_y), fill=(255, 255, 255, 25), width=1
+                satellite_draw.line(
+                    (start_x, start_y, end_x, end_y), fill=(255, 255, 255, 100), width=1
                 )  # Opacidad baja
 
             # Dibujar el satélite
-            draw.ellipse(
+            satellite_draw.ellipse(
                 (satellite_x - 2, satellite_y - 2, satellite_x + 2, satellite_y + 2),
                 fill="white",
             )
+
+    if planet["Life Forms"] == "Silicon-Based Life":
+        # Crear un seed único para cada planeta basado en el seed global y el nombre del planeta
+        planet_seed = f"{seed}-{planet['Name']}"
+        rng = random.Random(
+            consistent_hash(planet_seed)
+        )  # Usar un hash consistente para el seed
+
+        # Cristales flotantes
+        num_crystals = rng.randint(2, 4)  # Aumentar el número de cristales
+        for i in range(num_crystals):
+            crystal_distance = planet_radius + rng.randint(20, 60)
+            crystal_angle = rng.uniform(0, 2 * math.pi)
+            crystal_x = center_x + int(crystal_distance * math.cos(crystal_angle))
+            crystal_y = center_y + int(crystal_distance * math.sin(crystal_angle))
+
+            # Dibujar el cristal flotante con mayor detalle
+            crystal_size = rng.randint(3, 9)
+            satellite_draw.polygon(
+                [
+                    (crystal_x, crystal_y - crystal_size),
+                    (crystal_x + crystal_size, crystal_y + crystal_size),
+                    (crystal_x - crystal_size, crystal_y + crystal_size),
+                ],
+                fill="black",
+                outline="white",
+            )
+
+        # Anillo de escombros de silicio
+        num_debris = rng.randint(10, 20)  # Variar el número de escombros
+        for _ in range(num_debris):
+            rad_angle = rng.uniform(0, 2 * math.pi)
+            ring_distance = planet_radius + rng.randint(45, 60)
+            ring_x = center_x + int(ring_distance * math.cos(rad_angle))
+            ring_y = center_y + int(ring_distance * math.sin(rad_angle))
+
+            # Dibujar escombros de silicio
+            debris_size = rng.randint(1, 4)
+            satellite_draw.ellipse(
+                (
+                    ring_x - debris_size,
+                    ring_y - debris_size,
+                    ring_x + debris_size,
+                    ring_y + debris_size,
+                ),
+                fill="#121212",
+            )
+
+    if planet["Life Forms"] == "Non-Physical Entity":
+        # Crear un seed único para cada planeta basado en el seed global y el nombre del planeta
+        planet_seed = f"{seed}-{planet['Name']}"
+        rng = random.Random(
+            consistent_hash(planet_seed)
+        )  # Usar un hash consistente para el seed
+
+        # Cinturón de Plasma Fantasmal
+        plasma_ring_width = rng.randint(10, 20)
+        plasma_ring_radius = planet_radius + 30  # Ajustar según el tamaño del planeta
+
+        # Crear una imagen temporal para el plasma ring
+        plasma_ring_img = Image.new("RGBA", (img_size, img_size), (0, 0, 0, 0))
+        plasma_ring_draw = ImageDraw.Draw(plasma_ring_img)
+
+        plasma_ring_draw.ellipse(
+            (
+                center_x - plasma_ring_radius,
+                center_y - plasma_ring_radius,
+                center_x + plasma_ring_radius,
+                center_y + plasma_ring_radius,
+            ),
+            outline=(135, 206, 250, 150),  # Color azul claro con transparencia
+            width=plasma_ring_width,
+        )
+
+        # Aplicar un desenfoque para crear el efecto fantasmal
+        plasma_ring_img = plasma_ring_img.filter(ImageFilter.GaussianBlur(radius=5))
+
+        # Pegar la imagen del plasma ring en la imagen principal
+        satellite_draw.bitmap((0, 0), plasma_ring_img, fill=None)
+
+        # Ondas de Distorsión Gravitacional
+        num_waves = rng.randint(3, 5)
+        wave_radius_start = planet_radius + 50
+
+        for i in range(num_waves):
+            wave_radius = wave_radius_start + i * 10  # Cada onda es un poco más lejos
+
+            # Crear una imagen temporal para cada onda
+            wave_img = Image.new("RGBA", (img_size, img_size), (0, 0, 0, 0))
+            wave_draw = ImageDraw.Draw(wave_img)
+
+            wave_draw.arc(
+                [
+                    (center_x - wave_radius, center_y - wave_radius),
+                    (center_x + wave_radius, center_y + wave_radius),
+                ],
+                start=rng.randint(0, 360),
+                end=rng.randint(180, 360),
+                fill=(255, 255, 255, 100),  # Color blanco con baja opacidad
+            )
+
+            # Aplicar un leve desenfoque para suavizar la onda
+            wave_img = wave_img.filter(ImageFilter.GaussianBlur(radius=2))
+
+            # Pegar la imagen de la onda en la imagen principal
+            satellite_draw.bitmap((0, 0), wave_img, fill=None)
+
+    if planet["Life Forms"] == "Robotic Entities":
+        # Crear un seed único para cada planeta basado en el seed global y el nombre del planeta
+        planet_seed = f"{seed}-{planet['Name']}"
+        rng = random.Random(
+            consistent_hash(planet_seed)
+        )  # Usar un hash consistente para el seed
+
+        # Satélites de Control y Vigilancia
+        num_satellites = rng.randint(2, 4)
+        for i in range(num_satellites):
+            satellite_distance = planet_radius + rng.randint(30, 50)
+            satellite_angle = rng.uniform(0, 2 * math.pi)
+            satellite_x = center_x + int(satellite_distance * math.cos(satellite_angle))
+            satellite_y = center_y + int(satellite_distance * math.sin(satellite_angle))
+
+            # Dibujar el satélite de forma geométrica
+            satellite_size = rng.randint(5, 8)
+            satellite_draw.polygon(
+                [
+                    (satellite_x, satellite_y - satellite_size),
+                    (satellite_x + satellite_size, satellite_y),
+                    (satellite_x, satellite_y + satellite_size),
+                    (satellite_x - satellite_size, satellite_y),
+                ],
+                fill="gray",
+                outline="white",
+            )
+
+        # Red de Drones Industriales
+        drone_positions = []  # Asegúrate de inicializar esta lista antes de usarla
+        num_drones = rng.randint(10, 20)
+        for i in range(num_drones):
+            drone_distance = planet_radius + rng.randint(60, 80)
+            drone_angle = rng.uniform(0, 2 * math.pi)
+            drone_x = center_x + int(drone_distance * math.cos(drone_angle))
+            drone_y = center_y + int(drone_distance * math.sin(drone_angle))
+
+            # Dibujar el dron como un pequeño punto con líneas que los conectan
+            drone_size = rng.randint(1, 3)
+            satellite_draw.ellipse(
+                (
+                    drone_x - drone_size,
+                    drone_y - drone_size,
+                    drone_x + drone_size,
+                    drone_y + drone_size,
+                ),
+                fill="lightgray",
+            )
+
+            # Dibujar líneas conectando drones cercanos
+            if i > 0:
+                previous_drone_x, previous_drone_y = drone_positions[-1]
+                satellite_draw.line(
+                    (previous_drone_x, previous_drone_y, drone_x, drone_y),
+                    fill="lightgray",
+                    width=1,
+                )
+            drone_positions.append((drone_x, drone_y))
+
+        # Anillo de Energía o Transmisión
+        ring_width = rng.randint(10, 15)
+        ring_radius = planet_radius + 100
+
+        # Crear una imagen temporal para el anillo
+        energy_ring_img = Image.new("RGBA", (img_size, img_size), (0, 0, 0, 0))
+        energy_ring_draw = ImageDraw.Draw(energy_ring_img)
+
+        energy_ring_draw.ellipse(
+            (
+                center_x - ring_radius,
+                center_y - ring_radius,
+                center_x + ring_radius,
+                center_y + ring_radius,
+            ),
+            outline=(0, 255, 0, 150),  # Verde brillante para sugerir energía
+            width=ring_width,
+        )
+
+        # Aplicar un desenfoque para simular energía
+        energy_ring_img = energy_ring_img.filter(ImageFilter.GaussianBlur(radius=3))
+
+        # Pegar la imagen del anillo de energía en la imagen principal
+        satellite_draw.bitmap((0, 0), energy_ring_img, fill=None)
+
+    if planet["Life Forms"] == "Conscious Gas":
+        rng = random.Random(consistent_hash(f"{seed}-{planet['Name']}"))
+
+        # Nubes Luminosas en Movimiento
+        num_clouds = rng.randint(3, 6)
+        for _ in range(num_clouds):
+            cloud_distance = planet_radius + rng.randint(30, 50)
+            cloud_angle = rng.uniform(0, 2 * math.pi)
+            cloud_x = center_x + int(cloud_distance * math.cos(cloud_angle))
+            cloud_y = center_y + int(cloud_distance * math.sin(cloud_angle))
+
+            # Crear la nube luminosa
+            cloud_size = rng.randint(20, 40)
+            cloud_color = (
+                rng.randint(100, 200),
+                rng.randint(100, 255),
+                rng.randint(150, 255),
+                150,
+            )
+            cloud_img = Image.new("RGBA", (img_size, img_size), (0, 0, 0, 0))
+            cloud_draw = ImageDraw.Draw(cloud_img)
+
+            cloud_draw.ellipse(
+                (
+                    cloud_x - cloud_size,
+                    cloud_y - cloud_size,
+                    cloud_x + cloud_size,
+                    cloud_y + cloud_size,
+                ),
+                fill=cloud_color,
+            )
+
+            # Aplicar desenfoque para suavizar la nube
+            cloud_img = cloud_img.filter(ImageFilter.GaussianBlur(radius=5))
+
+            # Pegar la imagen de la nube en la imagen principal
+            satellite_draw.bitmap((0, 0), cloud_img, fill=None)
+
+        # Cinturones de Energía Fluctuante
+        num_belts = rng.randint(2, 3)
+        for i in range(num_belts):
+            belt_radius = planet_radius + 70 + i * 10
+            belt_color = (
+                rng.randint(150, 255),
+                rng.randint(150, 255),
+                rng.randint(150, 255),
+                120,
+            )
+
+            belt_img = Image.new("RGBA", (img_size, img_size), (0, 0, 0, 0))
+            belt_draw = ImageDraw.Draw(belt_img)
+
+            belt_draw.ellipse(
+                (
+                    center_x - belt_radius,
+                    center_y - belt_radius,
+                    center_x + belt_radius,
+                    center_y + belt_radius,
+                ),
+                outline=belt_color,
+                width=5,
+            )
+
+            # Aplicar un leve desenfoque para crear un efecto de energía fluctuante
+            belt_img = belt_img.filter(ImageFilter.GaussianBlur(radius=3))
+
+            # Pegar la imagen del cinturón en la imagen principal
+            satellite_draw.bitmap((0, 0), belt_img, fill=None)
+
+    if planet["Life Forms"] == "Have I just found God?":
+        rng = random.Random(consistent_hash(f"{seed}-{planet['Name']}"))
+
+        # Triángulo central (sin ojo)
+        triangle_size = (
+            planet_radius * 0.5
+        )  # Ajustar el tamaño del triángulo basado en el radio del planeta
+        triangle_center_x = center_x
+        triangle_center_y = center_y
+
+        # Dibujar el triángulo centrado dentro del planeta
+        satellite_draw.polygon(
+            [
+                (triangle_center_x, triangle_center_y - triangle_size),
+                (triangle_center_x - triangle_size, triangle_center_y + triangle_size),
+                (triangle_center_x + triangle_size, triangle_center_y + triangle_size),
+            ],
+            outline="yellow",
+            width=4,  # Borde definido
+        )
+
+        # Añadir rayos dorados variables alrededor del triángulo
+        num_rays = rng.randint(10, 20)  # Variar el número de rayos
+        for i in range(num_rays):
+            angle = math.radians(
+                i * (360 / num_rays) + rng.uniform(-10, 10)
+            )  # Añadir un ligero desfase aleatorio
+            ray_length = triangle_size + rng.randint(30, 60)  # Longitud variable
+            ray_x = triangle_center_x + int(ray_length * math.cos(angle))
+            ray_y = triangle_center_y + int(ray_length * math.sin(angle))
+            satellite_draw.line(
+                (triangle_center_x, triangle_center_y, ray_x, ray_y),
+                fill="yellow",
+                width=3,  # Rayos gruesos y definidos
+            )
+
+        # Anillo de Luz Dorada Ampliado
+        halo_radius = planet_radius + 180  # Halo 3 veces más grande
+        halo_width = 15  # Ancho del halo más grande
+
+        # Crear una imagen temporal para el anillo de luz
+        halo_img = Image.new("RGBA", (img_size, img_size), (0, 0, 0, 0))
+        halo_draw = ImageDraw.Draw(halo_img)
+
+        halo_draw.ellipse(
+            (
+                center_x - halo_radius,
+                center_y - halo_radius,
+                center_x + halo_radius,
+                center_y + halo_radius,
+            ),
+            outline=(255, 255, 0, 200),  # Amarillo más intenso
+            width=halo_width,
+        )
+
+        # Aplicar un desenfoque ligero para suavizar el halo
+        halo_img = halo_img.filter(ImageFilter.GaussianBlur(radius=10))
+
+        # Pegar la imagen del halo en la imagen principal
+        satellite_draw.bitmap((0, 0), halo_img, fill=None)
+
+        # Variabilidad adicional: añadir pequeños símbolos aleatorios alrededor del planeta
+        num_symbols = rng.randint(5, 10)
+        for _ in range(num_symbols):
+            symbol_size = rng.randint(10, 20)
+            symbol_angle = rng.uniform(0, 2 * math.pi)
+            symbol_distance = planet_radius + rng.randint(50, 100)
+            symbol_x = center_x + int(symbol_distance * math.cos(symbol_angle))
+            symbol_y = center_y + int(symbol_distance * math.sin(symbol_angle))
+
+            # Dibujar un símbolo simple como un círculo o cruz
+            symbol_type = rng.choice(["circle", "cross"])
+            if symbol_type == "circle":
+                satellite_draw.ellipse(
+                    (
+                        symbol_x - symbol_size // 2,
+                        symbol_y - symbol_size // 2,
+                        symbol_x + symbol_size // 2,
+                        symbol_y + symbol_size // 2,
+                    ),
+                    outline="yellow",
+                    width=2,
+                )
+            elif symbol_type == "cross":
+                satellite_draw.line(
+                    (
+                        symbol_x - symbol_size // 2,
+                        symbol_y,
+                        symbol_x + symbol_size // 2,
+                        symbol_y,
+                    ),
+                    fill="yellow",
+                    width=2,
+                )
+                satellite_draw.line(
+                    (
+                        symbol_x,
+                        symbol_y - symbol_size // 2,
+                        symbol_x,
+                        symbol_y + symbol_size // 2,
+                    ),
+                    fill="yellow",
+                    width=2,
+                )
+
+    # Pegar la capa de satélites sobre la imagen principal
+    image = Image.alpha_composite(image.convert("RGBA"), satellite_layer)
 
     image.paste(planet_surface, (0, 0), planet_surface)
 

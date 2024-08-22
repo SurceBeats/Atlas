@@ -6,5 +6,3 @@
 
 # Excluir todos los directorios '__pycache__' en cualquier lugar del proyecto
 **/__pycache__/
-
-.pre-commit-config.yaml

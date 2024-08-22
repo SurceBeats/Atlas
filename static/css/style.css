@@ -302,3 +302,8 @@ button {
   color: #5f7e8d !important;
   font-weight: bold;
 }
+
+.p-version {
+  font-size: xx-small;
+  color: #2d5575;
+}

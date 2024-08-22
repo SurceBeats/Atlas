@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, redirect, url_for, send_file,
 from io import BytesIO
 import os
 
-from pymodules.__config import seed
+from pymodules.__config import seed, version
 from pymodules.constants import PhysicalConstants
 from pymodules.universe import Universe
 from pymodules.image_utils import (
@@ -38,7 +38,7 @@ def get_current_system():
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("index.html", version=version)
 
 
 @app.route("/navigate", methods=["POST"])
@@ -223,4 +223,5 @@ def planet_image_blob(planet_name):
 if __name__ == "__main__":
     app.config["ENV"] = "production"
     app.config["DEBUG"] = False
+
     app.run(host="0.0.0.0")

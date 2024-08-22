@@ -94,7 +94,6 @@ class SolarSystem:
             self.planets[i] = generate_planet(planet_seed, planet_name, self.constants)
 
     def determine_star_system_type(self):
-        """Determina si el sistema es simple, binario o terciario."""
         system_type = random.choices(
             ["single", "binary", "tertiary"],
             weights=[0.7, 0.25, 0.05],
@@ -103,7 +102,6 @@ class SolarSystem:
         return system_type
 
     def generate_stars(self):
-        """Genera las estrellas del sistema solar."""
         star_count = (
             1
             if self.star_system_type == "single"

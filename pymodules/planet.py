@@ -69,6 +69,14 @@ def calculate_life_probability(planet):
         if random.random() < 0.001:
             return "Robotic Entities"
 
+    if (
+        planet["Type"] == "Nebulous"
+        and planet["Atmosphere"] == "Plasma"
+        and "Moscovium" in planet["Elements"]
+    ):
+        if random.random() < 0.00001:
+            return "Have I just found God?"
+
     return random.choice(possible_life_forms)
 
 
