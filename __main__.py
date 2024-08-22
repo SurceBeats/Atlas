@@ -1,6 +1,6 @@
 # __main__.py
 
-from flask import Flask, render_template, request, redirect, url_for, send_file
+from flask import Flask, render_template, request, redirect, url_for, send_file, session
 from io import BytesIO
 import os
 
@@ -14,13 +14,28 @@ from pymodules.image_utils import (
 )
 
 app = Flask(__name__)
+app.secret_key = os.urandom(24)
 
 # Configuración inicial
 seed = 42
 constants = PhysicalConstants()
 universe = Universe(seed, constants)
-current_galaxy = None
-current_system = None
+
+
+def get_current_galaxy():
+    galaxy_data = session.get("galaxy")
+    if galaxy_data:
+        galaxy = universe.get_galaxy(*galaxy_data["coordinates"])
+        return galaxy
+    return None
+
+
+def get_current_system():
+    galaxy = get_current_galaxy()
+    system_index = session.get("system")
+    if galaxy and system_index is not None:
+        return galaxy.get_solar_system(system_index)
+    return None
 
 
 @app.route("/")
@@ -30,14 +45,20 @@ def index():
 
 @app.route("/navigate", methods=["POST"])
 def navigate():
-    global current_galaxy, current_system
     x = int(request.form["x"])
     y = int(request.form["y"])
     z = int(request.form["z"])
 
     try:
-        current_galaxy = universe.get_galaxy(x, y, z)
-        current_system = None
+        galaxy = universe.get_galaxy(x, y, z)
+        session["galaxy"] = {
+            "seed": galaxy.seed,
+            "name": galaxy.name,
+            "constants": galaxy.constants.__dict__,
+            "galaxy_type": galaxy.galaxy_type,
+            "coordinates": (x, y, z),
+        }
+        session["system"] = None
         return redirect(url_for("view_galaxy"))
     except Exception as e:
         return render_template("index.html", error=str(e))
@@ -45,6 +66,7 @@ def navigate():
 
 @app.route("/galaxy")
 def view_galaxy():
+    current_galaxy = get_current_galaxy()
     if not current_galaxy:
         print("No galaxy found, redirecting to index.")
         return redirect(url_for("index"))
@@ -81,13 +103,13 @@ def view_galaxy():
 
 @app.route("/galaxy_image_blob")
 def galaxy_image_blob():
+    current_galaxy = get_current_galaxy()
     if not current_galaxy:
         print("No galaxy found, redirecting to index.")
         return redirect(url_for("index"))
 
     try:
         print(f"Generating image for galaxy: {current_galaxy.name}")
-        # Usa la función correcta para generar la imagen de la galaxia
         image = generate_galaxy_image(current_galaxy)
         img_io = BytesIO()
         image.save(img_io, "PNG")
@@ -101,11 +123,12 @@ def galaxy_image_blob():
 
 @app.route("/system/<int:system_index>")
 def view_system(system_index):
-    global current_system
+    current_galaxy = get_current_galaxy()
     if not current_galaxy:
         return redirect(url_for("index"))
 
     try:
+        session["system"] = system_index  # Guardar el índice del sistema en la sesión
         current_system = current_galaxy.get_solar_system(system_index)
 
         image_url = url_for("system_image_blob")
@@ -138,6 +161,7 @@ def view_system(system_index):
 
 @app.route("/system_image_blob")
 def system_image_blob():
+    current_system = get_current_system()
     if not current_system:
         return redirect(url_for("index"))
 
@@ -150,6 +174,7 @@ def system_image_blob():
 
 @app.route("/planet/<planet_name>")
 def view_planet(planet_name):
+    current_system = get_current_system()
     if not current_system:
         return redirect(url_for("view_galaxy"))
 
@@ -184,6 +209,7 @@ def view_planet(planet_name):
 
 @app.route("/planet_image_blob/<planet_name>")
 def planet_image_blob(planet_name):
+    current_system = get_current_system()
     planet_name = planet_name.lower()
     for planet in current_system.planets.values():
         if planet["Name"].lower() == planet_name:
