@@ -43,7 +43,7 @@ These numbers give a sense of the sheer scale of "The Atlas" and the massive dat
 - Alternatively, you can run pip install -r requirements.txt to install both dependencies automatically!
 
 ## Demo
-- View it live (and slow cause it's free) at https://marbled-scratch-aspen.glitch.me/ !!!
+- View it live (and slow cause it's free) at https://the-atlas.glitch.me !!!
 
 ## Galaxy Screenshots
 <p align="center"><img src="https://github.com/SurceBeats/Atlas/blob/main/public/galaxy.png" width="400" alt="The Atlas Logo"></p>
