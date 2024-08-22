@@ -1,3 +1,5 @@
+# pymodules\planet.py
+
 import random
 import math
 from pymodules.elements import periodic_table

@@ -1,35 +1,19 @@
+# __main__.py
+
+from flask import Flask, render_template, request, redirect, url_for, send_file
+from io import BytesIO
 import os
-import pymodules.__folders
-
-import logging
-
-from logging.handlers import RotatingFileHandler
 
 from pymodules.__config import seed
 from pymodules.constants import PhysicalConstants
 from pymodules.universe import Universe
-from pymodules.image_utils import generate_solar_system_image, generate_planet_image
-
-from flask import (
-    Flask,
-    render_template,
-    request,
-    redirect,
-    url_for,
-    send_from_directory,
+from pymodules.image_utils import (
+    generate_solar_system_image,
+    generate_planet_image,
+    generate_galaxy_image,
 )
 
 app = Flask(__name__)
-
-# Configura el manejador de archivo para volcar los errores
-file_handler = RotatingFileHandler("logs/error.log", maxBytes=10240, backupCount=10)
-file_handler.setLevel(logging.ERROR)
-formatter = logging.Formatter(
-    "%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]"
-)
-file_handler.setFormatter(formatter)
-app.logger.addHandler(file_handler)
-app.logger.setLevel(logging.ERROR)
 
 # Configuración inicial
 seed = 42
@@ -37,27 +21,6 @@ constants = PhysicalConstants()
 universe = Universe(seed, constants)
 current_galaxy = None
 current_system = None
-
-
-# Data
-galaxy_dir = os.path.join(os.getcwd(), "data/galaxy")
-system_dir = os.path.join(os.getcwd(), "data/system")
-planet_dir = os.path.join(os.getcwd(), "data/planet")
-
-
-@app.route("/data/galaxy/<filename>")
-def galaxy_image(filename):
-    return send_from_directory(galaxy_dir, filename)
-
-
-@app.route("/data/system/<filename>")
-def system_image(filename):
-    return send_from_directory(system_dir, filename)
-
-
-@app.route("/data/planet/<filename>")
-def planet_image(filename):
-    return send_from_directory(planet_dir, filename)
 
 
 @app.route("/")
@@ -83,15 +46,14 @@ def navigate():
 @app.route("/galaxy")
 def view_galaxy():
     if not current_galaxy:
+        print("No galaxy found, redirecting to index.")
         return redirect(url_for("index"))
 
-    # Obtener el parámetro 'page' de la URL; por defecto, se usa la página 1
     page = int(request.args.get("page", 1))
     per_page = 50
     start = (page - 1) * per_page
     end = start + per_page
 
-    # Crear una lista de sistemas solares con sus nombres, índices y números
     systems = [
         {
             "index": i,
@@ -104,15 +66,37 @@ def view_galaxy():
     next_page = page + 1 if end < current_galaxy.num_systems else None
     prev_page = page - 1 if start > 0 else None
 
+    print(f"Rendering galaxy with image_url: {url_for('galaxy_image_blob')}")
+
     return render_template(
         "galaxy.html",
         galaxy=current_galaxy,
-        image_url=f"/data/galaxy/{current_galaxy.name}.png",
+        image_url=url_for("galaxy_image_blob"),
         systems=systems,
         page=page,
         next_page=next_page,
         prev_page=prev_page,
     )
+
+
+@app.route("/galaxy_image_blob")
+def galaxy_image_blob():
+    if not current_galaxy:
+        print("No galaxy found, redirecting to index.")
+        return redirect(url_for("index"))
+
+    try:
+        print(f"Generating image for galaxy: {current_galaxy.name}")
+        # Usa la función correcta para generar la imagen de la galaxia
+        image = generate_galaxy_image(current_galaxy)
+        img_io = BytesIO()
+        image.save(img_io, "PNG")
+        img_io.seek(0)
+        print("Image generated successfully.")
+        return send_file(img_io, mimetype="image/png")
+    except Exception as e:
+        print(f"Error generating image: {str(e)}")
+        return redirect(url_for("index"))
 
 
 @app.route("/system/<int:system_index>")
@@ -124,16 +108,8 @@ def view_system(system_index):
     try:
         current_system = current_galaxy.get_solar_system(system_index)
 
-        # Generar la imagen del sistema solar si no existe
-        system_image_path = os.path.join("data/system", f"{current_system.name}.png")
-        if not os.path.exists(system_image_path):
-            image = generate_solar_system_image(current_system)
-            image.save(system_image_path)
+        image_url = url_for("system_image_blob")
 
-        # Generar la URL para la imagen del sistema solar
-        image_url = url_for("system_image", filename=f"{current_system.name}.png")
-
-        # Crear un resumen del sistema solar
         star_summary = [
             {
                 "Type": star["Type"],
@@ -153,11 +129,23 @@ def view_system(system_index):
             "system.html",
             system=current_system,
             galaxy=current_galaxy,
-            image_url=image_url,  # Pasar la URL de la imagen a la plantilla
-            summary=system_summary,  # Pasar el resumen a la plantilla
+            image_url=image_url,
+            summary=system_summary,
         )
     except ValueError as e:
         return render_template("error.html", message=str(e), galaxy=current_galaxy)
+
+
+@app.route("/system_image_blob")
+def system_image_blob():
+    if not current_system:
+        return redirect(url_for("index"))
+
+    image = generate_solar_system_image(current_system)
+    img_io = BytesIO()
+    image.save(img_io, "PNG")
+    img_io.seek(0)
+    return send_file(img_io, mimetype="image/png")
 
 
 @app.route("/planet/<planet_name>")
@@ -168,16 +156,8 @@ def view_planet(planet_name):
     planet_name = planet_name.lower()
     for planet in current_system.planets.values():
         if planet["Name"].lower() == planet_name:
-            # Generar la imagen del planeta si no existe
-            planet_image_path = os.path.join("data/planet", f'{planet["Name"]}.png')
-            if not os.path.exists(planet_image_path):
-                image = generate_planet_image(planet)
-                image.save(planet_image_path)
+            image_url = url_for("planet_image_blob", planet_name=planet_name)
 
-            # Generar la URL para la imagen del planeta
-            image_url = url_for("planet_image", filename=f"{planet['Name']}.png")
-
-            # Crear un resumen del planeta
             planet_summary = {
                 "Type": planet["Type"],
                 "Atmosphere": planet["Atmosphere"],
@@ -202,7 +182,21 @@ def view_planet(planet_name):
     return redirect(url_for("view_system", system_index=current_system.index))
 
 
+@app.route("/planet_image_blob/<planet_name>")
+def planet_image_blob(planet_name):
+    planet_name = planet_name.lower()
+    for planet in current_system.planets.values():
+        if planet["Name"].lower() == planet_name:
+            image = generate_planet_image(planet)
+            img_io = BytesIO()
+            image.save(img_io, "PNG")
+            img_io.seek(0)
+            return send_file(img_io, mimetype="image/png")
+
+    return redirect(url_for("view_system", system_index=current_system.index))
+
+
 if __name__ == "__main__":
-    app.config['ENV'] = 'production' # lmao
-    app.config['DEBUG'] = False
+    app.config["ENV"] = "production"
+    app.config["DEBUG"] = False
     app.run()

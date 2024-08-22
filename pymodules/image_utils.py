@@ -1,3 +1,5 @@
+# pymodules\image_utils.py
+
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps, ImageColor
 from pymodules.__config import seed
 
@@ -1111,7 +1113,10 @@ def generate_solar_system_image(solar_system):
             )
 
             # Determinar la posición del planeta en la órbita usando la velocidad orbital
-            angle = random.uniform(0, 2 * math.pi)
+            # Cambiar el uso de random.uniform por un ángulo calculado con una semilla consistente
+            angle_seed = hash((solar_system.seed, i))
+            rng = random.Random(angle_seed)
+            angle = rng.uniform(0, 2 * math.pi)
             planet_x = center_x + semi_major_axis * math.cos(angle)
             planet_y = center_y + semi_minor_axis * math.sin(angle)
 
@@ -1168,11 +1173,16 @@ def generate_solar_system_image(solar_system):
 
 def generate_galaxy_image(galaxy):
     img_size = 800
-    image = Image.new("RGB", (img_size, img_size), "black")
+    image = Image.new(
+        "RGBA", (img_size, img_size), "black"
+    )  # Imagen con fondo transparente
     draw = ImageDraw.Draw(image)
 
     center_x = img_size // 2
     center_y = img_size // 2
+
+    # Inicializa un generador de números aleatorios con la semilla de la galaxia
+    rng = random.Random(galaxy.seed)
 
     if galaxy.galaxy_type == "spiral":
         num_arms = 4
@@ -1190,8 +1200,8 @@ def generate_galaxy_image(galaxy):
 
         # Dibujar el núcleo con alta densidad
         for i in range(int(num_points * core_density)):
-            angle = random.uniform(0, 2 * math.pi)
-            radius = random.gauss(max_radius * 0.1, max_radius * 0.05)
+            angle = rng.uniform(0, 2 * math.pi)
+            radius = rng.gauss(max_radius * 0.1, max_radius * 0.05)
             x = center_x + radius * math.cos(angle)
             y = center_y + radius * math.sin(angle)
             draw.point((x, y), fill="white")
@@ -1205,12 +1215,12 @@ def generate_galaxy_image(galaxy):
             x = (
                 center_x
                 + radius * math.cos(theta + arm_angle)
-                + random.uniform(-spread * radius, spread * radius)
+                + rng.uniform(-spread * radius, spread * radius)
             )
             y = (
                 center_y
                 + radius * math.sin(theta + arm_angle)
-                + random.uniform(-spread * radius, spread * radius)
+                + rng.uniform(-spread * radius, spread * radius)
             )
 
             # Dibujar la estrella
@@ -1226,11 +1236,11 @@ def generate_galaxy_image(galaxy):
         blurred_image = image.filter(ImageFilter.GaussianBlur(radius=5))
         image.paste(blurred_image, (0, 0), mask)
 
-    if galaxy.galaxy_type == "elliptical":
+    elif galaxy.galaxy_type == "elliptical":
         num_points = 100000  # Representar con 1000 sistemas máximo
         for _ in range(num_points):
-            angle = random.uniform(0, 2 * math.pi)
-            radius = random.gauss(img_size // 4, img_size // 8)
+            angle = rng.uniform(0, 2 * math.pi)
+            radius = rng.gauss(img_size // 4, img_size // 8)
             x = center_x + radius * math.cos(angle)
             y = center_y + radius * math.sin(angle)
 
@@ -1263,27 +1273,91 @@ def generate_galaxy_image(galaxy):
         for i in range(
             galaxy.num_systems // 100
         ):  # Representar con 100 veces menos densidad
-            angle = random.uniform(0, 2 * math.pi)
-            radius = random.gauss(max_radius / 2, spread * max_radius)
+            angle = rng.uniform(0, 2 * math.pi)
+            radius = rng.gauss(max_radius / 2, spread * max_radius)
             x = center_x + radius * math.cos(angle)
             y = center_y + radius * math.sin(angle)
 
             draw.ellipse((x, y, x + 1, y + 1), fill="white")
 
-    # Dibujar agujeros negros, púlsares y quásares como antes
+    # Dibuja agujeros negros agrupados
+    black_hole_positions = []
+    distance_threshold = 20
+
     for _ in range(galaxy.black_holes):
-        x = random.randint(center_x - 20, center_x + 20)
-        y = random.randint(center_y - 20, center_y + 20)
-        draw.ellipse((x, y, x + 3, y + 3), fill="blue")
+        x = rng.randint(center_x - 30, center_x + 30)
+        y = rng.randint(center_y - 30, center_y + 30)
+
+        grouped = False
+        for i, (bx, by, size_offset) in enumerate(black_hole_positions):
+            distance = math.sqrt((x - bx) ** 2 + (y - by) ** 2)
+            if distance < distance_threshold:
+                black_hole_positions[i] = (bx, by, size_offset + 1.5)
+                grouped = True
+                break
+
+        if not grouped:
+            black_hole_positions.append((x, y, 5))
+
+    for x, y, size_offset in black_hole_positions:
+        for i in range(10):
+            alpha = int(255 * (0.6 - i * 0.05))
+            size = 1.2 * (i + 1) + size_offset
+            temp_image = Image.new("RGBA", (img_size, img_size), (0, 0, 0, 0))
+            temp_draw = ImageDraw.Draw(temp_image)
+            temp_draw.ellipse(
+                (x - size, y - size, x + size, y + size), fill=(0, 0, 0, alpha)
+            )
+            image = Image.alpha_composite(image, temp_image)
+
+        blue_dot_image = Image.new("RGBA", (img_size, img_size), (0, 0, 0, 0))
+        blue_dot_draw = ImageDraw.Draw(blue_dot_image)
+        blue_dot_draw.ellipse((x - 1, y - 1, x + 1, y + 1), fill="cyan")
+        image = Image.alpha_composite(image, blue_dot_image)
+
+    # Crear una capa temporal para púlsares y cuásares
+    pulsars_quasars_layer = Image.new("RGBA", (img_size, img_size), (0, 0, 0, 0))
+    pulsars_quasars_draw = ImageDraw.Draw(pulsars_quasars_layer)
 
     for _ in range(galaxy.pulsars):
-        x = random.randint(0, img_size)
-        y = random.randint(0, img_size)
-        draw.ellipse((x, y, x + 5, y + 5), fill="yellow")
+        x = rng.randint(0, img_size)
+        y = rng.randint(0, img_size)
+        pulsars_quasars_draw.ellipse((x, y, x + 5, y + 5), fill="yellow")
+        pulsars_quasars_draw.line(
+            (x - 3, y + 2.5, x + 8, y + 2.5), fill="white", width=1
+        )
+        pulsars_quasars_draw.line(
+            (x + 2.5, y - 3, x + 2.5, y + 8), fill="white", width=1
+        )
 
     for _ in range(galaxy.quasars):
-        x = random.randint(0, img_size)
-        y = random.randint(0, img_size)
-        draw.ellipse((x, y, x + 10, y + 10), fill="red")
+        x = rng.randint(0, img_size)
+        y = rng.randint(0, img_size)
+
+        # Dibujar el núcleo brillante del cuásar
+        pulsars_quasars_draw.ellipse((x - 5, y - 5, x + 5, y + 5), fill="white")
+
+        # Dibujar el halo alrededor del cuásar
+        for i in range(5):
+            alpha = int(255 * (0.5 - i * 0.1))  # Opacidad decreciente
+            size = 7 + i * 2  # Aumentar el tamaño en 2px por capa
+            temp_image = Image.new("RGBA", (img_size, img_size), (0, 0, 0, 0))
+            temp_draw = ImageDraw.Draw(temp_image)
+            temp_draw.ellipse(
+                (x - size, y - size, x + size, y + size),
+                fill=(255, 0, 0, alpha),  # Rojo con transparencia
+            )
+            image = Image.alpha_composite(image, temp_image)
+
+        # Dibujar rayos de radiación que salen del cuásar
+        pulsars_quasars_draw.line(
+            (x - 10, y, x + 10, y), fill="yellow", width=2
+        )  # Rayo horizontal
+        pulsars_quasars_draw.line(
+            (x, y - 10, x, y + 10), fill="yellow", width=2
+        )  # Rayo vertical
+
+    # Componer la capa de púlsares y cuásares sobre la imagen principal
+    image = Image.alpha_composite(image, pulsars_quasars_layer)
 
     return image

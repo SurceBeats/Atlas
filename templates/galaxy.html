@@ -1,82 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        <link rel="apple-touch-icon" sizes="57x57" href="/static/favicon/apple-icon-57x57.png">
-        <link rel="apple-touch-icon" sizes="60x60" href="/static/favicon/apple-icon-60x60.png">
-        <link rel="apple-touch-icon" sizes="72x72" href="/static/favicon/apple-icon-72x72.png">
-        <link rel="apple-touch-icon" sizes="76x76" href="/static/favicon/apple-icon-76x76.png">
-        <link rel="apple-touch-icon" sizes="114x114" href="/static/favicon/apple-icon-114x114.png">
-        <link rel="apple-touch-icon" sizes="120x120" href="/static/favicon/apple-icon-120x120.png">
-        <link rel="apple-touch-icon" sizes="144x144" href="/static/favicon/apple-icon-144x144.png">
-        <link rel="apple-touch-icon" sizes="152x152" href="/static/favicon/apple-icon-152x152.png">
-        <link rel="apple-touch-icon" sizes="180x180" href="/static/favicon/apple-icon-180x180.png">
-        <link rel="icon" type="image/png" sizes="192x192"  href="/static/favicon/android-icon-192x192.png">
-        <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon/favicon-32x32.png">
-        <link rel="icon" type="image/png" sizes="96x96" href="/static/favicon/favicon-96x96.png">
-        <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon/favicon-16x16.png">
-        <link rel="manifest" href="/static/favicon/manifest.json">
-        <meta name="msapplication-TileColor" content="#ffffff">
-        <meta name="msapplication-TileImage" content="/static/favicon/ms-icon-144x144.png">
-        <meta name="theme-color" content="#ffffff">
-    
-        <link rel="stylesheet" type="text/css"
-            href="{{ url_for('static', filename='css/style.css') }}">
-        <title>Galaxy: {{ galaxy.name }}</title>
-    </head>
-    <body>
-        <h1>Galaxy '{{ galaxy.name }}' at Coordinates {{ galaxy.coordinates
-            }}</h1>
+    <link rel="apple-touch-icon" sizes="57x57" href="/static/favicon/apple-icon-57x57.png" />
+    <link rel="apple-touch-icon" sizes="60x60" href="/static/favicon/apple-icon-60x60.png" />
+    <link rel="apple-touch-icon" sizes="72x72" href="/static/favicon/apple-icon-72x72.png" />
+    <link rel="apple-touch-icon" sizes="76x76" href="/static/favicon/apple-icon-76x76.png" />
+    <link rel="apple-touch-icon" sizes="114x114" href="/static/favicon/apple-icon-114x114.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="/static/favicon/apple-icon-120x120.png" />
+    <link rel="apple-touch-icon" sizes="144x144" href="/static/favicon/apple-icon-144x144.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/static/favicon/apple-icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/favicon/apple-icon-180x180.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/favicon/android-icon-192x192.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/static/favicon/favicon-96x96.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon/favicon-16x16.png" />
+    <link rel="manifest" href="/static/favicon/manifest.json" />
+    <meta name="msapplication-TileColor" content="#ffffff" />
+    <meta name="msapplication-TileImage" content="/static/favicon/ms-icon-144x144.png" />
+    <meta name="theme-color" content="#ffffff" />
 
-        <!-- Mostrar el resumen de la galaxia -->
-        <div class="galaxy-info">
-            <p><strong>Type:</strong> {{ galaxy.galaxy_type }}</p>
-            <p><strong>Number of Solar Systems:</strong> {{ galaxy.num_systems
-                }}</p>
-            <p><strong>Black Holes:</strong> {{ galaxy.black_holes }}</p>
-            <p><strong>Pulsars:</strong> {{ galaxy.pulsars }}</p>
-            <p><strong>Quasars:</strong> {{ galaxy.quasars }}</p>
-        </div>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}" />
+    <title>Galaxy: {{ galaxy.name }}</title>
+  </head>
+  <body>
+    <h1>Galaxy '{{ galaxy.name }}' at Coordinates {{ galaxy.coordinates }}</h1>
 
+    <!-- Mostrar el resumen de la galaxia -->
+    <div class="galaxy-info">
+      <p><strong>Type:</strong> {{ galaxy.galaxy_type }}</p>
+      <p><strong>Number of Solar Systems:</strong> {{ galaxy.num_systems }}</p>
+      <p><strong>Black Holes:</strong> {{ galaxy.black_holes }}</p>
+      <p><strong>Pulsars:</strong> {{ galaxy.pulsars }}</p>
+      <p><strong>Quasars:</strong> {{ galaxy.quasars }}</p>
+      <p><strong style="font-size: xx-small">*Black holes are grouped depending its position</strong></p>
+    </div>
 
-        <!-- Mostrar la imagen de la galaxia -->
-        <div class="galaxy-info">
-            <img class="galaxy-image" src="{{ image_url }}"
-                alt="Image of {{ galaxy.name }}" />
-        </div>
+    <!-- Mostrar la imagen de la galaxia -->
+    <div class="galaxy-info">
+      <img class="galaxy-image" src="{{ image_url }}" alt="Image of {{ galaxy.name }}" />
+    </div>
 
-        <!-- Listar los sistemas solares en la galaxia -->
-        <h2>Systems in '{{ galaxy.name }}'</h2>
-        <div class="galaxy-info">
+    <!-- Listar los sistemas solares en la galaxia -->
+    <h2>Systems in '{{ galaxy.name }}'</h2>
+    <div class="galaxy-info">
+      <ul class="solar-systems-list">
+        {% for system in systems %}
+        <a href="{{ url_for('view_system', system_index=system.index, page=page) }}">
+          <li>#{{ system.number }} - {{ system.name }}</li>
+        </a>
+        {% endfor %}
+      </ul>
+    </div>
 
-            <ul class="solar-systems-list">
-                {% for system in systems %}
-                <a
-                    href="{{ url_for('view_system', system_index=system.index, page=page) }}">
-                    <li>
-                        #{{ system.number }} - {{ system.name }}
-                    </li>
-                </a>
-                {% endfor %}
-            </ul>
-        </div>
+    <!-- Botón para volver al índice -->
+    <div class="galaxy-info">
+      <a href="/"><button class="back-button">Go Back to Planetary Index</button></a>
+    </div>
 
-        <!-- Botón para volver al índice -->
-        <div class="galaxy-info">
-            <a href="/"><button class="back-button">Go Back to Planetary
-                    Index</button></a>
-        </div>
-
-        <!-- Navegación entre páginas -->
-        <div class="page-navigation">
-            {% if prev_page %}
-            <a href="{{ url_for('view_galaxy', page=prev_page) }}">Previous</a>
-            {% endif %}
-            {% if next_page %}
-            <a href="{{ url_for('view_galaxy', page=next_page) }}">Next</a>
-            {% endif %}
-        </div>
-    </body>
+    <!-- Navegación entre páginas -->
+    <div class="page-navigation">
+      {% if prev_page %}
+      <a href="{{ url_for('view_galaxy', page=prev_page) }}">Previous</a>
+      {% endif %} {% if next_page %}
+      <a href="{{ url_for('view_galaxy', page=next_page) }}">Next</a>
+      {% endif %}
+    </div>
+  </body>
 </html>

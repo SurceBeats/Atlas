@@ -1,3 +1,5 @@
+# pymodules\universe.py
+
 import os
 import random
 from pymodules.naming import generate_name
@@ -71,14 +73,6 @@ class Galaxy:
         self.black_holes = random.randint(1, 10)  # Número de agujeros negros
         self.pulsars = random.randint(0, 50)  # Número de púlsares
         self.quasars = random.randint(0, 2)  # Número de quásares (muy raros)
-
-        # Ruta donde se guardará la imagen de la galaxia
-        galaxy_image_path = os.path.join("data/galaxy", f"{self.name}.png")
-
-        # Generar la imagen si no existe
-        if not os.path.exists(galaxy_image_path):
-            image = generate_galaxy_image(self)
-            image.save(galaxy_image_path)
 
     def get_solar_system(self, index):
         if index < 0 or index >= self.num_systems:
