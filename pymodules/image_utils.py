@@ -1,4 +1,4 @@
-# pymodules\image_utils.py
+# pymodules/image_utils.py
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps, ImageColor
 from pymodules.__config import seed
@@ -1361,3 +1361,6 @@ def generate_galaxy_image(galaxy):
     image = Image.alpha_composite(image, pulsars_quasars_layer)
 
     return image
+
+
+# Assisted by GPT4o yoo!

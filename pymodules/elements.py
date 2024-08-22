@@ -1,4 +1,4 @@
-# pymodules\elements.py
+# pymodules/elements.py
 
 periodic_table = [
     ("Hydrogen", 0.7),

@@ -16,8 +16,6 @@ from pymodules.image_utils import (
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
-# Configuración inicial
-seed = 42
 constants = PhysicalConstants()
 universe = Universe(seed, constants)
 
@@ -128,7 +126,7 @@ def view_system(system_index):
         return redirect(url_for("index"))
 
     try:
-        session["system"] = system_index  # Guardar el índice del sistema en la sesión
+        session["system"] = system_index
         current_system = current_galaxy.get_solar_system(system_index)
 
         image_url = url_for("system_image_blob")

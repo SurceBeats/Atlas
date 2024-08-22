@@ -1,4 +1,4 @@
-# pymodules\constants.py
+# pymodules/constants.py
 
 class PhysicalConstants:
     def __init__(

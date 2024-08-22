@@ -1,3 +1,3 @@
-# pymodules\__config.py
+# pymodules/__config.py
 
 seed = 42

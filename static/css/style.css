@@ -1,4 +1,3 @@
-/* Estilos generales */
 body {
   font-family: "Arial", sans-serif;
   background-color: #0b1d2b;
@@ -18,7 +17,6 @@ body {
   border-radius: 10px;
 }
 
-/* Encabezados con tamaño ajustado y transiciones */
 h1 {
   color: #72c3dc;
   font-size: 1em;
@@ -39,7 +37,6 @@ h2:hover {
   color: #a1d9f2;
 }
 
-/* Estilos para el formulario */
 form,
 .interfaceinit {
   background-color: #102d44;
@@ -128,14 +125,12 @@ button {
   transform: scale(1.05);
 }
 
-/* Estilos para mensajes de error */
 .error {
   color: red;
   margin-top: 20px;
   font-weight: bold;
 }
 
-/* Estilos para mostrar la información de la galaxia */
 .galaxy-info {
   background-color: #102d44;
   border-radius: 10px;
@@ -151,7 +146,6 @@ button {
   box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
 }
 
-/* Estilos para la imagen de la galaxia */
 .galaxy-image {
   display: block;
   margin: 0 auto;
@@ -161,7 +155,6 @@ button {
   height: auto;
 }
 
-/* Estilos para la lista de sistemas solares */
 .solar-systems-list {
   list-style-type: none;
   padding: 0;
@@ -194,7 +187,6 @@ button {
   color: #a1d9f2;
 }
 
-/* Estilos para la navegación entre páginas */
 .page-navigation a {
   text-decoration: none;
   color: #72c3dc;
@@ -208,7 +200,6 @@ button {
   text-decoration: underline;
 }
 
-/* Estilos para mostrar el resumen del sistema solar */
 .solar-system-info {
   background-color: #102d44;
   border-radius: 10px;
@@ -224,7 +215,6 @@ button {
   box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
 }
 
-/* Estilos para la imagen del sistema solar */
 .solar-system-image {
   display: block;
   margin: 0 auto;
@@ -234,7 +224,6 @@ button {
   height: auto;
 }
 
-/* Estilos para la lista de planetas */
 .planets-list {
   list-style-type: none;
   padding: 0;
@@ -267,7 +256,6 @@ button {
   color: #a1d9f2;
 }
 
-/* Info Container */
 .planet-info {
   background-color: #102d44;
   border-radius: 10px;
@@ -279,7 +267,6 @@ button {
   transition: box-shadow 0.3s ease;
 }
 
-/* Image Styles */
 .planet-image {
   display: block;
   margin: 0 auto;
@@ -292,10 +279,11 @@ button {
 .planet-info p,
 .solar-system-info p,
 .galaxy-info p {
-  line-height: 6px;
-  font-size: 0.8em;
+  line-height: 1em;
+  font-size: 0.9em;
   margin: 10px 0;
   transition: color 0.3s ease;
+  color: #ffffff;
 }
 
 .planet-info p strong,
@@ -312,4 +300,5 @@ button {
 
 .info-bulked {
   color: #5f7e8d !important;
+  font-weight: bold;
 }

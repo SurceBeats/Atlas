@@ -1,10 +1,8 @@
-# pymodules\universe.py
+# pymodules/universe.py
 
-import os
 import random
 from pymodules.naming import generate_name
 from pymodules.planet import generate_planet
-from pymodules.image_utils import generate_galaxy_image, generate_solar_system_image
 
 
 class Universe:
@@ -14,7 +12,7 @@ class Universe:
         self.galaxies = {}
 
     def get_galaxy(self, x, y, z):
-        # Limitar las coordenadas dentro del rango del universo observable
+
         max_coordinate = 10**7
         if not (
             0 <= x <= max_coordinate
@@ -29,7 +27,7 @@ class Universe:
             galaxy_seed = hash((self.seed, x, y, z))
             galaxy_name = generate_name(galaxy_seed, "galaxy")
             galaxy_type = random.choice(["dwarf", "spiral", "elliptical"])
-            # Pasar las coordenadas al crear la galaxia
+
             self.galaxies[(x, y, z)] = Galaxy(
                 galaxy_seed,
                 galaxy_name,
@@ -51,28 +49,20 @@ class Galaxy:
         self.galaxy_type = galaxy_type
         random.seed(seed)
 
-        # Definir el número de sistemas estelares según el tipo de galaxia con límites realistas
         if self.galaxy_type == "dwarf":
-            self.num_systems = random.randint(
-                10**5, 10**7
-            )  # Menos sistemas estelares en galaxias enanas
+            self.num_systems = random.randint(10**5, 10**7)
         elif self.galaxy_type == "spiral":
-            self.num_systems = random.randint(
-                10**9, 5 * 10**10
-            )  # Valores más bajos para galaxias espirales
+            self.num_systems = random.randint(10**9, 5 * 10**10)
         elif self.galaxy_type == "elliptical":
-            self.num_systems = random.randint(
-                10**10, 10**11
-            )  # Ajuste para galaxias elípticas
+            self.num_systems = random.randint(10**10, 10**11)
         else:
             self.num_systems = random.randint(10**8, 10**9)
 
         self.solar_systems = {}
 
-        # Generar eventos espaciales
-        self.black_holes = random.randint(1, 10)  # Número de agujeros negros
-        self.pulsars = random.randint(0, 50)  # Número de púlsares
-        self.quasars = random.randint(0, 2)  # Número de quásares (muy raros)
+        self.black_holes = random.randint(1, 10)
+        self.pulsars = random.randint(0, 50)
+        self.quasars = random.randint(0, 2)
 
     def get_solar_system(self, index):
         if index < 0 or index >= self.num_systems:
@@ -91,17 +81,13 @@ class SolarSystem:
         self.index = index
         self.constants = constants
         random.seed(seed)
-        self.name = generate_name(
-            seed + index, "system"
-        )  # Generar nombre para el sistema solar
+        self.name = generate_name(seed + index, "system")
         self.num_planets = random.randint(1, 6)
         self.planets = {}
 
-        # Definir el tipo de sistema estelar
         self.star_system_type = self.determine_star_system_type()
         self.stars = self.generate_stars()
 
-        # Generar planetas al inicializar el sistema solar
         for i in range(self.num_planets):
             planet_seed = hash((self.seed, i))
             planet_name = generate_name(planet_seed, "planet")
@@ -111,7 +97,7 @@ class SolarSystem:
         """Determina si el sistema es simple, binario o terciario."""
         system_type = random.choices(
             ["single", "binary", "tertiary"],
-            weights=[0.7, 0.25, 0.05],  # Probabilidades ajustables
+            weights=[0.7, 0.25, 0.05],
             k=1,
         )[0]
         return system_type
@@ -132,7 +118,6 @@ class SolarSystem:
     def generate_star(self, seed):
         random.seed(seed)
 
-        # Definir tipos de estrellas con sus propiedades
         star_types = {
             "Red Dwarf": {"color": "red", "radius_factor": 0.5},
             "Yellow Dwarf": {"color": "yellow", "radius_factor": 1.0},
