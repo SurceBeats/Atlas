@@ -223,4 +223,4 @@ def planet_image_blob(planet_name):
 if __name__ == "__main__":
     app.config["ENV"] = "production"
     app.config["DEBUG"] = False
-    app.run()
+    app.run(host="0.0.0.0")
