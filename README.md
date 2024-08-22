@@ -26,7 +26,7 @@ These numbers highlight the incredible scale and richness of "The Atlas," where 
 
 ## How to run it?
 - First, install Pillow to enable image generation at runtime and Flask as a webserver. You can do this by running pip install Pillow and pip install Flask, which should work on most systems. After that, run python3 pointing to the folder. Then, open your browser and navigate to the localhost URL. You're all set!
-- Alternatively, you can run pip3 install -r requirements.txt to install both dependencies automatically!
+- Alternatively, you can run pip install -r requirements.txt to install both dependencies automatically!
 
 ## Galaxy Screenshots
 <p align="center"><img src="https://github.com/SurceBeats/Atlas/blob/main/public/galaxy.png" width="400" alt="The Atlas Logo"></p>
