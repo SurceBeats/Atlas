@@ -16,6 +16,7 @@
     <div class="solar-system-info">
       <p><strong>Star System Type:</strong> {{ summary['Star System Type'] }}</p>
       <p><strong>Number of Planets:</strong> {{ summary['Number of Planets'] }}</p>
+
       <p><strong>Stars ({{ summary['Stars']|length }}):</strong></p>
       {% for star in summary['Stars'] %}
 
@@ -23,6 +24,14 @@
       <p><strong class="info-bulked">Star Size {{ loop.index }}:</strong> {{ star['Size'] }}</p>
       <p><strong class="info-bulked">Star Color {{ loop.index }}:</strong> {{ star['Color'] }}</p>
       {% endfor %}
+
+      <div id="localization-content" class="localization-content">
+        <p><strong class="localize">System:</strong> {{ system.name }}</p>
+        <p><strong class="localize">System ID:</strong> #{{ system_index + 1}}</p>
+        <p><strong class="localize">Galaxy:</strong> {{ galaxy.name }}</p>
+        <p><strong class="localize">Coordinates:</strong> X: {{ galaxy.coordinates[0] }}, Y: {{ galaxy.coordinates[1] }}, Z: {{ galaxy.coordinates[2] }}</p>
+      </div>
+      <button class="dropdown-btn" onclick="toggleLocalization()">View Localization</button>
     </div>
 
     <div class="solar-system-info">
@@ -47,5 +56,7 @@
         <button class="back-button">Back to Galaxy '{{ galaxy.name }}'</button>
       </a>
     </div>
+
+    <script src="{{ url_for('static', filename='vjs/script.js') }}"></script>
   </body>
 </html>

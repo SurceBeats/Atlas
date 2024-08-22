@@ -27,6 +27,15 @@
       <p><strong>Rotation Period:</strong> {{ planet['Rotation Period'] }} hours</p>
       <p><strong>Surface Temperature:</strong> {{ planet['Surface Temperature'] }} °C</p>
       <p><strong>Elements:</strong> {{ ", ".join(planet['Elements']) }}</p>
+
+      <div id="localization-content" class="localization-content">
+        <p><strong class="localize">Planet:</strong> {{ planet['Name'] }}</p>
+        <p><strong class="localize">System:</strong> {{ system.name }}</p>
+        <p><strong class="localize">System ID:</strong> #{{ system.index + 1 }}</p>
+        <p><strong class="localize">Galaxy:</strong> {{ galaxy.name }}</p>
+        <p><strong class="localize">Coordinates:</strong> X: {{ galaxy.coordinates[0] }}, Y: {{ galaxy.coordinates[1] }}, Z: {{ galaxy.coordinates[2] }}</p>
+      </div>
+      <button class="dropdown-btn" onclick="toggleLocalization()">View Localization</button>
     </div>
 
     <div class="planet-info">
@@ -35,8 +44,10 @@
 
     <div class="planet-info">
       <a href="{{ url_for('view_system', system_index=system.index, page=request.args.get('page', 1)) }}">
-        <button class="back-button">Go Back to System '{{system.name}}'</button>
+        <button class="back-button">Go Back to System '{{ system.name }}'</button>
       </a>
     </div>
+
+    <script src="{{ url_for('static', filename='vjs/script.js') }}"></script>
   </body>
 </html>

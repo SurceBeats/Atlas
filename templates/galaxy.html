@@ -12,7 +12,6 @@
   <body>
     <h1>Galaxy '{{ galaxy.name }}' at Coordinates {{ galaxy.coordinates }}</h1>
 
-    <!-- Mostrar el resumen de la galaxia -->
     <div class="galaxy-info">
       <p><strong>Type:</strong> {{ galaxy.galaxy_type }}</p>
       <p><strong>Number of Solar Systems:</strong> {{ galaxy.num_systems }}</p>
@@ -22,12 +21,10 @@
       <p><strong style="font-size: xx-small">*Black holes are grouped depending its position</strong></p>
     </div>
 
-    <!-- Mostrar la imagen de la galaxia -->
     <div class="galaxy-info">
       <img class="galaxy-image" src="{{ image_url }}" alt="Image of {{ galaxy.name }}" />
     </div>
 
-    <!-- Listar los sistemas solares en la galaxia -->
     <h2>Systems in '{{ galaxy.name }}'</h2>
     <div class="galaxy-info">
       <ul class="solar-systems-list">
@@ -39,12 +36,10 @@
       </ul>
     </div>
 
-    <!-- Botón para volver al índice -->
     <div class="galaxy-info">
       <a href="/"><button class="back-button">Go Back to Planetary Index</button></a>
     </div>
 
-    <!-- Navegación entre páginas -->
     <div class="page-navigation">
       {% if prev_page %}
       <a href="{{ url_for('view_galaxy', page=prev_page) }}">Previous</a>
@@ -53,4 +48,5 @@
       {% endif %}
     </div>
   </body>
+  <script src="{{ url_for('static', filename='vjs/script.js') }}"></script>
 </html>

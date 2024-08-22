@@ -152,6 +152,7 @@ def view_system(system_index):
             galaxy=current_galaxy,
             image_url=image_url,
             summary=system_summary,
+            system_index=system_index,
         )
     except ValueError as e:
         return render_template("error.html", message=str(e), galaxy=current_galaxy)
@@ -176,6 +177,8 @@ def view_planet(planet_name):
     if not current_system:
         return redirect(url_for("view_galaxy"))
 
+    current_galaxy = get_current_galaxy()  # Obtener la galaxia actual
+
     planet_name = planet_name.lower()
     for planet in current_system.planets.values():
         if planet["Name"].lower() == planet_name:
@@ -198,6 +201,7 @@ def view_planet(planet_name):
                 "planet.html",
                 planet=planet,
                 system=current_system,
+                galaxy=current_galaxy,  # Añadir la galaxia al contexto
                 image_url=image_url,
                 summary=planet_summary,
             )

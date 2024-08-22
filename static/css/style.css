@@ -307,3 +307,27 @@ button {
   font-size: xx-small;
   color: #2d5575;
 }
+
+.localize {
+  color: #275a86 !important;
+}
+
+.localization-content {
+  display: none;
+  margin-top: 10px;
+}
+
+.dropdown-btn {
+  background-color: #0a1926;
+  color: #6687a1;
+  padding: 8px;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-size: 10px;
+}
+
+.dropdown-btn:hover {
+  background-color: #05121d;
+}
