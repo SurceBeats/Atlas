@@ -317,6 +317,11 @@ button {
 .p-version {
   font-size: xx-small;
   color: #2d5575;
+  text-decoration: none;
+}
+
+.p-version a:visited {
+  color: inherit;
 }
 
 .localize {
