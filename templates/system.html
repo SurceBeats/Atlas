@@ -10,7 +10,7 @@
 
     <title>System: {{ system.name.replace("_", " ") }}</title>
   </head>
-  <body>
+  <body data-coordinates="{{ galaxy.coordinates | join(',') }}" data-system-index="{{ system_index }}">
     <h1>System: '{{ system.name }}' at Galaxy '{{ galaxy.name.replace("_", " ") }}'</h1>
 
     <div class="solar-system-info">
@@ -37,7 +37,10 @@
     <div class="solar-system-info">
       <div>
         <img class="solar-system-image" src="{{ image_url }}" alt="Imagen del Sistema Solar {{ system.name }}" />
-        <a href="{{ system_url }}"> - URL - </a>
+        <div class="stargate-container">
+          <a class="stargate" href="{{ system_url }}"><span id="stargate-text">Aligning Stargate...</span></a>
+          <div class="tooltip">Right-click and select 'Copy Link' to save this Stargate location</div>
+        </div>
       </div>
     </div>
 
@@ -45,9 +48,12 @@
     <div class="solar-system-info">
       <ul class="planets-list">
         {% for planet in system.planets.values() %}
-        <a href="{{ url_for('view_planet', planet_name=planet['Name'].lower(), page=request.args.get('page', 1)) }}">
-          <li>{{ planet['Name'].replace("_", " ") }}</li>
-        </a>
+        <li class="planet-item">
+          <div class="seen-indicator" data-planet="{{ planet['Name'].lower() }}"></div>
+          <a href="{{ url_for('view_planet', planet_name=planet['Name'].lower(), page=request.args.get('page', 1)) }}">
+            <span>{{ planet['Name'].replace("_", " ") }}</span>
+          </a>
+        </li>
         {% endfor %}
       </ul>
     </div>
@@ -59,5 +65,6 @@
     </div>
 
     <script src="{{ url_for('static', filename='vjs/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='vjs/atlasHistoricalScript.js') }}"></script>
   </body>
 </html>

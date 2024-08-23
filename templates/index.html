@@ -7,7 +7,7 @@
     {% include 'partials/_favicon.html' %}
 
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}" />
-    <title>The ATLAS</title>
+    <title>The Atlas</title>
   </head>
   <body>
     <header class="interfaceinit">
@@ -33,7 +33,7 @@
     <p class="error">{{ error }}</p>
     {% endif %}
 
-    <p class="p-version">Version {{ version }}</p>
+    <p class="p-version">Version {{ version }} · <a target="_blank" href="https://github.com/SurceBeats/Atlas">Created by Claudio González</a></p>
 
     <script src="{{ url_for('static', filename='vjs/script.js') }}"></script>
   </body>

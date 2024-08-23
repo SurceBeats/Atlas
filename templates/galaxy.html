@@ -9,7 +9,7 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}" />
     <title>Galaxy: {{ galaxy.name.replace("_", " ") }}</title>
   </head>
-  <body>
+  <body data-coordinates="{{ galaxy.coordinates | join(',') }}">
     <h1>Galaxy '{{ galaxy.name.replace("_", " ") }}' at Coordinates {{ galaxy.coordinates }}</h1>
 
     <div class="galaxy-info">
@@ -23,16 +23,22 @@
 
     <div class="galaxy-info">
       <img class="galaxy-image" src="{{ image_url }}" alt="Image of {{ galaxy.name.replace("_", " ") }}" />
-      <a href="{{ galaxy_url }}"> - URL - </a>
+      <div class="stargate-container">
+        <a class="stargate" href="{{ galaxy_url }}"><span id="stargate-text">Aligning Stargate...</span></a>
+        <div class="tooltip">Right-click and select 'Copy Link' to save this Stargate location</div>
+      </div>
     </div>
 
     <h2>Systems in '{{ galaxy.name.replace("_", " ") }}'</h2>
     <div class="galaxy-info">
       <ul class="solar-systems-list">
         {% for system in systems %}
-        <a href="{{ url_for('view_system', system_index=system.index, page=page) }}">
-          <li>#{{ system.number }} - {{ system.name }}</li>
-        </a>
+        <li class="system-item">
+          <div class="seen-indicator" data-system="{{ system.index }}"></div>
+          <a href="{{ url_for('view_system', system_index=system.index, page=page) }}">
+            <span class="system-text">#{{ system.number }} {{ system.name }}</span>
+          </a>
+        </li>
         {% endfor %}
       </ul>
     </div>
@@ -50,4 +56,5 @@
     </div>
   </body>
   <script src="{{ url_for('static', filename='vjs/script.js') }}"></script>
+  <script src="{{ url_for('static', filename='vjs/atlasHistoricalScript.js') }}"></script>
 </html>

@@ -9,7 +9,7 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}" />
     <title>Planet: {{ planet['Name'].replace("_", " ") }}</title>
   </head>
-  <body>
+  <body data-coordinates="{{ galaxy.coordinates | join(',') }}" data-system-index="{{ system.index }}" data-planet-name="{{ planet['Name'].lower() }}">
     <h1>Planet '{{ planet['Name'].replace("_", " ") }}'</h1>
 
     <div class="planet-info">
@@ -32,7 +32,7 @@
         <p><strong class="localize">Planet:</strong> {{ planet['Name'].replace("_", " ") }}</p>
         <p><strong class="localize">System:</strong> {{ system.name }}</p>
         <p><strong class="localize">System ID:</strong> #{{ system.index + 1 }}</p>
-        <p><strong class="localize">Galaxy:</strong> {{ galaxy.name }}</p>
+        <p><strong class="localize">Galaxy:</strong> {{ galaxy.name.replace("_", " ") }}</p>
         <p><strong class="localize">Coordinates:</strong> X: {{ galaxy.coordinates[0] }}, Y: {{ galaxy.coordinates[1] }}, Z: {{ galaxy.coordinates[2] }}</p>
       </div>
       <button class="dropdown-btn" onclick="toggleLocalization()">View Localization</button>
@@ -40,7 +40,10 @@
 
     <div class="planet-info">
       <img class="planet-image" src="{{ image_url }}" alt="Image of {{ planet['Name'] }}" />
-      <a href="{{ planet_url }}"> - URL - </a>
+      <div class="stargate-container">
+        <a class="stargate" href="{{ planet_url }}"><span id="stargate-text">Aligning Stargate...</span></a>
+        <div class="tooltip">Right-click and select 'Copy Link' to save this Stargate location</div>
+      </div>
     </div>
 
     <div class="planet-info">
@@ -50,5 +53,6 @@
     </div>
 
     <script src="{{ url_for('static', filename='vjs/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='vjs/atlasHistoricalScript.js') }}"></script>
   </body>
 </html>
