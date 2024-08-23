@@ -15,6 +15,7 @@ def consistent_hash(input_string):
 def generate_abstract_shape(
     draw, center_x, center_y, radius, color, global_seed, planet_name
 ):
+
     # Crear un generador de números aleatorios independiente
     planet_seed = consistent_hash(f"{global_seed}-{planet_name}")
     rng = random.Random(planet_seed)
@@ -72,6 +73,8 @@ def generate_gradient(draw, center_x, center_y, planet_radius, base_color, seed)
 
 
 def generate_planet_image(planet):
+    spaced_planet_name = planet["Name"].replace("_", " ")
+
     img_size = 800  # Tamaño de la imagen
     image = Image.new("RGB", (img_size, img_size), "black")
     planet_surface = Image.new("RGBA", (img_size, img_size), (0, 0, 0, 0))
@@ -122,7 +125,12 @@ def generate_planet_image(planet):
 
     # Generar el gradiente y pegarlo en la imagen principal
     gradient = generate_gradient(
-        draw, center_x, center_y, planet_radius, base_color, seed=hash(planet["Name"])
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        base_color,
+        seed=hash(spaced_planet_name),
     )
     image.paste(
         gradient, (center_x - planet_radius, center_y - planet_radius), gradient
@@ -142,7 +150,7 @@ def generate_planet_image(planet):
                 band_width,
                 "orange",
                 seed,
-                planet["Name"] + f"_cloudband_{i}",
+                spaced_planet_name + f"_cloudband_{i}",
             )
         if rng.random() < 0.5:
             storm_radius = rng.randint(30, 50)
@@ -155,7 +163,7 @@ def generate_planet_image(planet):
                 storm_radius,
                 "darkred",
                 seed,
-                planet["Name"] + "_storm",
+                spaced_planet_name + "_storm",
             )
 
     elif planet["Type"] == "Rocky":
@@ -172,7 +180,7 @@ def generate_planet_image(planet):
                 mountain_radius,
                 "gray",
                 seed,
-                planet["Name"] + f"_mountain_{i}",
+                spaced_planet_name + f"_mountain_{i}",
             )
         if rng.random() < 0.7:
             crater_radius = rng.randint(15, 40)
@@ -185,7 +193,7 @@ def generate_planet_image(planet):
                 crater_radius,
                 "darkgray",
                 seed,
-                planet["Name"] + "_crater",
+                spaced_planet_name + "_crater",
             )
 
     elif planet["Type"] == "Icy":
@@ -202,7 +210,7 @@ def generate_planet_image(planet):
                 cap_radius,
                 "lightblue",
                 seed,
-                planet["Name"] + f"_icecap_{i}",
+                spaced_planet_name + f"_icecap_{i}",
             )
         if rng.random() < 0.5:
             crack_length = rng.randint(50, 100)
@@ -228,7 +236,7 @@ def generate_planet_image(planet):
                 island_radius,
                 "brown",
                 seed,
-                planet["Name"] + f"_island_{i}",
+                spaced_planet_name + f"_island_{i}",
             )
         if rng.random() < 0.7:
             lake_radius = rng.randint(10, 30)
@@ -241,7 +249,7 @@ def generate_planet_image(planet):
                 lake_radius,
                 "blue",
                 seed,
-                planet["Name"] + "_lake",
+                spaced_planet_name + "_lake",
             )
 
     elif planet["Type"] == "Desert":
@@ -258,7 +266,7 @@ def generate_planet_image(planet):
                 dune_radius,
                 "yellow",
                 seed,
-                planet["Name"] + f"_dune_{i}",
+                spaced_planet_name + f"_dune_{i}",
             )
         if rng.random() < 0.3:
             oasis_radius = rng.randint(10, 20)
@@ -271,7 +279,7 @@ def generate_planet_image(planet):
                 oasis_radius,
                 "blue",
                 seed,
-                planet["Name"] + "_oasis",
+                spaced_planet_name + "_oasis",
             )
 
     elif planet["Type"] == "Lava":
@@ -289,7 +297,7 @@ def generate_planet_image(planet):
                 rng.randint(5, 15),
                 "red",
                 seed,
-                planet["Name"] + f"_flow_{i}",
+                spaced_planet_name + f"_flow_{i}",
             )
         if rng.random() < 0.5:
             volcano_radius = rng.randint(20, 40)
@@ -302,7 +310,7 @@ def generate_planet_image(planet):
                 volcano_radius,
                 "darkorange",
                 seed,
-                planet["Name"] + f"_volcano_{i}",
+                spaced_planet_name + f"_volcano_{i}",
             )
 
     elif planet["Type"] == "Arid":
@@ -332,7 +340,7 @@ def generate_planet_image(planet):
                 swamp_radius,
                 "green",
                 seed,
-                planet["Name"] + f"_swamp_{i}",
+                spaced_planet_name + f"_swamp_{i}",
             )
             if rng.random() < 0.6:
                 water_radius = rng.randint(10, 20)
@@ -343,7 +351,7 @@ def generate_planet_image(planet):
                     water_radius,
                     "blue",
                     seed,
-                    planet["Name"] + f"_water_{i}",
+                    spaced_planet_name + f"_water_{i}",
                 )
 
     elif planet["Type"] == "Tundra":
@@ -361,7 +369,7 @@ def generate_planet_image(planet):
                 tundra_radius,
                 "aliceblue",
                 seed,
-                planet["Name"] + f"_tundra_{i}",
+                spaced_planet_name + f"_tundra_{i}",
             )
 
     elif planet["Type"] == "Forest":
@@ -379,7 +387,7 @@ def generate_planet_image(planet):
                 forest_radius,
                 "darkgreen",
                 seed,
-                planet["Name"] + f"_forest_{i}",
+                spaced_planet_name + f"_forest_{i}",
             )
             if rng.random() < 0.6:
                 tree_radius = rng.randint(5, 15)
@@ -390,7 +398,7 @@ def generate_planet_image(planet):
                     tree_radius,
                     "green",
                     seed,
-                    planet["Name"] + f"_tree_{i}",
+                    spaced_planet_name + f"_tree_{i}",
                 )
 
     elif planet["Type"] == "Savannah":
@@ -408,7 +416,7 @@ def generate_planet_image(planet):
                 grass_radius,
                 "sandybrown",
                 seed,
-                planet["Name"] + f"_grass_{i}",
+                spaced_planet_name + f"_grass_{i}",
             )
         num_trees = rng.randint(3, 7)
         for i in range(num_trees):
@@ -422,7 +430,7 @@ def generate_planet_image(planet):
                 tree_radius,
                 "darkgreen",
                 seed,
-                planet["Name"] + f"_tree_{i}",
+                spaced_planet_name + f"_tree_{i}",
             )
 
     elif planet["Type"] == "Cave":
@@ -440,7 +448,7 @@ def generate_planet_image(planet):
                 cave_radius,
                 "dimgray",
                 seed,
-                planet["Name"] + f"_cave_{i}",
+                spaced_planet_name + f"_cave_{i}",
             )
 
     elif planet["Type"] == "Crystalline":
@@ -487,7 +495,7 @@ def generate_planet_image(planet):
                 metal_radius,
                 "silver",
                 seed,
-                planet["Name"] + f"_metal_{i}",
+                spaced_planet_name + f"_metal_{i}",
             )
         if rng.random() < 0.5:
             reflection_radius = rng.randint(10, 20)
@@ -500,7 +508,7 @@ def generate_planet_image(planet):
                 reflection_radius,
                 "white",
                 seed,
-                planet["Name"] + "_reflection",
+                spaced_planet_name + "_reflection",
             )
 
     elif planet["Type"] == "Toxic":
@@ -518,7 +526,7 @@ def generate_planet_image(planet):
                 cloud_radius,
                 "purple",
                 seed,
-                planet["Name"] + f"_cloud_{i}",
+                spaced_planet_name + f"_cloud_{i}",
             )
         if rng.random() < 0.5:
             pool_radius = rng.randint(10, 30)
@@ -531,7 +539,7 @@ def generate_planet_image(planet):
                 pool_radius,
                 "darkgreen",
                 seed,
-                planet["Name"] + "_toxic_pool",
+                spaced_planet_name + "_toxic_pool",
             )
 
     elif planet["Type"] == "Radioactive":
@@ -549,7 +557,7 @@ def generate_planet_image(planet):
                 zone_radius,
                 "lime",
                 seed,
-                planet["Name"] + f"_radioactive_zone_{i}",
+                spaced_planet_name + f"_radioactive_zone_{i}",
             )
         if rng.random() < 0.5:
             glow_radius = rng.randint(10, 20)
@@ -562,7 +570,7 @@ def generate_planet_image(planet):
                 glow_radius,
                 "yellow",
                 seed,
-                planet["Name"] + "_glow",
+                spaced_planet_name + "_glow",
             )
 
     elif planet["Type"] == "Magma":
@@ -580,7 +588,7 @@ def generate_planet_image(planet):
                 lake_radius,
                 "orangered",
                 seed,
-                planet["Name"] + f"_magma_lake_{i}",
+                spaced_planet_name + f"_magma_lake_{i}",
             )
         num_flows = rng.randint(3, 6)
         for i in range(num_flows):
@@ -595,7 +603,7 @@ def generate_planet_image(planet):
                 rng.randint(10, 20),
                 "red",
                 seed,
-                planet["Name"] + f"_magma_flow_{i}",
+                spaced_planet_name + f"_magma_flow_{i}",
             )
 
     elif planet["Type"] == "Molten Core":
@@ -612,7 +620,7 @@ def generate_planet_image(planet):
                 core_radius,
                 "darkorange",
                 seed,
-                planet["Name"] + f"_core_spot_{i}",
+                spaced_planet_name + f"_core_spot_{i}",
             )
         if rng.random() < 0.5:
             crater_radius = rng.randint(20, 40)
@@ -625,7 +633,7 @@ def generate_planet_image(planet):
                 crater_radius,
                 "darkred",
                 seed,
-                planet["Name"] + "_molten_crater",
+                spaced_planet_name + "_molten_crater",
             )
 
     elif planet["Type"] == "Carbon":
@@ -643,7 +651,7 @@ def generate_planet_image(planet):
                 deposit_radius,
                 "darkgray",
                 seed,
-                planet["Name"] + f"_carbon_deposit_{i}",
+                spaced_planet_name + f"_carbon_deposit_{i}",
             )
         if rng.random() < 0.5:
             dark_spot_radius = rng.randint(10, 20)
@@ -656,7 +664,7 @@ def generate_planet_image(planet):
                 dark_spot_radius,
                 "black",
                 seed,
-                planet["Name"] + "_dark_spot",
+                spaced_planet_name + "_dark_spot",
             )
 
     elif planet["Type"] == "Diamond":
@@ -685,7 +693,7 @@ def generate_planet_image(planet):
                 rng.randint(10, 20),
                 "white",
                 seed,
-                planet["Name"] + "_diamond_reflection",
+                spaced_planet_name + "_diamond_reflection",
             )
 
     elif planet["Type"] == "Super Earth":
@@ -703,7 +711,7 @@ def generate_planet_image(planet):
                 highland_radius,
                 "lightgreen",
                 seed,
-                planet["Name"] + f"_highland_{i}",
+                spaced_planet_name + f"_highland_{i}",
             )
         if rng.random() < 0.5:
             water_radius = rng.randint(10, 30)
@@ -716,7 +724,7 @@ def generate_planet_image(planet):
                 water_radius,
                 "blue",
                 seed,
-                planet["Name"] + "_water",
+                spaced_planet_name + "_water",
             )
 
     elif planet["Type"] == "Sub Earth":
@@ -734,7 +742,7 @@ def generate_planet_image(planet):
                 hill_radius,
                 "darkgreen",
                 seed,
-                planet["Name"] + f"_hill_{i}",
+                spaced_planet_name + f"_hill_{i}",
             )
         if rng.random() < 0.5:
             valley_radius = rng.randint(20, 50)
@@ -747,7 +755,7 @@ def generate_planet_image(planet):
                 valley_radius,
                 "green",
                 seed,
-                planet["Name"] + "_valley",
+                spaced_planet_name + "_valley",
             )
 
     elif planet["Type"] == "Frozen Gas Giant":
@@ -763,7 +771,7 @@ def generate_planet_image(planet):
                 band_width,
                 "lightblue",
                 seed,
-                planet["Name"] + f"_iceband_{i}",
+                spaced_planet_name + f"_iceband_{i}",
             )
         if rng.random() < 0.5:
             storm_radius = rng.randint(30, 50)
@@ -776,7 +784,7 @@ def generate_planet_image(planet):
                 storm_radius,
                 "white",
                 seed,
-                planet["Name"] + "_ice_storm",
+                spaced_planet_name + "_ice_storm",
             )
 
     elif planet["Type"] == "Nebulous":
@@ -794,7 +802,7 @@ def generate_planet_image(planet):
                 nebula_radius,
                 "pink",
                 seed,
-                planet["Name"] + f"_nebula_{i}",
+                spaced_planet_name + f"_nebula_{i}",
             )
         if rng.random() < 0.5:
             star_radius = rng.randint(10, 20)
@@ -807,7 +815,7 @@ def generate_planet_image(planet):
                 star_radius,
                 "white",
                 seed,
-                planet["Name"] + "_star",
+                spaced_planet_name + "_star",
             )
 
     elif planet["Type"] == "Aquifer":
@@ -825,7 +833,7 @@ def generate_planet_image(planet):
                 aquifer_radius,
                 "aqua",
                 seed,
-                planet["Name"] + f"_aquifer_{i}",
+                spaced_planet_name + f"_aquifer_{i}",
             )
         if rng.random() < 0.5:
             well_radius = rng.randint(10, 20)
@@ -838,7 +846,7 @@ def generate_planet_image(planet):
                 well_radius,
                 "darkblue",
                 seed,
-                planet["Name"] + "_well",
+                spaced_planet_name + "_well",
             )
 
     elif planet["Type"] == "Exotic":
@@ -857,7 +865,7 @@ def generate_planet_image(planet):
                 exotic_radius,
                 exotic_color,
                 seed,
-                planet["Name"] + f"_exotic_{i}",
+                spaced_planet_name + f"_exotic_{i}",
             )
         if rng.random() < 0.5:
             additional_radius = rng.randint(10, 30)
@@ -871,7 +879,7 @@ def generate_planet_image(planet):
                 additional_radius,
                 additional_color,
                 seed,
-                planet["Name"] + "_additional",
+                spaced_planet_name + "_additional",
             )
 
     # Aplicar una máscara para recortar lo que sobresalga del planeta
@@ -1407,12 +1415,15 @@ def generate_planet_image(planet):
     text_x = center_x
     text_y = center_y + planet_radius + 40
     draw = ImageDraw.Draw(image)
-    draw.text((text_x, text_y), planet["Name"], font=font, fill="white", anchor="mm")
+    draw.text(
+        (text_x, text_y), spaced_planet_name, font=font, fill="white", anchor="mm"
+    )
 
     return image
 
 
 def generate_solar_system_image(solar_system):
+
     img_size = 800  # Tamaño de la imagen para acomodar órbitas más grandes
     image = Image.new("RGB", (img_size, img_size), "black")
     draw = ImageDraw.Draw(image)
@@ -1460,6 +1471,9 @@ def generate_solar_system_image(solar_system):
     for i in range(1, num_planets + 1):
         planet = solar_system.get_planet(i - 1)
         if planet:
+
+            spaced_planet_name = planet["Name"].replace("_", " ")
+
             # Determinar el radio orbital usando la constante física
             relative_orbit_radius = planet["Orbital Radius"] / max(
                 [p["Orbital Radius"] for p in solar_system.planets.values()]
@@ -1541,7 +1555,7 @@ def generate_solar_system_image(solar_system):
 
             text_x = planet_x + planet_radius + 5
             text_y = planet_y - planet_radius / 2
-            draw.text((text_x, text_y), planet["Name"], font=font, fill="white")
+            draw.text((text_x, text_y), spaced_planet_name, font=font, fill="white")
 
     return image
 

@@ -7,10 +7,10 @@
     {% include 'partials/_favicon.html' %}
 
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}" />
-    <title>Planet: {{ planet['Name'] }}</title>
+    <title>Planet: {{ planet['Name'].replace("_", " ") }}</title>
   </head>
   <body>
-    <h1>Planet '{{ planet['Name'] }}'</h1>
+    <h1>Planet '{{ planet['Name'].replace("_", " ") }}'</h1>
 
     <div class="planet-info">
       <p><strong>Type:</strong> {{ planet['Type'] }}</p>
@@ -29,7 +29,7 @@
       <p><strong>Elements:</strong> {{ ", ".join(planet['Elements']) }}</p>
 
       <div id="localization-content" class="localization-content">
-        <p><strong class="localize">Planet:</strong> {{ planet['Name'] }}</p>
+        <p><strong class="localize">Planet:</strong> {{ planet['Name'].replace("_", " ") }}</p>
         <p><strong class="localize">System:</strong> {{ system.name }}</p>
         <p><strong class="localize">System ID:</strong> #{{ system.index + 1 }}</p>
         <p><strong class="localize">Galaxy:</strong> {{ galaxy.name }}</p>
@@ -40,6 +40,7 @@
 
     <div class="planet-info">
       <img class="planet-image" src="{{ image_url }}" alt="Image of {{ planet['Name'] }}" />
+      <a href="{{ planet_url }}"> - URL - </a>
     </div>
 
     <div class="planet-info">

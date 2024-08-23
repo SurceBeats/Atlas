@@ -360,4 +360,4 @@ def generate_name(seed, type="galaxy"):
             f"{random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZ')}-{random.randint(1, 999):03}"
         )
 
-    return f"{prefix}{suffix} {number}"
+    return f"{prefix}{suffix}_{number}"

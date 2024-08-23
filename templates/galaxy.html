@@ -7,10 +7,10 @@
     {% include 'partials/_favicon.html' %}
 
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}" />
-    <title>Galaxy: {{ galaxy.name }}</title>
+    <title>Galaxy: {{ galaxy.name.replace("_", " ") }}</title>
   </head>
   <body>
-    <h1>Galaxy '{{ galaxy.name }}' at Coordinates {{ galaxy.coordinates }}</h1>
+    <h1>Galaxy '{{ galaxy.name.replace("_", " ") }}' at Coordinates {{ galaxy.coordinates }}</h1>
 
     <div class="galaxy-info">
       <p><strong>Type:</strong> {{ galaxy.galaxy_type }}</p>
@@ -22,10 +22,11 @@
     </div>
 
     <div class="galaxy-info">
-      <img class="galaxy-image" src="{{ image_url }}" alt="Image of {{ galaxy.name }}" />
+      <img class="galaxy-image" src="{{ image_url }}" alt="Image of {{ galaxy.name.replace("_", " ") }}" />
+      <a href="{{ galaxy_url }}"> - URL - </a>
     </div>
 
-    <h2>Systems in '{{ galaxy.name }}'</h2>
+    <h2>Systems in '{{ galaxy.name.replace("_", " ") }}'</h2>
     <div class="galaxy-info">
       <ul class="solar-systems-list">
         {% for system in systems %}

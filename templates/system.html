@@ -8,10 +8,10 @@
 
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}" />
 
-    <title>System: {{ system.name }}</title>
+    <title>System: {{ system.name.replace("_", " ") }}</title>
   </head>
   <body>
-    <h1>System: '{{ system.name }}' at Galaxy '{{ galaxy.name }}'</h1>
+    <h1>System: '{{ system.name }}' at Galaxy '{{ galaxy.name.replace("_", " ") }}'</h1>
 
     <div class="solar-system-info">
       <p><strong>Star System Type:</strong> {{ summary['Star System Type'] }}</p>
@@ -28,7 +28,7 @@
       <div id="localization-content" class="localization-content">
         <p><strong class="localize">System:</strong> {{ system.name }}</p>
         <p><strong class="localize">System ID:</strong> #{{ system_index + 1}}</p>
-        <p><strong class="localize">Galaxy:</strong> {{ galaxy.name }}</p>
+        <p><strong class="localize">Galaxy:</strong> {{ galaxy.name.replace("_", " ") }}</p>
         <p><strong class="localize">Coordinates:</strong> X: {{ galaxy.coordinates[0] }}, Y: {{ galaxy.coordinates[1] }}, Z: {{ galaxy.coordinates[2] }}</p>
       </div>
       <button class="dropdown-btn" onclick="toggleLocalization()">View Localization</button>
@@ -37,6 +37,7 @@
     <div class="solar-system-info">
       <div>
         <img class="solar-system-image" src="{{ image_url }}" alt="Imagen del Sistema Solar {{ system.name }}" />
+        <a href="{{ system_url }}"> - URL - </a>
       </div>
     </div>
 
@@ -45,7 +46,7 @@
       <ul class="planets-list">
         {% for planet in system.planets.values() %}
         <a href="{{ url_for('view_planet', planet_name=planet['Name'].lower(), page=request.args.get('page', 1)) }}">
-          <li>{{ planet['Name'] }}</li>
+          <li>{{ planet['Name'].replace("_", " ") }}</li>
         </a>
         {% endfor %}
       </ul>
@@ -53,7 +54,7 @@
 
     <div class="solar-system-info">
       <a href="{{ url_for('view_galaxy', page=request.args.get('page', 1)) }}">
-        <button class="back-button">Back to Galaxy '{{ galaxy.name }}'</button>
+        <button class="back-button">Back to Galaxy '{{ galaxy.name.replace("_", " ") }}'</button>
       </a>
     </div>
 
