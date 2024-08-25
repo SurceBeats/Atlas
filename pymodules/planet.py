@@ -1,7 +1,8 @@
-# pymodules/planet.py
+import hashlib
 import random
 import math
 from pymodules.elements import periodic_table
+from pymodules.__seedmaster import seedmaster
 
 
 def calculate_life_probability(planet):
@@ -80,8 +81,23 @@ def calculate_life_probability(planet):
     return random.choice(possible_life_forms)
 
 
+def generate_elements_for_planet(possible_elements):
+    elements, weights = zip(*periodic_table)
+    if random.random() < 0.01:
+        dominant_element = random.choices(elements, weights=weights, k=1)[0]
+        return [dominant_element] * random.randint(5, 10)
+    selected_elements = random.sample(
+        possible_elements, k=min(len(possible_elements), random.randint(2, 10))
+    )
+    return selected_elements
+
+
 def generate_planet(seed, name, constants):
-    random.seed(seed)
+
+    planet_seed = int(
+        hashlib.sha256(f"{seed}-{seedmaster(4)}".encode()).hexdigest(), 16
+    )
+    random.seed(planet_seed)
 
     planet_type = random.choice(
         [
@@ -98,6 +114,7 @@ def generate_planet(seed, name, constants):
             "Savannah",
             "Cave",
             "Crystalline",
+            "Anomaly",
             "Metallic",
             "Toxic",
             "Radioactive",
@@ -114,7 +131,7 @@ def generate_planet(seed, name, constants):
         ]
     )
 
-    if planet_type in ["Gas Giant", "Frozen Gas Giant", "Nebulous"]:
+    if planet_type in ["Gas Giant", "Frozen Gas Giant", "Nebulous", "Anomaly"]:
         possible_atmospheres = [
             "Hydrogen",
             "Helium",
@@ -164,49 +181,48 @@ def generate_planet(seed, name, constants):
         ]
 
     atmosphere = random.choice(possible_atmospheres)
-
     if planet_type == "Gas Giant":
         mass = random.uniform(100, 300) * constants.M_EARTH
         diameter = random.uniform(10, 15) * constants.D_EARTH
         density = mass / ((4 / 3) * math.pi * (diameter / 2) ** 3) * 0.5
         surface_temperature = random.uniform(-150, 100)
         possible_elements = ["Hydrogen", "Helium", "Methane", "Ammonia"]
-
     elif planet_type == "Icy":
         mass = random.uniform(0.5, 5) * constants.M_EARTH
         diameter = random.uniform(0.5, 2) * constants.D_EARTH
         density = mass / ((4 / 3) * math.pi * (diameter / 2) ** 3)
         surface_temperature = random.uniform(-200, 0)
         possible_elements = ["Water", "Ammonia", "Methane", "Nitrogen"]
-
+    elif planet_type == "Anomaly":
+        mass = random.uniform(0.01, 50) * constants.M_EARTH
+        diameter = random.uniform(0.1, 3) * constants.D_EARTH
+        density = mass / ((4 / 3) * math.pi * (diameter / 2) ** 3)
+        surface_temperature = random.uniform(-273, 1500)
+        possible_elements = ["Copernicium", "Nihonium", "Flerovium", "Moscovium"]
     elif planet_type == "Lava":
         mass = random.uniform(0.5, 5) * constants.M_EARTH
         diameter = random.uniform(0.7, 2.5) * constants.D_EARTH
         density = mass / ((4 / 3) * math.pi * (diameter / 2) ** 3)
         surface_temperature = random.uniform(500, 1200)
         possible_elements = ["Magnesium", "Silicon", "Iron"]
-
     elif planet_type == "Oceanic":
         mass = random.uniform(0.5, 5) * constants.M_EARTH
         diameter = random.uniform(0.8, 2) * constants.D_EARTH
         density = mass / ((4 / 3) * math.pi * (diameter / 2) ** 3) * 1.1
         surface_temperature = random.uniform(-10, 50)
         possible_elements = ["Water", "Oxygen", "Carbon Dioxide"]
-
     elif planet_type == "Desert":
         mass = random.uniform(0.3, 5) * constants.M_EARTH
         diameter = random.uniform(0.7, 2) * constants.D_EARTH
         density = mass / ((4 / 3) * math.pi * (diameter / 2) ** 3)
         surface_temperature = random.uniform(50, 200)
         possible_elements = ["Silicon", "Oxygen", "Iron"]
-
     elif planet_type == "Swamp":
         mass = random.uniform(0.5, 5) * constants.M_EARTH
         diameter = random.uniform(0.8, 2) * constants.D_EARTH
         density = mass / ((4 / 3) * math.pi * (diameter / 2) ** 3)
         surface_temperature = random.uniform(10, 50)
         possible_elements = ["Water", "Carbon", "Oxygen", "Phosphorus"]
-
     else:
         mass = random.uniform(0.1, 10) * constants.M_EARTH
         diameter = random.uniform(0.5, 2) * constants.D_EARTH
@@ -217,39 +233,26 @@ def generate_planet(seed, name, constants):
     gravity = constants.G * (mass / (diameter / 2) ** 2)
 
     orbital_radius = random.uniform(0.1, 40)
-
-    star_mass = constants.M_SUN
     orbital_period_seconds = (
         2
         * math.pi
-        * math.sqrt((orbital_radius * 1.496e11) ** 3 / (constants.G * star_mass))
+        * math.sqrt((orbital_radius * 1.496e11) ** 3 / (constants.G * constants.M_SUN))
     )
     orbital_period_years = orbital_period_seconds / (60 * 60 * 24 * 365.25)
 
-    orbital_speed = (constants.G * star_mass / (orbital_radius * 1.496e11)) ** 0.5
+    orbital_speed = (constants.G * constants.M_SUN / (orbital_radius * 1.496e11)) ** 0.5
 
     axial_tilt = random.uniform(0, 90)
 
-    tidal_effect = (constants.G * star_mass / (orbital_radius * 1.496e11) ** 2) ** 0.5
+    tidal_effect = (
+        constants.G * constants.M_SUN / (orbital_radius * 1.496e11) ** 2
+    ) ** 0.5
     inertia_effect = (mass / constants.M_EARTH) ** 0.25
 
     rotation_period = random.uniform(10, 1000) * inertia_effect / tidal_effect
     rotation_period = max(0.1, rotation_period)
 
-    def generate_elements_for_planet():
-        elements, weights = zip(*periodic_table)
-
-        if random.random() < 0.01:
-            dominant_element = random.choices(elements, weights=weights, k=1)[0]
-            return [dominant_element] * random.randint(5, 10)
-
-        selected_elements = random.sample(
-            possible_elements, k=min(len(possible_elements), random.randint(2, 10))
-        )
-
-        return selected_elements
-
-    elements = generate_elements_for_planet()
+    elements = generate_elements_for_planet(possible_elements)
 
     planet = {
         "Name": name,

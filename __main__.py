@@ -19,6 +19,7 @@ from pymodules.image_utils import (
     generate_galaxy_image,
 )
 
+
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
@@ -289,7 +290,7 @@ def navigate(encoded_url):
 
 
 if __name__ == "__main__":
-    app.config["ENV"] = "production"
-    app.config["DEBUG"] = False
+    app.config["ENV"] = "development"
+    app.config["DEBUG"] = True
 
     app.run(host="0.0.0.0")

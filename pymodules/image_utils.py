@@ -88,7 +88,9 @@ def generate_planet_image(planet):
     center_x = img_size // 2
     center_y = img_size // 2
 
-    rng = random.Random(seed)
+    shape_seed = consistent_hash(f"{seed}-{spaced_planet_name}-shape")
+    rng = random.Random(shape_seed)
+
 
     planet_radius = int(150 * (planet["Diameter"] / max(planet["Diameter"], 1)))
 
@@ -96,6 +98,7 @@ def generate_planet_image(planet):
         "Gas Giant": "orange",
         "Rocky": "gray",
         "Icy": "lightblue",
+        "Anomaly": "white",
         "Oceanic": "blue",
         "Desert": "yellow",
         "Lava": "red",
@@ -165,7 +168,25 @@ def generate_planet_image(planet):
                 seed,
                 spaced_planet_name + "_storm",
             )
-
+            
+    elif planet["Type"] == "Anomaly":
+        # Generar patrones caóticos y colores anómalos de manera consistente
+        num_anomalies = 1  # Número fijo de anomalías para consistencia
+        for i in range(num_anomalies):
+            anomaly_radius = 100  # Radio fijo para consistencia
+            anomaly_x = center_x + rng.randint(-planet_radius, planet_radius)
+            anomaly_y = center_y + rng.randint(-planet_radius, planet_radius)
+            anomaly_color = "purple"  # Color fijo para consistencia
+            generate_abstract_shape(
+                draw,
+                anomaly_x,
+                anomaly_y,
+                anomaly_radius,
+                anomaly_color,
+                seed,
+                spaced_planet_name + f"_anomaly_{i}",
+            )
+            
     elif planet["Type"] == "Rocky":
         # Montañas y cráteres
         num_mountains = rng.randint(5, 10)
@@ -213,13 +234,21 @@ def generate_planet_image(planet):
                 spaced_planet_name + f"_icecap_{i}",
             )
         if rng.random() < 0.5:
-            crack_length = rng.randint(50, 100)
-            crack_angle = rng.uniform(0, 2 * math.pi)
-            crack_x1 = center_x + int(crack_length * math.cos(crack_angle))
-            crack_y1 = center_y + int(crack_length * math.sin(crack_angle))
-            crack_x2 = center_x + int(crack_length * math.cos(crack_angle + math.pi))
-            crack_y2 = center_y + int(crack_length * math.sin(crack_angle + math.pi))
-            draw.line((crack_x1, crack_y1, crack_x2, crack_y2), fill="white", width=2)
+            crack_length = rng.randint(100, 130)
+            crack_angle = rng.uniform(6, 45 * math.pi)
+
+            # Crear múltiples líneas a partir del centro con ligeras variaciones en el ángulo
+            num_cracks = rng.randint(3, 12)  # Número de grietas
+            for _ in range(num_cracks):
+                angle_variation = rng.uniform(-1, 1)  # Variación de hasta ±0.5 radianes
+                adjusted_angle = crack_angle + angle_variation
+                
+                crack_x1 = center_x + int(crack_length * math.cos(adjusted_angle))
+                crack_y1 = center_y + int(crack_length * math.sin(adjusted_angle))
+                crack_x2 = center_x + int(crack_length * math.cos(adjusted_angle + math.pi))
+                crack_y2 = center_y + int(crack_length * math.sin(adjusted_angle + math.pi))
+
+                draw.line((crack_x1, crack_y1, crack_x2, crack_y2), fill="white", width=1)
 
     elif planet["Type"] == "Oceanic":
         # Masas de agua y pequeños continentes
@@ -238,18 +267,22 @@ def generate_planet_image(planet):
                 seed,
                 spaced_planet_name + f"_island_{i}",
             )
+            
         if rng.random() < 0.7:
-            lake_radius = rng.randint(10, 30)
+            lake_radius = rng.randint(50, 150)
             lake_x = center_x + rng.randint(-planet_radius, planet_radius)
             lake_y = center_y + rng.randint(-planet_radius, planet_radius)
-            generate_abstract_shape(
-                draw,
-                lake_x,
-                lake_y,
-                lake_radius,
-                "blue",
-                seed,
-                spaced_planet_name + "_lake",
+            
+            # Dibujar el lago como un círculo sólido
+            draw.ellipse(
+                (
+                    lake_x - lake_radius,
+                    lake_y - lake_radius,
+                    lake_x + lake_radius,
+                    lake_y + lake_radius
+                ),
+                fill="darkblue",
+                outline="blue"
             )
 
     elif planet["Type"] == "Desert":
@@ -323,7 +356,9 @@ def generate_planet_image(planet):
             crack_y1 = center_y + int(crack_length * math.sin(crack_angle))
             crack_x2 = center_x + int(crack_length * math.cos(crack_angle + math.pi))
             crack_y2 = center_y + int(crack_length * math.sin(crack_angle + math.pi))
-            draw.line((crack_x1, crack_y1, crack_x2, crack_y2), fill="brown", width=2)
+            
+            # Usar un color marrón más claro para las grietas
+            draw.line((crack_x1, crack_y1, crack_x2, crack_y2), fill="sandybrown", width=2)
 
     elif planet["Type"] == "Swamp":
         # Masas de tierra pantanosa y agua estancada
@@ -450,7 +485,7 @@ def generate_planet_image(planet):
                 seed,
                 spaced_planet_name + f"_cave_{i}",
             )
-
+            
     elif planet["Type"] == "Crystalline":
         # Formaciones de cristales
         num_crystals = rng.randint(5, 10)

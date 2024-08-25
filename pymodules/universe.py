@@ -1,8 +1,8 @@
-# pymodules/universe.py
-
+import hashlib
 import random
 from pymodules.naming import generate_name
 from pymodules.planet import generate_planet
+from pymodules.__seedmaster import seedmaster
 
 
 class Universe:
@@ -24,7 +24,7 @@ class Universe:
             )
 
         if (x, y, z) not in self.galaxies:
-            galaxy_seed = hash((self.seed, x, y, z))
+            galaxy_seed = int(hashlib.sha256(f"{self.seed}-{seedmaster(12)}-{x}-{y}-{z}".encode()).hexdigest(), 16)
             galaxy_name = generate_name(galaxy_seed, "galaxy")
             galaxy_type = random.choice(["dwarf", "spiral", "elliptical"])
 
@@ -70,7 +70,7 @@ class Galaxy:
                 f"Solar System index out of range. Must be between 0 and {self.num_systems - 1}."
             )
         if index not in self.solar_systems:
-            system_seed = hash((self.seed, index))
+            system_seed = int(hashlib.sha256(f"{self.seed}-{seedmaster(8)}-{index}".encode()).hexdigest(), 16)
             self.solar_systems[index] = SolarSystem(system_seed, index, self.constants)
         return self.solar_systems[index]
 
@@ -89,7 +89,7 @@ class SolarSystem:
         self.stars = self.generate_stars()
 
         for i in range(self.num_planets):
-            planet_seed = hash((self.seed, i))
+            planet_seed = int(hashlib.sha256(f"{self.seed}-{seedmaster(4)}-{i}".encode()).hexdigest(), 16)
             planet_name = generate_name(planet_seed, "planet")
             self.planets[i] = generate_planet(planet_seed, planet_name, self.constants)
 
@@ -109,7 +109,8 @@ class SolarSystem:
         )
         stars = []
         for i in range(star_count):
-            star_seed = self.seed + i
+            star_seed = int(hashlib.sha256(f"{self.seed}-{seedmaster(2)}-{i}".encode()).hexdigest(), 16)
+            print(star_seed)
             stars.append(self.generate_star(star_seed))
         return stars
 
