@@ -1,6 +1,9 @@
+# planet.py
+
 import hashlib
 import random
 import math
+
 from pymodules.elements import periodic_table
 from pymodules.__seedmaster import seedmaster
 

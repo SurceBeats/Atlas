@@ -1,16 +1,19 @@
 # __main__.py
 
-from flask import Flask, render_template, request, redirect, url_for, send_file, session
-from io import BytesIO
 import os
 
-from pymodules.__config import seed, version
-from pymodules.__mapper import (
+from flask import Flask, render_template, request, redirect, url_for, send_file, session
+from io import BytesIO
+
+from pymodules.__config import seed, version, versionHash
+from pymodules.__the_observer import observer
+from pymodules.__stargate import (
     generate_planet_url,
     generate_system_url,
     generate_galaxy_url,
     decode_url,
 )
+
 from pymodules.constants import PhysicalConstants
 from pymodules.universe import Universe
 from pymodules.image_utils import (
@@ -45,7 +48,7 @@ def get_current_system():
 
 @app.route("/")
 def index():
-    return render_template("index.html", version=version)
+    return render_template("index.html", version=version, versionHash=versionHash)
 
 
 @app.route("/navigate", methods=["POST"])
@@ -66,7 +69,7 @@ def navigate():
         session["system"] = None
         return redirect(url_for("view_galaxy"))
     except Exception as e:
-        return render_template("index.html", error=str(e))
+        return render_template("index.html", version=version, versionHash=versionHash, error=str(e))
 
 
 @app.route("/galaxy")
@@ -106,6 +109,8 @@ def view_galaxy():
         next_page=next_page,
         prev_page=prev_page,
         galaxy_url=galaxy_url,
+        version=version,
+        versionHash=versionHash,
     )
 
 
@@ -120,10 +125,10 @@ def galaxy_image_blob():
         print(f"Generating image for galaxy: {current_galaxy.name}")
         image = generate_galaxy_image(current_galaxy)
         img_io = BytesIO()
-        image.save(img_io, "PNG")
+        image.save(img_io, "WEBP")
         img_io.seek(0)
         print("Image generated successfully.")
-        return send_file(img_io, mimetype="image/png")
+        return send_file(img_io, mimetype="image/webp")
     except Exception as e:
         print(f"Error generating image: {str(e)}")
         return redirect(url_for("index"))
@@ -168,6 +173,8 @@ def view_system(system_index):
             summary=system_summary,
             system_index=system_index,
             system_url=system_url,
+            version=version,
+            versionHash=versionHash,
         )
     except ValueError as e:
         return render_template("error.html", message=str(e), galaxy=current_galaxy)
@@ -181,9 +188,9 @@ def system_image_blob():
 
     image = generate_solar_system_image(current_system)
     img_io = BytesIO()
-    image.save(img_io, "PNG")
+    image.save(img_io, "WEBP")
     img_io.seek(0)
-    return send_file(img_io, mimetype="image/png")
+    return send_file(img_io, mimetype="image/webp")
 
 
 @app.route("/planet/<planet_name>")
@@ -224,6 +231,8 @@ def view_planet(planet_name):
                 image_url=image_url,
                 summary=planet_summary,
                 planet_url=planet_url,
+                version=version,
+                versionHash=versionHash,
             )
 
     return redirect(url_for("view_system", system_index=current_system.index))
@@ -237,14 +246,14 @@ def planet_image_blob(planet_name):
         if planet["Name"].lower() == planet_name:
             image = generate_planet_image(planet)
             img_io = BytesIO()
-            image.save(img_io, "PNG")
+            image.save(img_io, "WEBP")
             img_io.seek(0)
-            return send_file(img_io, mimetype="image/png")
+            return send_file(img_io, mimetype="image/webp")
 
     return redirect(url_for("view_system", system_index=current_system.index))
 
 
-@app.route("/mapper/<encoded_url>", endpoint="mapper")
+@app.route("/stargate/<encoded_url>", endpoint="stargate")
 def navigate(encoded_url):
     try:
 
@@ -290,7 +299,10 @@ def navigate(encoded_url):
 
 
 if __name__ == "__main__":
+
+    # observer(universe)
+
     app.config["ENV"] = "development"
-    app.config["DEBUG"] = True
+    app.config["DEBUG"] = False
 
     app.run(host="0.0.0.0")

@@ -64,7 +64,7 @@
       </a>
     </div>
 
-    <script src="{{ url_for('static', filename='vjs/script.js') }}"></script>
-    <script src="{{ url_for('static', filename='vjs/atlasHistoricalScript.js') }}"></script>
+    <script src="{{ url_for('static', filename='vjs/script.js') }}?v={{ versionHash }}"></script>
+    <script src="{{ url_for('static', filename='vjs/atlasHistoricalScript.js') }}?v={{ versionHash }}"></script>
   </body>
 </html>
