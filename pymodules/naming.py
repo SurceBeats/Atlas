@@ -2,6 +2,7 @@
 
 import random
 
+
 def generate_name(seed, type="galaxy"):
     random.seed(seed)
 
@@ -189,11 +190,49 @@ def generate_name(seed, type="galaxy"):
         "Janus",
         "Epimetheus",
     ]
-    
+
     planet_suffixes = [
-        "on", "us", "ia", "ara", "es", "ar", "er", "ur", "or", "ax", "ys", "en", "ir",
-        "os", "ix", "as", "ox", "um", "un", "is", "el", "yn", "ex", "an", "yl", "id",
-        "em", "ol", "in", "et", "ac", "il", "ad", "im", "ul", "al", "a", "e", "i", "o", "u",
+        "on",
+        "us",
+        "ia",
+        "ara",
+        "es",
+        "ar",
+        "er",
+        "ur",
+        "or",
+        "ax",
+        "ys",
+        "en",
+        "ir",
+        "os",
+        "ix",
+        "as",
+        "ox",
+        "um",
+        "un",
+        "is",
+        "el",
+        "yn",
+        "ex",
+        "an",
+        "yl",
+        "id",
+        "em",
+        "ol",
+        "in",
+        "et",
+        "ac",
+        "il",
+        "ad",
+        "im",
+        "ul",
+        "al",
+        "a",
+        "e",
+        "i",
+        "o",
+        "u",
     ]
 
     word_list_1 = [
