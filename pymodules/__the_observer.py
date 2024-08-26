@@ -1,8 +1,8 @@
-# pymodules/__the_observer.py
+# pymodules\__the_observer.py
 
+import gc
 from pymodules.__stargate import generate_planet_url
 
-# Lista de tipos de planetas
 planet_types = [
     "None",
     "Gas Giant",
@@ -34,7 +34,6 @@ planet_types = [
     "Exotic",
 ]
 
-# Lista de formas de vida posibles
 life_forms = [
     "None",
     "Intelligent Life",
@@ -46,8 +45,9 @@ life_forms = [
     "Non-Physical Entity",
     "Conscious Gas",
     "Robotic Entities",
-    "Have I just found God?"
+    "Have I just found God?",
 ]
+
 
 def select_option(options, prompt="Please select an option"):
     print(prompt)
@@ -64,22 +64,20 @@ def select_option(options, prompt="Please select an option"):
         except ValueError:
             print("Invalid input. Please enter a number.")
 
+
 def observer(universe):
-    # Selección del tipo de planeta
     desired_planet_type = select_option(planet_types, "Please select a planet type:")
-    
-    # Selección de la forma de vida
     desired_life_form = select_option(life_forms, "Please select a desired life form:")
-    
-    # Convertir "None" a None para los casos donde no hay filtro
+
     if desired_planet_type == "None":
         desired_planet_type = None
     if desired_life_form == "None":
         desired_life_form = None
 
-    # Verificar si ambos criterios son None
     if not desired_planet_type and not desired_life_form:
-        print("You must select at least one criterion (either a planet type or a life form) to search.")
+        print(
+            "You must select at least one criterion (either a planet type or a life form) to search."
+        )
         return
 
     total_galaxies_searched = 0
@@ -87,7 +85,7 @@ def observer(universe):
     total_planets_searched = 0
 
     print("Searching infinitely. Please wait...")
-    x = 0
+    x = 1
     while True:
         for y in range(10000):
             for z in range(10000):
@@ -105,34 +103,67 @@ def observer(universe):
 
                             if planet:
                                 found = False
-                                if desired_life_form and planet["Life Forms"] == desired_life_form:
+                                if (
+                                    desired_life_form
+                                    and planet["Life Forms"] == desired_life_form
+                                ):
                                     found = True
                                     print(f"Found {desired_life_form}!")
-                                    print(f"Galaxy: {galaxy.name} (Coords: {x}, {y}, {z})")
-                                    print(f"System #{system_index + 1}: {solar_system.name}")
+                                    print(
+                                        f"Galaxy: {galaxy.name} (Coords: {x}, {y}, {z})"
+                                    )
+                                    print(
+                                        f"System #{system_index + 1}: {solar_system.name}"
+                                    )
                                     print(f"Planet: {planet['Name']}")
                                     print(f"Details: {planet}")
-                                    print(f"URL: http://127.0.0.1:5000{generate_planet_url((x, y, z), system_index, planet['Name'])}")
-                                    print(f"+ Galaxies Mapped: #{total_galaxies_searched}, Systems Mapped: #{total_systems_searched}, Planets Mapped: #{total_planets_searched}")
+                                    print(
+                                        f"URL: http://127.0.0.1:5000{generate_planet_url((x, y, z), system_index, planet['Name'])}"
+                                    )
+                                    print(
+                                        f"+ Galaxies Mapped: #{total_galaxies_searched}, Systems Mapped: #{total_systems_searched}, Planets Mapped: #{total_planets_searched}"
+                                    )
                                     print("-" * 50)
                                     print("")
 
-                                
-                                if desired_planet_type and planet["Type"] == desired_planet_type:
+                                if (
+                                    desired_planet_type
+                                    and planet["Type"] == desired_planet_type
+                                ):
                                     found = True
-                                    print(f"Found a planet of type {desired_planet_type}!")
-                                    print(f"Galaxy: {galaxy.name} (Coords: {x}, {y}, {z})")
-                                    print(f"System #{system_index + 1}: {solar_system.name}")
+                                    print(
+                                        f"Found a planet of type {desired_planet_type}!"
+                                    )
+                                    print(
+                                        f"Galaxy: {galaxy.name} (Coords: {x}, {y}, {z})"
+                                    )
+                                    print(
+                                        f"System #{system_index + 1}: {solar_system.name}"
+                                    )
                                     print(f"Planet: {planet['Name']}")
                                     print(f"Details: {planet}")
-                                    print(f"URL: http://127.0.0.1:5000{generate_planet_url((x, y, z), system_index, planet['Name'])}")
-                                    print(f"+ Galaxies Mapped: #{total_galaxies_searched}, Systems Mapped: #{total_systems_searched}, Planets Mapped: #{total_planets_searched}")
+                                    print(
+                                        f"URL: http://127.0.0.1:5000{generate_planet_url((x, y, z), system_index, planet['Name'])}"
+                                    )
+                                    print(
+                                        f"+ Galaxies Mapped: #{total_galaxies_searched}, Systems Mapped: #{total_systems_searched}, Planets Mapped: #{total_planets_searched}"
+                                    )
                                     print("-" * 50)
                                     print("")
 
                                 if found:
                                     input("Press Enter to continue searching...")
 
+                            del planet
+                            gc.collect()
+
+                        del solar_system
+                        gc.collect()
+
+                    del galaxy
+                    gc.collect()
+
                 except ValueError:
                     continue
+
         x += 1
