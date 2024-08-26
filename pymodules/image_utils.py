@@ -74,6 +74,10 @@ def generate_gradient(draw, center_x, center_y, planet_radius, base_color, seed)
 
 def generate_planet_image(planet):
     spaced_planet_name = planet["Name"].replace("_", " ")
+    planet_type = planet["Type"].replace("_", " ")
+    planet_diam = planet["Diameter"]
+    planet_dens = planet["Density"]
+    planet_grav = planet["Gravity"]
 
     img_size = 800  # Tamaño de la imagen
     image = Image.new("RGB", (img_size, img_size), "black")
@@ -88,7 +92,7 @@ def generate_planet_image(planet):
     center_x = img_size // 2
     center_y = img_size // 2
 
-    shape_seed = consistent_hash(f"{seed}-{spaced_planet_name}-shape")
+    shape_seed = consistent_hash(f"{seed}-{spaced_planet_name}-{planet_type}-{planet_diam}-{planet_dens}-{planet_grav}-_safe_shaper")
     rng = random.Random(shape_seed)
 
     planet_radius = int(150 * (planet["Diameter"] / max(planet["Diameter"], 1)))
