@@ -383,7 +383,7 @@ def generate_planet_image(planet):
         wave_radius_start = planet_radius + 50
 
         for i in range(num_waves):
-            wave_radius = wave_radius_start + i * 10 
+            wave_radius = wave_radius_start + i * 10
 
             wave_img = Image.new("RGBA", (img_size, img_size), (0, 0, 0, 0))
             wave_draw = ImageDraw.Draw(wave_img)
@@ -532,7 +532,7 @@ def generate_planet_image(planet):
             satellite_draw.bitmap((0, 0), belt_img, fill=None)
 
     if planet["Life Forms"] == "Have I just found God?":
-        triangle_size = (planet_radius * 0.5)
+        triangle_size = planet_radius * 0.5
         triangle_center_x = center_x
         triangle_center_y = center_y
 
@@ -812,7 +812,8 @@ def generate_galaxy_image(galaxy):
 
             draw.point((x, y), fill="white")
 
-            if (radius > max_radius * 0.6): mask_draw.point((x, y), fill="white")
+            if radius > max_radius * 0.6:
+                mask_draw.point((x, y), fill="white")
 
         blurred_image = image.filter(ImageFilter.GaussianBlur(radius=5))
         image.paste(blurred_image, (0, 0), mask)
@@ -847,9 +848,7 @@ def generate_galaxy_image(galaxy):
         max_radius = img_size // 3
         spread = 0.3
 
-        for i in range(
-            galaxy.num_systems // 100
-        ):
+        for i in range(galaxy.num_systems // 100):
             angle = rng.uniform(0, 2 * math.pi)
             radius = rng.gauss(max_radius / 2, spread * max_radius)
             x = center_x + radius * math.cos(angle)
