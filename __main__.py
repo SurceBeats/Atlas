@@ -1,6 +1,7 @@
 # __main__.py
 
 import os
+import sys
 
 from flask import Flask, render_template, request, redirect, url_for, send_file, session
 from io import BytesIO
@@ -69,7 +70,9 @@ def navigate():
         session["system"] = None
         return redirect(url_for("view_galaxy"))
     except Exception as e:
-        return render_template("index.html", version=version, versionHash=versionHash, error=str(e))
+        return render_template(
+            "index.html", version=version, versionHash=versionHash, error=str(e)
+        )
 
 
 @app.route("/galaxy")
@@ -254,7 +257,7 @@ def planet_image_blob(planet_name):
 
 
 @app.route("/stargate/<encoded_url>", endpoint="stargate")
-def navigate(encoded_url):
+def stargate(encoded_url):
     try:
 
         decoded_data = decode_url(encoded_url)
@@ -300,9 +303,10 @@ def navigate(encoded_url):
 
 if __name__ == "__main__":
 
-    # observer(universe)
+    if "--observer" in sys.argv:
+        observer(universe)
 
-    app.config["ENV"] = "production"
-    app.config["DEBUG"] = False
+    app.config["ENV"] = "development"
+    app.config["DEBUG"] = True
 
     app.run(host="0.0.0.0")

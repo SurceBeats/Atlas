@@ -32,7 +32,7 @@ def decode_url(encoded_data):
             return None
 
         return decoded_data
-    except (base64.binascii.Error, ValueError) as e:
+    except (base64.binascii.Error, ValueError):
         return None
 
 
