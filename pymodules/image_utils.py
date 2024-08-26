@@ -2,7 +2,8 @@
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageColor
 from pymodules.__config import seed
-from pymodules.__drawer_planet import (
+from pymodules.__image_utils_planets import (
+    get_planet_color_map,
     draw_gas_giant_elements,
     draw_anomaly_elements,
     draw_rocky_elements,
@@ -94,35 +95,7 @@ def generate_planet_image(planet):
 
     planet_radius = int(150 * (planet["Diameter"] / max(planet["Diameter"], 1)))
 
-    planet_color_map = {
-        "Gas Giant": "orange",
-        "Rocky": "gray",
-        "Icy": "lightblue",
-        "Anomaly": "white",
-        "Oceanic": "blue",
-        "Desert": "yellow",
-        "Lava": "red",
-        "Arid": "brown",
-        "Swamp": "green",
-        "Tundra": "aliceblue",
-        "Forest": "darkgreen",
-        "Savannah": "sandybrown",
-        "Cave": "dimgray",
-        "Crystalline": "cyan",
-        "Metallic": "silver",
-        "Toxic": "purple",
-        "Radioactive": "lime",
-        "Magma": "orangered",
-        "Molten Core": "darkorange",
-        "Carbon": "darkgray",
-        "Diamond": "lightskyblue",
-        "Super Earth": "lightgreen",
-        "Sub Earth": "darkgreen",
-        "Frozen Gas Giant": "lightblue",
-        "Nebulous": "pink",
-        "Aquifer": "aqua",
-        "Exotic": "magenta",
-    }
+    planet_color_map = get_planet_color_map()
 
     base_color = planet_color_map.get(planet["Type"], "white")
 

@@ -128,7 +128,7 @@ def galaxy_image_blob():
         print(f"Generating image for galaxy: {current_galaxy.name}")
         image = generate_galaxy_image(current_galaxy)
         img_io = BytesIO()
-        image.save(img_io, "WEBP")
+        image.save(img_io, "WEBP", quality=75)
         img_io.seek(0)
         print("Image generated successfully.")
         return send_file(img_io, mimetype="image/webp")
@@ -191,7 +191,7 @@ def system_image_blob():
 
     image = generate_solar_system_image(current_system)
     img_io = BytesIO()
-    image.save(img_io, "WEBP")
+    image.save(img_io, "WEBP", quality=75)
     img_io.seek(0)
     return send_file(img_io, mimetype="image/webp")
 
@@ -249,7 +249,7 @@ def planet_image_blob(planet_name):
         if planet["Name"].lower() == planet_name:
             image = generate_planet_image(planet)
             img_io = BytesIO()
-            image.save(img_io, "WEBP")
+            image.save(img_io, "WEBP", quality=75)
             img_io.seek(0)
             return send_file(img_io, mimetype="image/webp")
 
@@ -295,7 +295,7 @@ def stargate(encoded_url):
             return redirect(url_for("view_planet", planet_name=planet_name))
 
         else:
-            raise ValueError("Datos malformados en la URL")
+            raise ValueError("Malformed URL")
 
     except Exception as e:
         return redirect(url_for("index", error=str(e)))

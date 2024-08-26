@@ -9,6 +9,38 @@ def consistent_hash(input_string):
     return int(hashlib.md5(input_string.encode()).hexdigest(), 16)
 
 
+def get_planet_color_map():
+    return {
+        "Gas Giant": "orange",
+        "Anomaly": "white",
+        "Rocky": "gray",
+        "Icy": "lightblue",
+        "Oceanic": "blue",
+        "Desert": "yellow",
+        "Lava": "red",
+        "Arid": "brown",
+        "Swamp": "green",
+        "Tundra": "aliceblue",
+        "Forest": "darkgreen",
+        "Savannah": "sandybrown",
+        "Cave": "dimgray",
+        "Crystalline": "cyan",
+        "Metallic": "silver",
+        "Toxic": "purple",
+        "Radioactive": "lime",
+        "Magma": "orangered",
+        "Molten Core": "darkorange",
+        "Carbon": "darkgray",
+        "Diamond": "lightskyblue",
+        "Super Earth": "lightgreen",
+        "Sub Earth": "darkgreen",
+        "Frozen Gas Giant": "lightblue",
+        "Nebulous": "pink",
+        "Aquifer": "aqua",
+        "Exotic": "magenta",
+    }
+
+
 def generate_abstract_shape(
     draw, center_x, center_y, radius, color, global_seed, planet_name
 ):
