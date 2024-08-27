@@ -74,18 +74,46 @@ def generate_abstract_shape(
     draw.bitmap((0, 0), blurred_image, fill=None)
 
 
+def generate_abstract_land(
+    draw, center_x, center_y, radius, color, global_seed, planet_name
+):
+    planet_seed = consistent_hash(f"{global_seed}-{planet_name}-{radius}-{color}")
+    rng = random.Random(planet_seed)
+
+    num_segments = rng.randint(1, 3)
+    for _ in range(num_segments):
+        num_points = rng.randint(40, 60)
+        angle_offset = rng.uniform(0, 2 * math.pi)
+        angle_step = 2 * math.pi / num_points
+        points = []
+
+        origin_angle = rng.uniform(0, 2 * math.pi)
+        origin_distance = rng.uniform(radius * 0.8, radius * 1.1)
+        origin_x = center_x + origin_distance * math.cos(origin_angle)
+        origin_y = center_y + origin_distance * math.sin(origin_angle)
+
+        for i in range(num_points):
+            angle = angle_offset + i * angle_step + rng.uniform(-0.05, 0.05)
+            dist = rng.uniform(0.3 * radius, 0.6 * radius)
+            x = origin_x + dist * math.cos(angle)
+            y = origin_y + dist * math.sin(angle)
+            points.append((x, y))
+
+        draw.polygon(points, fill=color)
+
+
 def draw_gas_giant_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
 
-    num_cloud_bands = rng.randint(3, 30)
+    num_cloud_bands = rng.randint(3, 20)
 
     rotation_angle = math.radians(rng.uniform(-15, 15))
     sin_angle = math.sin(rotation_angle)
     cos_angle = math.cos(rotation_angle)
 
     for i in range(num_cloud_bands):
-        band_width = rng.randint(1, 3)
+        band_width = rng.randint(2, 4)
         band_position_y = rng.randint(
             center_y - planet_radius, center_y + planet_radius
         )
@@ -183,20 +211,67 @@ def draw_anomaly_elements(
 def draw_rocky_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
-    num_mountains = rng.randint(5, 10)
-    for i in range(num_mountains):
-        mountain_radius = rng.randint(10, 30)
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        (80, 80, 80, 40),
+        seed,
+        spaced_planet_name,
+    )
+
+    num_mountains = rng.randint(4, 30)
+    mountain_color = (130, 130, 130, 1)
+
+    for _ in range(num_mountains):
+        mountain_width = rng.randint(5, 10)
+        mountain_height = rng.randint(5, 8)
         mountain_x = center_x + rng.randint(-planet_radius, planet_radius)
         mountain_y = center_y + rng.randint(-planet_radius, planet_radius)
+
+        angle = math.radians(rng.uniform(-20, 20))
+        cos_angle = math.cos(angle)
+        sin_angle = math.sin(angle)
+
+        half_width = mountain_width // 2
+        left_x = -half_width
+        right_x = half_width
+
+        left_x_rot = cos_angle * left_x + mountain_x
+        left_y_rot = sin_angle * left_x + mountain_y
+        right_x_rot = cos_angle * right_x + mountain_x
+        right_y_rot = sin_angle * right_x + mountain_y
+
+        peak_x_rot = mountain_x
+        peak_y_rot = mountain_y - mountain_height
+
+        draw.line(
+            [(left_x_rot, left_y_rot), (peak_x_rot, peak_y_rot)],
+            fill=mountain_color,
+            width=3,
+        )
+        draw.line(
+            [(right_x_rot, right_y_rot), (peak_x_rot, peak_y_rot)],
+            fill=mountain_color,
+            width=3,
+        )
+
+    num_clouds = rng.randint(5, 10)
+    for i in range(num_clouds):
+        cloud_radius = rng.randint(10, 30)
+        cloud_x = center_x + rng.randint(-planet_radius, planet_radius)
+        cloud_y = center_y + rng.randint(-planet_radius, planet_radius)
         generate_abstract_shape(
             draw,
-            mountain_x,
-            mountain_y,
-            mountain_radius,
+            cloud_x,
+            cloud_y,
+            cloud_radius,
             "gray",
             seed,
-            spaced_planet_name + f"_mountain_{i}",
+            spaced_planet_name + f"_cloud_{i}",
         )
+
     if rng.random() < 0.7:
         crater_radius = rng.randint(15, 40)
         crater_x = center_x + rng.randint(-planet_radius, planet_radius)
@@ -215,6 +290,67 @@ def draw_rocky_elements(
 def draw_icy_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        (81, 106, 145, 1),
+        seed,
+        spaced_planet_name,
+    )
+
+    two_pi = 2 * math.pi
+
+    num_crystals = rng.randint(20, 30)
+    for _ in range(num_crystals):
+        crystal_length = rng.randint(5, 15)
+        crystal_width = rng.randint(8, 20)
+        crystal_angle = rng.uniform(0, two_pi)
+
+        polar_bias = rng.choice([-1, 1])
+        polar_offset = rng.uniform(0.5 * planet_radius, planet_radius) * polar_bias
+        crystal_x = center_x + rng.uniform(-0.3 * planet_radius, 0.3 * planet_radius)
+        crystal_y = center_y + polar_offset
+
+        cos_angle = math.cos(crystal_angle)
+        sin_angle = math.sin(crystal_angle)
+
+        x1 = crystal_x + crystal_length * cos_angle
+        y1 = crystal_y + crystal_length * sin_angle
+        x2 = crystal_x - crystal_length * cos_angle
+        y2 = crystal_y - crystal_length * sin_angle
+
+        cos_half_pi = crystal_width * cos_angle
+        sin_half_pi = crystal_width * sin_angle
+
+        draw.polygon(
+            [
+                (x1 + sin_half_pi, y1 - cos_half_pi),
+                (x1 - sin_half_pi, y1 + cos_half_pi),
+                (x2 - sin_half_pi, y2 + cos_half_pi),
+                (x2 + sin_half_pi, y2 - cos_half_pi),
+            ],
+            fill=(172, 215, 230, 255),
+        )
+
+    if rng.random() < 0.5:
+        crack_length = 200
+        crack_angle = rng.uniform(0, two_pi)
+
+        num_cracks = rng.randint(3, 12)
+        for _ in range(num_cracks):
+            adjusted_angle = crack_angle + rng.uniform(-1, 1)
+
+            crack_x1 = center_x + int(crack_length * math.cos(adjusted_angle))
+            crack_y1 = center_y + int(crack_length * math.sin(adjusted_angle))
+            crack_x2 = center_x + int(crack_length * math.cos(adjusted_angle + math.pi))
+            crack_y2 = center_y + int(crack_length * math.sin(adjusted_angle + math.pi))
+
+            draw.line(
+                (crack_x1, crack_y1, crack_x2, crack_y2), fill=(80, 80, 80, 40), width=1
+            )
+
     num_ice_caps = rng.randint(2, 4)
     for i in range(num_ice_caps):
         cap_radius = rng.randint(20, 50)
@@ -229,21 +365,6 @@ def draw_icy_elements(
             seed,
             spaced_planet_name + f"_icecap_{i}",
         )
-    if rng.random() < 0.5:
-        crack_length = rng.randint(100, 130)
-        crack_angle = rng.uniform(6, 45 * math.pi)
-
-        num_cracks = rng.randint(3, 12)
-        for _ in range(num_cracks):
-            angle_variation = rng.uniform(-1, 1)
-            adjusted_angle = crack_angle + angle_variation
-
-            crack_x1 = center_x + int(crack_length * math.cos(adjusted_angle))
-            crack_y1 = center_y + int(crack_length * math.sin(adjusted_angle))
-            crack_x2 = center_x + int(crack_length * math.cos(adjusted_angle + math.pi))
-            crack_y2 = center_y + int(crack_length * math.sin(adjusted_angle + math.pi))
-
-            draw.line((crack_x1, crack_y1, crack_x2, crack_y2), fill="white", width=1)
 
 
 def draw_oceanic_elements(
