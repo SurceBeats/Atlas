@@ -182,7 +182,7 @@ def system_blob():
 
     image = generate_solar_system_image(current_system)
     img_io = BytesIO()
-    image.save(img_io, "WEBP", quality=75)
+    image.save(img_io, "WEBP", quality=80)
     img_io.seek(0)
     return send_file(img_io, mimetype="image/webp")
 
@@ -240,7 +240,7 @@ def planet_blob(planet_name):
         if planet["Name"].lower() == planet_name:
             image = generate_planet_image(planet)
             img_io = BytesIO()
-            image.save(img_io, "WEBP", quality=75)
+            image.save(img_io, "WEBP", quality=85)
             img_io.seek(0)
             return send_file(img_io, mimetype="image/webp")
 

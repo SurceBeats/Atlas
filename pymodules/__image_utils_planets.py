@@ -455,10 +455,16 @@ def draw_oceanic_elements(
 def draw_desert_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
-    for _ in range(rng.randint(20, 50)):
-        grain_size = rng.randint(1, 2)
+    for _ in range(rng.randint(400, 800)):
+        grain_size = rng.randint(0, 1)
         grain_x = center_x + rng.randint(-planet_radius, planet_radius)
         grain_y = center_y + rng.randint(-planet_radius, planet_radius)
+        grain_color = (
+            194 + rng.randint(-10, 10),
+            178 + rng.randint(-10, 10),
+            128 + rng.randint(-10, 10),
+            rng.randint(1, 200),
+        )
         draw.ellipse(
             (
                 grain_x - grain_size,
@@ -466,24 +472,101 @@ def draw_desert_elements(
                 grain_x + grain_size,
                 grain_y + grain_size,
             ),
-            fill="khaki",
+            fill=grain_color,
             outline=None,
         )
 
-    num_dunes = rng.randint(5, 10)
-    for i in range(num_dunes):
-        dune_radius = rng.randint(10, 25)
+    num_dunes = rng.randint(20, 40)
+    for _ in range(num_dunes):
+        dune_length = rng.randint(20, 40)
+        dune_width = rng.randint(6, 12)
         dune_x = center_x + rng.randint(-planet_radius, planet_radius)
         dune_y = center_y + rng.randint(-planet_radius, planet_radius)
+        angle = rng.uniform(0, 2 * math.pi)
+        draw.polygon(
+            [
+                (
+                    dune_x + dune_length * math.cos(angle),
+                    dune_y + dune_width * math.sin(angle),
+                ),
+                (
+                    dune_x - dune_length * math.cos(angle),
+                    dune_y - dune_width * math.sin(angle),
+                ),
+                (
+                    dune_x - dune_length * 0.5 * math.cos(angle + math.pi / 4),
+                    dune_y - dune_width * 0.5 * math.sin(angle + math.pi / 4),
+                ),
+                (
+                    dune_x + dune_length * 0.5 * math.cos(angle - math.pi / 4),
+                    dune_y + dune_width * 0.5 * math.sin(angle - math.pi / 4),
+                ),
+            ],
+            fill=(218, 165, 32, 20),
+        )
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        (243, 244, 0, 200),
+        seed,
+        spaced_planet_name,
+    )
+
+    if rng.random() < 0.2:
+        oasis_radius = rng.randint(15, 35)
+        oasis_x = center_x + rng.randint(
+            -planet_radius + oasis_radius, planet_radius - oasis_radius
+        )
+        oasis_y = center_y + rng.randint(
+            -planet_radius + oasis_radius, planet_radius - oasis_radius
+        )
+
+        num_sides = rng.randint(10, 20)
+        angle_step = 2 * math.pi / num_sides
+        oasis_points = [
+            (
+                oasis_x
+                + rng.uniform(0.8 * oasis_radius, oasis_radius)
+                * math.cos(i * angle_step + rng.uniform(-0.2, 0.2)),
+                oasis_y
+                + rng.uniform(0.8 * oasis_radius, oasis_radius)
+                * math.sin(i * angle_step + rng.uniform(-0.2, 0.2)),
+            )
+            for i in range(num_sides)
+        ]
+
+        draw.polygon(oasis_points, fill=(3, 136, 252, 200))
+
+        inner_radius = oasis_radius * rng.uniform(0.1, 0.2)
+        inner_x = oasis_x + rng.uniform(-0.7 * oasis_radius, 0.7 * oasis_radius)
+        inner_y = oasis_y + rng.uniform(-0.7 * oasis_radius, 0.7 * oasis_radius)
+        draw.ellipse(
+            [
+                (inner_x - inner_radius, inner_y - inner_radius),
+                (inner_x + inner_radius, inner_y + inner_radius),
+            ],
+            fill=(0, 100, 0, 255),
+            outline=None,
+        )
+
+    dune_clouds = rng.randint(10, 14)
+    for i in range(dune_clouds):
+        dunec_radius = rng.randint(15, 30)
+        cdune_x = center_x + rng.randint(-planet_radius, planet_radius)
+        cdune_y = center_y + rng.randint(-planet_radius, planet_radius)
         generate_abstract_shape(
             draw,
-            dune_x,
-            dune_y,
-            dune_radius,
+            cdune_x,
+            cdune_y,
+            dunec_radius,
             "yellow",
             seed,
             spaced_planet_name + f"_dune_{i}",
         )
+
     if rng.random() < 0.3:
         oasis_radius = rng.randint(10, 20)
         oasis_x = center_x + rng.randint(-planet_radius, planet_radius)
