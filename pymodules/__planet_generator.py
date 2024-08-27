@@ -4,7 +4,7 @@ import hashlib
 import random
 import math
 
-from pymodules.elements import periodic_table
+from pymodules.__periodic_table_prob import periodic_table
 from pymodules.__seedmaster import seedmaster
 
 
@@ -72,13 +72,13 @@ def calculate_life_probability(planet):
     if planet["Type"] in ["Metallic", "Crystalline"]:
         if random.random() < 0.001:
             return "Robotic Entities"
-
     if (
         planet["Type"] == "Nebulous"
         and planet["Atmosphere"] == "Plasma"
         and "Moscovium" in planet["Elements"]
+        and "Divinium" in planet["Elements"]
     ):
-        if random.random() < 0.00001:
+        if random.random() < 1111111111111:
             return "Have I just found God?"
 
     return random.choice(possible_life_forms)
@@ -231,7 +231,9 @@ def generate_planet(seed, name, constants):
         diameter = random.uniform(0.5, 2) * constants.D_EARTH
         density = mass / ((4 / 3) * math.pi * (diameter / 2) ** 3)
         surface_temperature = random.uniform(-100, 500)
-        possible_elements = [elem for elem, prob in periodic_table if prob > 0.00001]
+        possible_elements = [
+            elem for elem, prob in periodic_table if prob > 0.0000000001
+        ]
 
     gravity = constants.G * (mass / (diameter / 2) ** 2)
 

@@ -3,8 +3,8 @@
 import hashlib
 import random
 
-from pymodules.naming import generate_name
-from pymodules.planet import generate_planet
+from pymodules.__name_generator import generate_name
+from pymodules.__planet_generator import generate_planet
 from pymodules.__seedmaster import seedmaster
 
 

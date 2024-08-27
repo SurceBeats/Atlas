@@ -1,3 +1,5 @@
+# pymodules\__image_utils_planets.py
+
 from PIL import Image, ImageDraw, ImageFilter, ImageColor
 
 import math
@@ -75,10 +77,39 @@ def generate_abstract_shape(
 def draw_gas_giant_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
-    num_cloud_bands = rng.randint(3, 6)
+
+    num_cloud_bands = rng.randint(3, 30)
+
+    rotation_angle = math.radians(rng.uniform(-15, 15))
+    sin_angle = math.sin(rotation_angle)
+    cos_angle = math.cos(rotation_angle)
+
     for i in range(num_cloud_bands):
+        band_width = rng.randint(1, 3)
+        band_position_y = rng.randint(
+            center_y - planet_radius, center_y + planet_radius
+        )
+        cloud_color = (255, 165, 0, 1)
+
+        rotated_points = [
+            (
+                cos_angle * (x - center_x) - sin_angle * (y - center_y) + center_x,
+                sin_angle * (x - center_x) + cos_angle * (y - center_y) + center_y,
+            )
+            for x, y in [
+                (center_x - planet_radius, band_position_y - band_width // 2),
+                (center_x + planet_radius, band_position_y - band_width // 2),
+                (center_x + planet_radius, band_position_y + band_width // 2),
+                (center_x - planet_radius, band_position_y + band_width // 2),
+            ]
+        ]
+
+        draw.polygon(rotated_points, fill=cloud_color, outline=None)
+
+    num_shape_bands = rng.randint(3, 6)
+    for i in range(num_shape_bands):
         band_width = planet_radius // 10
-        band_offset = (i - num_cloud_bands // 2) * band_width * 2
+        band_offset = (i - num_shape_bands // 2) * band_width * 2
         generate_abstract_shape(
             draw,
             center_x,
@@ -88,6 +119,7 @@ def draw_gas_giant_elements(
             seed,
             spaced_planet_name + f"_cloudband_{i}",
         )
+
     if rng.random() < 0.5:
         storm_radius = rng.randint(30, 50)
         storm_x = center_x + rng.randint(-planet_radius // 3, planet_radius // 3)
@@ -106,20 +138,45 @@ def draw_gas_giant_elements(
 def draw_anomaly_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
-    num_anomalies = 6
+    num_anomalies = rng.randint(6, 12)
+    max_anomaly_radius = planet_radius // 2
+
     for i in range(num_anomalies):
-        anomaly_radius = 100
+        anomaly_radius = rng.randint(max_anomaly_radius // 2, max_anomaly_radius)
+
         anomaly_x = center_x + rng.randint(-planet_radius, planet_radius)
         anomaly_y = center_y + rng.randint(-planet_radius, planet_radius)
-        anomaly_color = "purple"
+
+        anomaly_color = (
+            rng.randint(0, 10),
+            rng.randint(0, 30),
+            rng.randint(0, 60),
+            rng.randint(0, 90),
+        )
+
+        num_points = rng.randint(3, 35)
+        angle_step = 2 * math.pi / num_points
+        points = []
+
+        for j in range(num_points):
+            angle = j * angle_step
+            radius_variation = rng.randint(-anomaly_radius // 4, anomaly_radius // 4)
+            current_radius = anomaly_radius + radius_variation
+
+            x = anomaly_x + current_radius * math.cos(angle)
+            y = anomaly_y + current_radius * math.sin(angle)
+            points.append((x, y))
+
+        draw.polygon(points, fill=anomaly_color, outline=None)
+
         generate_abstract_shape(
             draw,
             anomaly_x,
             anomaly_y,
-            anomaly_radius,
-            anomaly_color,
+            max_anomaly_radius,
+            "purple",
             seed,
-            spaced_planet_name + f"_anomaly_{i}",
+            spaced_planet_name + f"_anomaly_shape_{i}",
         )
 
 

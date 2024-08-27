@@ -15,7 +15,7 @@ from pymodules.__stargate import (
     decode_url,
 )
 
-from pymodules.constants import PhysicalConstants
+from pymodules.__constants import PhysicalConstants
 from pymodules.universe import Universe
 from pymodules.image_utils import (
     generate_solar_system_image,
@@ -79,7 +79,6 @@ def navigate():
 def view_galaxy():
     current_galaxy = get_current_galaxy()
     if not current_galaxy:
-        print("No galaxy found, redirecting to index.")
         return redirect(url_for("index"))
 
     galaxy_url = generate_galaxy_url(current_galaxy.coordinates)
@@ -101,12 +100,10 @@ def view_galaxy():
     next_page = page + 1 if end < current_galaxy.num_systems else None
     prev_page = page - 1 if start > 0 else None
 
-    print(f"Rendering galaxy with image_url: {url_for('galaxy_image_blob')}")
-
     return render_template(
         "galaxy.html",
         galaxy=current_galaxy,
-        image_url=url_for("galaxy_image_blob"),
+        image_url=url_for("galaxy_blob"),
         systems=systems,
         page=page,
         next_page=next_page,
@@ -117,24 +114,18 @@ def view_galaxy():
     )
 
 
-@app.route("/galaxy_image_blob")
-def galaxy_image_blob():
+@app.route("/galaxy_blob")
+def galaxy_blob():
     current_galaxy = get_current_galaxy()
     if not current_galaxy:
-        print("No galaxy found, redirecting to index.")
         return redirect(url_for("index"))
 
-    try:
-        print(f"Generating image for galaxy: {current_galaxy.name}")
-        image = generate_galaxy_image(current_galaxy)
-        img_io = BytesIO()
-        image.save(img_io, "WEBP", quality=75)
-        img_io.seek(0)
-        print("Image generated successfully.")
-        return send_file(img_io, mimetype="image/webp")
-    except Exception as e:
-        print(f"Error generating image: {str(e)}")
-        return redirect(url_for("index"))
+    print(f"Generating image for galaxy: {current_galaxy.name}")
+    image = generate_galaxy_image(current_galaxy)
+    img_io = BytesIO()
+    image.save(img_io, "WEBP", quality=75)
+    img_io.seek(0)
+    return send_file(img_io, mimetype="image/webp")
 
 
 @app.route("/system/<int:system_index>")
@@ -151,7 +142,7 @@ def view_system(system_index):
             current_galaxy.coordinates, current_system.index
         )
 
-        image_url = url_for("system_image_blob")
+        image_url = url_for("system_blob")
 
         star_summary = [
             {
@@ -183,8 +174,8 @@ def view_system(system_index):
         return render_template("error.html", message=str(e), galaxy=current_galaxy)
 
 
-@app.route("/system_image_blob")
-def system_image_blob():
+@app.route("/system_blob")
+def system_blob():
     current_system = get_current_system()
     if not current_system:
         return redirect(url_for("index"))
@@ -208,7 +199,7 @@ def view_planet(planet_name):
 
     for planet in current_system.planets.values():
         if planet["Name"].lower() == planet_name:
-            image_url = url_for("planet_image_blob", planet_name=planet_name)
+            image_url = url_for("planet_blob", planet_name=planet_name)
             planet_url = generate_planet_url(
                 current_galaxy.coordinates, current_system.index, planet_name
             )
@@ -241,8 +232,8 @@ def view_planet(planet_name):
     return redirect(url_for("view_system", system_index=current_system.index))
 
 
-@app.route("/planet_image_blob/<planet_name>")
-def planet_image_blob(planet_name):
+@app.route("/planet_blob/<planet_name>")
+def planet_blob(planet_name):
     current_system = get_current_system()
     planet_name = planet_name.lower()
     for planet in current_system.planets.values():

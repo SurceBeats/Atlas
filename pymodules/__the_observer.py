@@ -85,7 +85,7 @@ def observer(universe):
     total_planets_searched = 0
 
     print("Searching infinitely. Please wait...")
-    x = 1
+    x = 0
     while True:
         for y in range(10000):
             for z in range(10000):

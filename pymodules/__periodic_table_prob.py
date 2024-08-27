@@ -112,4 +112,5 @@ periodic_table = [
     ("Livermorium", 0.00000001),
     ("Tennessine", 0.00000001),
     ("Oganesson", 0.00000001),
+    ("Divinium", 0.000000001),
 ]
