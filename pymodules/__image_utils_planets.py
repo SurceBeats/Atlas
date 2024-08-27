@@ -18,7 +18,7 @@ def get_planet_color_map():
         "Rocky": "gray",
         "Icy": "lightblue",
         "Oceanic": "blue",
-        "Desert": "yellow",
+        "Desert": "gold",
         "Lava": "red",
         "Arid": "brown",
         "Swamp": "green",
@@ -321,7 +321,7 @@ def draw_icy_elements(
         x2 = crystal_x - crystal_length * cos_angle
         y2 = crystal_y - crystal_length * sin_angle
 
-        cos_half_pi = crystal_width * cos_angle
+        cos_half_pi = crystal_width - cos_angle
         sin_half_pi = crystal_width * sin_angle
 
         draw.polygon(
@@ -510,13 +510,13 @@ def draw_desert_elements(
         center_x,
         center_y,
         planet_radius,
-        (243, 244, 0, 200),
+        (255, 215, 0, 200),
         seed,
         spaced_planet_name,
     )
 
     if rng.random() < 0.2:
-        oasis_radius = rng.randint(15, 35)
+        oasis_radius = rng.randint(10, 25)
         oasis_x = center_x + rng.randint(
             -planet_radius + oasis_radius, planet_radius - oasis_radius
         )
@@ -538,7 +538,7 @@ def draw_desert_elements(
             for i in range(num_sides)
         ]
 
-        draw.polygon(oasis_points, fill=(3, 136, 252, 200))
+        draw.polygon(oasis_points, fill=(0, 48, 191, 200))
 
         inner_radius = oasis_radius * rng.uniform(0.1, 0.2)
         inner_x = oasis_x + rng.uniform(-0.7 * oasis_radius, 0.7 * oasis_radius)

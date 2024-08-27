@@ -13,6 +13,7 @@ periodic_table = [
     ("Sulfur", 0.00015),
     ("Nickel", 0.0001),
     ("Calcium", 0.0001),
+    ("Tritium", 0.00001),
     ("Aluminum", 0.00008),
     ("Sodium", 0.00007),
     ("Potassium", 0.00006),
