@@ -370,36 +370,85 @@ def draw_icy_elements(
 def draw_oceanic_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
-    num_islands = rng.randint(3, 7)
-    for i in range(num_islands):
-        island_radius = rng.randint(20, int(planet_radius * 0.5))
-        max_offset = planet_radius - island_radius
-        island_x = center_x + rng.randint(-max_offset, max_offset)
-        island_y = center_y + rng.randint(-max_offset, max_offset)
-        generate_abstract_shape(
-            draw,
-            island_x,
-            island_y,
-            island_radius,
-            "brown",
-            seed,
-            spaced_planet_name + f"_island_{i}",
+
+    num_depths = rng.randint(60, 100)
+    for _ in range(num_depths):
+        depth_radius = rng.randint(int(0.1 * planet_radius), int(0.3 * planet_radius))
+        depth_x = center_x + rng.randint(-planet_radius // 2, planet_radius // 2)
+        depth_y = center_y + rng.randint(-planet_radius // 2, planet_radius // 2)
+        depth_color = (0, 0, 139, rng.randint(1, 50))
+        draw.ellipse(
+            [
+                (depth_x - depth_radius, depth_y - depth_radius),
+                (depth_x + depth_radius, depth_y + depth_radius),
+            ],
+            fill=depth_color,
+            outline=None,
         )
 
-    if rng.random() < 0.7:
-        lake_radius = rng.randint(50, 150)
-        lake_x = center_x + rng.randint(-planet_radius, planet_radius)
-        lake_y = center_y + rng.randint(-planet_radius, planet_radius)
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        (0, 0, 139, 40),
+        seed,
+        spaced_planet_name,
+    )
 
-        draw.ellipse(
-            (
-                lake_x - lake_radius,
-                lake_y - lake_radius,
-                lake_x + lake_radius,
-                lake_y + lake_radius,
-            ),
-            fill="darkblue",
-            outline="blue",
+    base_green = (57, 92, 0)
+    base_brown = (92, 58, 0)
+
+    patch_color = (
+        rng.randint(
+            min(base_green[0], base_brown[0]), max(base_green[0], base_brown[0])
+        ),
+        rng.randint(
+            min(base_green[1], base_brown[1]), max(base_green[1], base_brown[1])
+        ),
+        rng.randint(
+            min(base_green[2], base_brown[2]), max(base_green[2], base_brown[2])
+        ),
+        150,
+    )
+
+    num_green_patches = rng.randint(10, 20)
+    for _ in range(num_green_patches):
+        patch_size = rng.randint(6, 80)
+        patch_angle = rng.uniform(0, 2 * math.pi)
+        patch_distance = rng.uniform(1 * planet_radius, planet_radius)
+
+        patch_x = center_x + patch_distance * math.cos(patch_angle)
+        patch_y = center_y + patch_distance * math.sin(patch_angle)
+
+        num_sides = rng.randint(20, 30)
+        patch_points = []
+        for j in range(num_sides):
+            angle_offset = 2 * math.pi * j / num_sides
+            point_x = patch_x + patch_size * math.cos(
+                angle_offset + rng.uniform(-0.2, 0.2)
+            )
+            point_y = patch_y + patch_size * math.sin(
+                angle_offset + rng.uniform(-0.2, 0.2)
+            )
+            patch_points.append((point_x, point_y))
+
+        draw.polygon(patch_points, fill=patch_color)
+
+    num_clouds = rng.randint(3, 6)
+    for i in range(num_clouds):
+        cloud_radius = rng.randint(25, int(planet_radius * 0.3))
+        max_offset = planet_radius - cloud_radius
+        cloud_x = center_x + rng.randint(-max_offset, max_offset)
+        cloud_y = center_y + rng.randint(-max_offset, max_offset)
+        generate_abstract_shape(
+            draw,
+            cloud_x,
+            cloud_y,
+            cloud_radius,
+            "sandybrown",
+            seed,
+            spaced_planet_name + f"_cloud_{i}",
         )
 
 
