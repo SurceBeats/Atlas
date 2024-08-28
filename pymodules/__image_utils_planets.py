@@ -1204,27 +1204,72 @@ def draw_cave_elements(
 def draw_crystalline_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
-    num_crystals = rng.randint(5, 10)
-    for i in range(num_crystals):
-        crystal_height = rng.randint(20, 50)
-        crystal_base_width = rng.randint(10, 20)
-        crystal_x = center_x + rng.randint(-planet_radius, planet_radius)
-        crystal_y = center_y + rng.randint(-planet_radius, planet_radius)
-        draw.polygon(
-            [
-                (crystal_x, crystal_y),
-                (crystal_x + crystal_base_width, crystal_y),
-                (crystal_x + crystal_base_width // 2, crystal_y - crystal_height),
-            ],
-            fill="cyan",
+
+    draw_planet_rings(draw, planet_radius, center_x, center_y, rng)
+
+    sparkle_colors = [
+        (255, 255, 255),
+        (127, 255, 212),
+        (0, 255, 255),
+    ]
+    num_sparkles = rng.randint(10, 240)
+    for _ in range(num_sparkles):
+        sparkle_x = center_x + rng.randint(-planet_radius, planet_radius)
+        sparkle_y = center_y + rng.randint(-planet_radius, planet_radius)
+        sparkle_color = rng.choice(sparkle_colors)
+        opacity = rng.randint(10, 100)
+
+        sparkle_color_with_opacity = sparkle_color + (opacity,)
+
+        draw.ellipse(
+            (sparkle_x - 1, sparkle_y - 1, sparkle_x + 1, sparkle_y + 1),
+            fill=sparkle_color_with_opacity,
         )
 
-    num_bright_areas = rng.randint(30, 250)
+    num_crystals = rng.randint(120, 600)
+    for _ in range(num_crystals):
+        crystal_height = rng.randint(10, 26)
+        crystal_base_width = rng.randint(6, 12)
+
+        angle_to_border = rng.uniform(0, 2 * math.pi)
+        distance_to_border = rng.uniform(planet_radius * 0.9, planet_radius * 1.1)
+
+        crystal_x = center_x + distance_to_border * math.cos(angle_to_border)
+        crystal_y = center_y + distance_to_border * math.sin(angle_to_border)
+
+        angle = rng.uniform(0, 2 * math.pi)
+
+        rotated_points = [
+            (crystal_x, crystal_y),
+            (
+                crystal_x + crystal_base_width * math.cos(angle),
+                crystal_y + crystal_base_width * math.sin(angle),
+            ),
+            (
+                crystal_x
+                + (crystal_base_width // 2) * math.cos(angle)
+                - crystal_height * math.sin(angle),
+                crystal_y
+                + (crystal_base_width // 2) * math.sin(angle)
+                + crystal_height * math.cos(angle),
+            ),
+        ]
+
+        draw.polygon(rotated_points, fill="cyan", outline=(0, 0, 0, 5))
+
+    num_bright_areas = rng.randint(120, 600)
     for _ in range(num_bright_areas):
         bright_radius = rng.randint(10, 15)
         bright_x = center_x + rng.randint(-planet_radius, planet_radius)
         bright_y = center_y + rng.randint(-planet_radius, planet_radius)
         num_points = rng.randint(5, 10)
+
+        color_choice = rng.choice([(173, 216, 230), (1, 255, 255)])
+
+        opacity = rng.randint(0, 55)
+
+        color_with_opacity = color_choice + (opacity,)
+
         points = []
         for _ in range(num_points):
             angle = rng.uniform(0, 2 * math.pi)
@@ -1232,45 +1277,93 @@ def draw_crystalline_elements(
             x = bright_x + int(distance * math.cos(angle))
             y = bright_y + int(distance * math.sin(angle))
             points.append((x, y))
-        draw.polygon(points, fill=(173, 216, 230, 35))
 
-    sparkle_colors = ["white", "aquamarine", "cyan"]
-    num_sparkles = rng.randint(10, 42)
-    for _ in range(num_sparkles):
-        sparkle_x = center_x + rng.randint(-planet_radius, planet_radius)
-        sparkle_y = center_y + rng.randint(-planet_radius, planet_radius)
-        sparkle_color = rng.choice(sparkle_colors)
-        draw.ellipse(
-            (sparkle_x - 2, sparkle_y - 2, sparkle_x + 2, sparkle_y + 2),
-            fill=sparkle_color,
-        )
+        draw.polygon(points, fill=color_with_opacity)
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(0, 174, 194, 40),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=100,
+        points_max=140,
+        seg_min=2,
+        seg_max=3,
+    )
 
 
 def draw_metallic_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
-    num_reflective_areas = rng.randint(1, 100)
-    for i in range(num_reflective_areas):
-        reflection_radius = rng.randint(4, 16)
-        reflection_x = center_x + rng.randint(-planet_radius, planet_radius)
-        reflection_y = center_y + rng.randint(-planet_radius, planet_radius)
-        start_angle = rng.randint(0, 360)
-        end_angle = start_angle + rng.randint(10, 200)
-        draw.chord(
-            (
-                reflection_x - reflection_radius,
-                reflection_y - reflection_radius,
-                reflection_x + reflection_radius,
-                reflection_y + reflection_radius,
-            ),
-            start=start_angle,
-            end=end_angle,
-            fill=(211, 211, 211, 1),
+
+    draw_planet_rings(draw, planet_radius, center_x, center_y, rng)
+
+    distance_factor = 1
+    two_pi = 2 * math.pi
+    planet_edge_distance = planet_radius * distance_factor
+    num_reflections = rng.randint(30, 90)
+
+    for _ in range(num_reflections):
+        reflection_radius = rng.randint(10, 160)
+        angle = rng.uniform(0, two_pi)
+
+        cos_angle = math.cos(angle)
+        sin_angle = math.sin(angle)
+
+        reflection_x = center_x + int(
+            (planet_edge_distance + reflection_radius // 2) * cos_angle
+        )
+        reflection_y = center_y + int(
+            (planet_edge_distance + reflection_radius // 2) * sin_angle
         )
 
-    num_metal_areas = rng.randint(3, 6)
+        for j in range(reflection_radius, 0, -8):
+            num_points = rng.randint(10, 20)
+            reflection_points = []
+            for _ in range(num_points):
+                angle_offset = rng.uniform(0, two_pi)
+                distance = rng.uniform(j * 0.3, j)
+                x = reflection_x + int(distance * math.cos(angle_offset))
+                y = reflection_y + int(distance * math.sin(angle_offset))
+                reflection_points.append((x, y))
+
+            alpha = rng.randint(1, 255)
+            draw.polygon(reflection_points, fill=(255, 255, 255, alpha))
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(40, 40, 40, 60),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=7,
+        points_max=9,
+        seg_min=2,
+        seg_max=3,
+    )
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(0, 0, 0, 90),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=6,
+        points_max=8,
+        seg_min=2,
+        seg_max=3,
+    )
+
+    num_metal_areas = rng.randint(4, 8)
     for i in range(num_metal_areas):
-        metal_radius = rng.randint(20, 150)
+        metal_radius = rng.randint(10, 18)
         max_offset = planet_radius - metal_radius
         metal_x = center_x + rng.randint(-max_offset, max_offset)
         metal_y = center_y + rng.randint(-max_offset, max_offset)
@@ -1284,18 +1377,17 @@ def draw_metallic_elements(
             spaced_planet_name + f"_metal_{i}",
         )
 
-    if rng.random() < 0.5:
-        reflection_radius = rng.randint(10, 20)
-        reflection_x = center_x + rng.randint(-planet_radius, planet_radius)
-        reflection_y = center_y + rng.randint(-planet_radius, planet_radius)
-        generate_abstract_shape(
-            draw,
-            reflection_x,
-            reflection_y,
-            reflection_radius,
-            "white",
-            seed,
-            spaced_planet_name + "_reflection",
+    num_scratches = rng.randint(40, 60)
+    for _ in range(num_scratches):
+        start_x = center_x + rng.randint(-planet_radius, planet_radius)
+        start_y = center_y + rng.randint(-planet_radius, planet_radius)
+        end_x = start_x + rng.randint(-15, 15)
+        end_y = start_y + rng.randint(-15, 15)
+
+        draw.line(
+            [(start_x, start_y), (end_x, end_y)],
+            fill=(200, 200, 200, rng.randint(50, 100)),
+            width=1,
         )
 
 
