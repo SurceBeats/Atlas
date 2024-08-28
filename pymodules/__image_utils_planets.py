@@ -2,49 +2,19 @@
 
 from PIL import Image, ImageDraw, ImageFilter, ImageColor
 
+from pymodules.__image_utils_planets_forms import (
+    generate_noise_texture,
+    generate_abstract_shape,
+    generate_abstract_land,
+    draw_planet_rings,
+)
+
 import math
-import random
 import hashlib
 
 
 def consistent_hash(input_string):
     return int(hashlib.md5(input_string.encode()).hexdigest(), 16)
-
-
-def generate_noise_texture(draw, center_x, center_y, planet_radius, seed, opacity):
-    size = planet_radius * 2
-    random.seed(seed)
-
-    noise = [[random.random() for _ in range(size)] for _ in range(size)]
-
-    def smooth_noise(x, y):
-        corners = (
-            noise[x - 1][y - 1]
-            + noise[x + 1][y - 1]
-            + noise[x - 1][y + 1]
-            + noise[x + 1][y + 1]
-        ) / 16
-        sides = (
-            noise[x - 1][y] + noise[x + 1][y] + noise[x][y - 1] + noise[x][y + 1]
-        ) / 8
-        center = noise[x][y] / 4
-        return corners + sides + center
-
-    smooth_noise_data = [
-        [smooth_noise(x, y) for y in range(1, size - 1)] for x in range(1, size - 1)
-    ]
-
-    noise_image = Image.new("L", (size, size))
-    noise_pixels = noise_image.load()
-
-    for i in range(size - 2):
-        for j in range(size - 2):
-            value = int(smooth_noise_data[i][j] * opacity)
-            noise_pixels[i, j] = value
-
-    draw.bitmap(
-        (center_x - planet_radius, center_y - planet_radius), noise_image, fill=None
-    )
 
 
 def get_planet_color_map():
@@ -56,7 +26,7 @@ def get_planet_color_map():
         "Oceanic": "blue",
         "Desert": "gold",
         "Lava": "red",
-        "Arid": "brown",
+        "Arid": "maroon",
         "Swamp": "green",
         "Tundra": "aliceblue",
         "Forest": "darkgreen",
@@ -77,75 +47,6 @@ def get_planet_color_map():
         "Aquifer": "aqua",
         "Exotic": "magenta",
     }
-
-
-def generate_abstract_shape(
-    draw, center_x, center_y, radius, color, global_seed, planet_name
-):
-
-    planet_seed = consistent_hash(f"{global_seed}-{planet_name}")
-    rng = random.Random(planet_seed)
-
-    if isinstance(color, str):
-        color = ImageColor.getrgb(color)
-
-    color_with_alpha = color + (int(255 * 0.37),)
-
-    num_points = rng.randint(5, 250)
-    points = []
-
-    for i in range(num_points):
-        angle = rng.uniform(0, 2 * math.pi)
-        distance = rng.uniform(0.5 * radius, radius)
-        x = center_x + distance * math.cos(angle) * 10
-        y = center_y + distance * math.sin(angle) * 5
-        points.append((x, y))
-
-    temp_image = Image.new("RGBA", draw.im.size, (0, 0, 0, 0))
-    temp_draw = ImageDraw.Draw(temp_image)
-    temp_draw.polygon(points, fill=color_with_alpha)
-
-    blurred_image = temp_image.filter(ImageFilter.GaussianBlur(radius=6))
-
-    draw.bitmap((0, 0), blurred_image, fill=None)
-
-
-def generate_abstract_land(
-    draw,
-    center_x,
-    center_y,
-    radius,
-    color,
-    global_seed,
-    planet_name,
-    pointmin,
-    pointmax,
-):
-    planet_seed = consistent_hash(
-        f"{global_seed}-{planet_name}-{radius}-{color}-{pointmax}-{pointmin}"
-    )
-    rng = random.Random(planet_seed)
-
-    num_segments = rng.randint(1, 3)
-    for _ in range(num_segments):
-        num_points = rng.randint(pointmin, pointmax)
-        angle_offset = rng.uniform(0, 2 * math.pi)
-        angle_step = 2 * math.pi / num_points
-        points = []
-
-        origin_angle = rng.uniform(0, 2 * math.pi)
-        origin_distance = rng.uniform(radius * 0.8, radius * 1.1)
-        origin_x = center_x + origin_distance * math.cos(origin_angle)
-        origin_y = center_y + origin_distance * math.sin(origin_angle)
-
-        for i in range(num_points):
-            angle = angle_offset + i * angle_step + rng.uniform(-0.05, 0.05)
-            dist = rng.uniform(0.3 * radius, 0.6 * radius)
-            x = origin_x + dist * math.cos(angle)
-            y = origin_y + dist * math.sin(angle)
-            points.append((x, y))
-
-        draw.polygon(points, fill=color)
 
 
 def draw_gas_giant_elements(
@@ -212,23 +113,37 @@ def draw_gas_giant_elements(
 def draw_anomaly_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
-    num_anomalies = rng.randint(6, 12)
+    draw_planet_rings(draw, planet_radius, center_x, center_y, rng)
+
+    num_anomalies = rng.randint(8, 14)
     max_anomaly_radius = planet_radius // 2
+
+    anomaly_positions = []
+    anomaly_radii = []
+    anomaly_colors = []
 
     for i in range(num_anomalies):
         anomaly_radius = rng.randint(max_anomaly_radius // 2, max_anomaly_radius)
-
         anomaly_x = center_x + rng.randint(-planet_radius, planet_radius)
         anomaly_y = center_y + rng.randint(-planet_radius, planet_radius)
 
         anomaly_color = (
             rng.randint(0, 10),
+            rng.randint(0, 20),
             rng.randint(0, 30),
-            rng.randint(0, 60),
-            rng.randint(0, 90),
+            rng.randint(0, 40),
         )
 
-        num_points = rng.randint(3, 35)
+        anomaly_positions.append((anomaly_x, anomaly_y))
+        anomaly_radii.append(anomaly_radius)
+        anomaly_colors.append(anomaly_color)
+
+    for i in range(num_anomalies):
+        anomaly_x, anomaly_y = anomaly_positions[i]
+        anomaly_radius = anomaly_radii[i]
+        anomaly_color = anomaly_colors[i]
+
+        num_points = rng.randint(8, 14)
         angle_step = 2 * math.pi / num_points
         points = []
 
@@ -243,42 +158,64 @@ def draw_anomaly_elements(
 
         draw.polygon(points, fill=anomaly_color, outline=None)
 
+    num_anom_shapers = rng.randint(3, 6)
+    for i in range(num_anom_shapers):
+        anom_shaper_radius = rng.randint(10, 16)
+        anom_shaper_x = center_x + rng.randint(-planet_radius, planet_radius)
+        anom_shaper_y = center_y + rng.randint(-planet_radius, planet_radius)
         generate_abstract_shape(
             draw,
-            anomaly_x,
-            anomaly_y,
-            max_anomaly_radius,
-            "purple",
+            anom_shaper_x,
+            anom_shaper_y,
+            anom_shaper_radius,
+            "gray",
             seed,
-            spaced_planet_name + f"_anomaly_shape_{i}",
+            spaced_planet_name + f"_anom_shaper_{i}",
         )
 
 
 def draw_rocky_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
+
     generate_abstract_land(
         draw,
         center_x,
         center_y,
         planet_radius,
-        (80, 80, 80, 40),
-        seed,
-        spaced_planet_name,
-        40,
-        60,
+        color=(38, 38, 38, 165),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=8,
+        points_max=10,
+        seg_min=1,
+        seg_max=2,
+    )
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(80, 80, 80, 40),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=12,
+        points_max=20,
+        seg_min=1,
+        seg_max=6,
     )
 
     num_mountains = rng.randint(4, 30)
     mountain_color = (130, 130, 130, 1)
 
     for _ in range(num_mountains):
-        mountain_width = rng.randint(5, 10)
-        mountain_height = rng.randint(5, 8)
+        mountain_width = rng.randint(4, 8)
+        mountain_height = rng.randint(4, 8)
         mountain_x = center_x + rng.randint(-planet_radius, planet_radius)
         mountain_y = center_y + rng.randint(-planet_radius, planet_radius)
 
-        angle = math.radians(rng.uniform(-20, 20))
+        angle = math.radians(rng.uniform(-40, 40))
         cos_angle = math.cos(angle)
         sin_angle = math.sin(angle)
 
@@ -338,16 +275,33 @@ def draw_rocky_elements(
 def draw_icy_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
+
+    draw_planet_rings(draw, planet_radius, center_x, center_y, rng)
+
     generate_abstract_land(
         draw,
         center_x,
         center_y,
         planet_radius,
-        (81, 106, 145, 1),
-        seed,
-        spaced_planet_name,
-        40,
-        60,
+        color=(126, 169, 214, 150),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=6,
+        points_max=8,
+        seg_min=8,
+        seg_max=14,
+    )
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(81, 106, 145, 1),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=40,
+        points_max=60,
     )
 
     two_pi = 2 * math.pi
@@ -421,6 +375,8 @@ def draw_oceanic_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
 
+    draw_planet_rings(draw, planet_radius, center_x, center_y, rng)
+
     num_depths = rng.randint(60, 100)
     for _ in range(num_depths):
         depth_radius = rng.randint(int(0.1 * planet_radius), int(0.3 * planet_radius))
@@ -441,11 +397,11 @@ def draw_oceanic_elements(
         center_x,
         center_y,
         planet_radius,
-        (0, 0, 139, 40),
-        seed,
-        spaced_planet_name,
-        40,
-        60,
+        color=(0, 0, 139, 40),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=40,
+        points_max=60,
     )
 
     base_green = (57, 92, 0)
@@ -507,6 +463,8 @@ def draw_oceanic_elements(
 def draw_desert_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
+    draw_planet_rings(draw, planet_radius, center_x, center_y, rng)
+
     for _ in range(rng.randint(400, 800)):
         grain_size = rng.randint(0, 1)
         grain_x = center_x + rng.randint(-planet_radius, planet_radius)
@@ -562,11 +520,25 @@ def draw_desert_elements(
         center_x,
         center_y,
         planet_radius,
-        (255, 215, 0, 200),
-        seed,
-        spaced_planet_name,
-        40,
-        60,
+        color=(153, 129, 0, 1),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=10,
+        points_max=20,
+        seg_min=1,
+        seg_max=2,
+    )
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(255, 215, 0, 200),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=40,
+        points_max=60,
     )
 
     if rng.random() < 0.2:
@@ -640,29 +612,18 @@ def draw_lava_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
 
-    linebreaker = rng.randint(40, 60)
-    for i in range(linebreaker):
-        edge_radius = planet_radius - i * (planet_radius // linebreaker)
-        opacity = linebreaker - (i * 2)
-        draw.ellipse(
-            [
-                (center_x - edge_radius, center_y - edge_radius),
-                (center_x + edge_radius, center_y + edge_radius),
-            ],
-            outline=(50, 0, 0, opacity),
-            width=1,
-        )
+    draw_planet_rings(draw, planet_radius, center_x, center_y, rng)
 
     generate_abstract_land(
         draw,
         center_x,
         center_y,
         planet_radius,
-        (255, 69, 0, 50),
-        seed,
-        spaced_planet_name,
-        12,
-        18,
+        color=(255, 69, 0, 50),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=12,
+        points_max=18,
     )
 
     num_cracks = rng.randint(10, 80)
@@ -716,16 +677,20 @@ def draw_arid_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
 
+    draw_planet_rings(
+        draw, planet_radius, center_x, center_y, rng, color=(255, 255, 255)
+    )
+
     generate_abstract_land(
         draw,
         center_x,
         center_y,
         planet_radius,
-        (220, 20, 60, 10),
-        seed,
-        spaced_planet_name,
-        6,
-        8,
+        color=(220, 20, 60, 10),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=6,
+        points_max=8,
     )
 
     num_cracks = rng.randint(15, 30)
@@ -744,18 +709,18 @@ def draw_arid_elements(
             points.append((next_x, next_y))
             crack_length *= 0.7
 
-        draw.line(points, fill="crimson", width=rng.randint(1, 5))
+        draw.line(points, fill=(181, 2, 37), width=rng.randint(1, 5))
 
     generate_abstract_land(
         draw,
         center_x,
         center_y,
         planet_radius,
-        (220, 20, 60, 255),
-        seed,
-        spaced_planet_name,
-        16,
-        20,
+        color=(181, 2, 37, 255),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=16,
+        points_max=20,
     )
 
     num_dunes = rng.randint(2, 5)
@@ -769,7 +734,7 @@ def draw_arid_elements(
                 (dune_x - dune_radius, dune_y + dune_radius),
                 (dune_x + dune_radius, dune_y + dune_radius),
             ],
-            fill="crimson",
+            fill=(181, 2, 37),
         )
 
     rngopac = rng.randint(40, 80)
@@ -796,16 +761,18 @@ def draw_swamp_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
 
+    draw_planet_rings(draw, planet_radius, center_x, center_y, rng)
+
     generate_abstract_land(
         draw,
         center_x,
         center_y,
         planet_radius,
-        (0, 100, 0, 1),
-        seed,
-        spaced_planet_name,
-        16,
-        20,
+        color=(0, 100, 0, 1),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=16,
+        points_max=20,
     )
 
     generate_abstract_land(
@@ -813,11 +780,11 @@ def draw_swamp_elements(
         center_x,
         center_y,
         planet_radius,
-        (6, 154, 199, 30),
-        seed,
-        spaced_planet_name,
-        20,
-        24,
+        color=(6, 154, 199, 30),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=20,
+        points_max=24,
     )
 
     num_water_areas = rng.randint(50, 100)
@@ -870,6 +837,9 @@ def draw_swamp_elements(
 def draw_tundra_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
+
+    draw_planet_rings(draw, planet_radius, center_x, center_y, rng)
+
     num_cracks = rng.randint(1, 6)
     for _ in range(num_cracks):
         crack_length = rng.randint(30, 60)
@@ -881,7 +851,49 @@ def draw_tundra_elements(
 
         draw.line((crack_x1, crack_y1, crack_x2, crack_y2), fill="lightblue", width=10)
 
-    num_wind_lines = rng.randint(5, 20)
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(255, 255, 255, 1),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=6,
+        points_max=8,
+        seg_min=1,
+        seg_max=2,
+    )
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(0, 77, 46, 20),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=6,
+        points_max=8,
+        seg_min=1,
+        seg_max=2,
+    )
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(255, 255, 255, 255),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=6,
+        points_max=8,
+        seg_min=4,
+        seg_max=7,
+    )
+
+    num_wind_lines = rng.randint(40, 90)
     for _ in range(num_wind_lines):
         line_length = rng.randint(2, 15)
         start_x = center_x + rng.randint(-planet_radius, planet_radius)
@@ -892,9 +904,9 @@ def draw_tundra_elements(
 
         draw.line((start_x, start_y, end_x, end_y), fill="white", width=1)
 
-    num_snow_areas = rng.randint(3, 6)
+    num_snow_areas = rng.randint(60, 200)
     for _ in range(num_snow_areas):
-        snow_radius = rng.randint(1, 4)
+        snow_radius = rng.randint(0, 1)
         snow_x = center_x + rng.randint(-planet_radius, planet_radius)
         snow_y = center_y + rng.randint(-planet_radius, planet_radius)
 
@@ -911,7 +923,7 @@ def draw_tundra_elements(
 
     num_tundra_areas = rng.randint(5, 10)
     for i in range(num_tundra_areas):
-        tundra_radius = rng.randint(25, 50)
+        tundra_radius = rng.randint(25, 70)
         max_offset = planet_radius - tundra_radius
         tundra_x = center_x + rng.randint(-max_offset, max_offset)
         tundra_y = center_y + rng.randint(-max_offset, max_offset)
@@ -929,14 +941,17 @@ def draw_tundra_elements(
 def draw_forest_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
-    num_forest_regions = rng.randint(5, 10)
+
+    draw_planet_rings(draw, planet_radius, center_x, center_y, rng)
+
+    num_forest_regions = rng.randint(4, 10)
     for i in range(num_forest_regions):
-        forest_radius = rng.randint(20, 80)
+        forest_radius = rng.randint(30, 50)
         max_offset = planet_radius - forest_radius
         forest_x = center_x + rng.randint(-max_offset, max_offset)
         forest_y = center_y + rng.randint(-max_offset, max_offset)
 
-        num_points = rng.randint(100, 600)
+        num_points = rng.randint(200, 400)
         points = []
         for _ in range(num_points):
             angle = rng.uniform(0, 2 * math.pi)
@@ -946,11 +961,61 @@ def draw_forest_elements(
             points.append((x, y))
 
         for point in points:
-            draw.point(point, fill="darkgreen")
+            opacity = rng.randint(30, 120)
+            size = rng.choice([1, 2])
 
-    num_forests = rng.randint(5, 10)
+            if size == 1:
+                draw.point(point, fill=(0, 100, 0, opacity))
+            else:
+                draw.rectangle(
+                    [point, (point[0] + 1, point[1] + 1)], fill=(0, 100, 0, opacity)
+                )
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(0, 77, 46, 20),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=6,
+        points_max=8,
+        seg_min=6,
+        seg_max=10,
+    )
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(0, 128, 0, 200),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=6,
+        points_max=8,
+        seg_min=1,
+        seg_max=2,
+    )
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(154, 205, 50, 40),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=6,
+        points_max=8,
+        seg_min=1,
+        seg_max=2,
+    )
+
+    num_forests = rng.randint(6, 10)
     for i in range(num_forests):
-        forest_radius = rng.randint(15, 40)
+        forest_radius = rng.randint(15, 25)
         max_offset = planet_radius - forest_radius
         forest_x = center_x + rng.randint(-max_offset, max_offset)
         forest_y = center_y + rng.randint(-max_offset, max_offset)

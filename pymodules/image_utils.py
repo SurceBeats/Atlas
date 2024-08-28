@@ -1,6 +1,7 @@
 # pymodules/image_utils.py
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageColor
+
 from pymodules.__config import seed
 from pymodules.__image_utils_planets import (
     get_planet_color_map,
@@ -32,6 +33,7 @@ from pymodules.__image_utils_planets import (
     draw_aquifer_elements,
     draw_exotic_elements,
 )
+
 from pymodules.__image_utils_life_forms import (
     draw_intelligent_life,
     draw_silicon_based_life,
@@ -40,7 +42,6 @@ from pymodules.__image_utils_life_forms import (
     draw_conscious_gas,
     draw_god,
 )
-
 
 import math
 import random
@@ -289,7 +290,14 @@ def generate_planet_image(planet):
 
     if life_form_type in draw_life_functions:
         draw_life_functions[life_form_type](
-            life_form_draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name, img_size
+            life_form_draw,
+            center_x,
+            center_y,
+            planet_radius,
+            rng,
+            seed,
+            spaced_planet_name,
+            img_size,
         )
 
     image = Image.alpha_composite(image.convert("RGBA"), life_form_layer)
