@@ -51,9 +51,7 @@ def generate_noise_texture(
     )
 
 
-def generate_clouds(
-    draw, center_x, center_y, radius, color, global_seed, planet_name
-):
+def generate_clouds(draw, center_x, center_y, radius, color, global_seed, planet_name):
 
     planet_seed = consistent_hash(f"{global_seed}-{planet_name}")
     rng = random.Random(planet_seed)
@@ -233,3 +231,71 @@ def draw_toxic_vegetation(draw, center_x, center_y, planet_radius, rng):
                 fill=glow_color,
             )
 
+
+def draw_arcs(
+    draw,
+    center_x,
+    center_y,
+    color,
+    rng,
+    num_arcs_range=(2, 60),
+    radius_range=(60, 240),
+    arc_width_range=(2, 5),
+):
+    num_arcs = rng.randint(*num_arcs_range)
+    temp_image = Image.new("RGBA", draw.im.size, (0, 0, 0, 0))
+    temp_draw = ImageDraw.Draw(temp_image)
+
+    for i in range(num_arcs):
+        arc_radius = rng.randint(*radius_range)
+        arc_width = rng.randint(*arc_width_range)
+        arc_start_angle = rng.uniform(0, 2 * math.pi)
+        arc_end_angle = arc_start_angle + rng.uniform(math.pi / 4, math.pi / 2)
+        arc_x = center_x
+        arc_y = center_y
+
+        temp_draw.arc(
+            [
+                (arc_x - arc_radius, arc_y - arc_radius),
+                (arc_x + arc_radius, arc_y + arc_radius),
+            ],
+            start=math.degrees(arc_start_angle),
+            end=math.degrees(arc_end_angle),
+            fill=color,
+            width=arc_width,
+        )
+
+    draw.bitmap((0, 0), temp_image, fill=None)
+
+
+def draw_depths(
+    draw,
+    center_x,
+    center_y,
+    planet_radius,
+    rng,
+    num_depths_range=(60, 100),
+    depth_radius_range=(0.1, 0.3),
+    depth_color_base=(0, 0, 139),
+):
+
+    num_depths = rng.randint(*num_depths_range)
+
+    for _ in range(num_depths):
+        depth_radius = rng.randint(
+            int(depth_radius_range[0] * planet_radius),
+            int(depth_radius_range[1] * planet_radius),
+        )
+        depth_x = center_x + rng.randint(-planet_radius // 2, planet_radius // 2)
+        depth_y = center_y + rng.randint(-planet_radius // 2, planet_radius // 2)
+        depth_alpha = rng.randint(1, 50)
+        depth_color = (*depth_color_base, depth_alpha)
+
+        draw.ellipse(
+            [
+                (depth_x - depth_radius, depth_y - depth_radius),
+                (depth_x + depth_radius, depth_y + depth_radius),
+            ],
+            fill=depth_color,
+            outline=None,
+        )

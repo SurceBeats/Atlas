@@ -9,6 +9,8 @@ from pymodules.__image_utils_planets_forms import (
     draw_toxic_vegetation,
     draw_planet_rings,
     draw_cluster,
+    draw_arcs,
+    draw_depths,
 )
 
 import math
@@ -379,20 +381,7 @@ def draw_oceanic_elements(
 
     draw_planet_rings(draw, planet_radius, center_x, center_y, rng)
 
-    num_depths = rng.randint(60, 100)
-    for _ in range(num_depths):
-        depth_radius = rng.randint(int(0.1 * planet_radius), int(0.3 * planet_radius))
-        depth_x = center_x + rng.randint(-planet_radius // 2, planet_radius // 2)
-        depth_y = center_y + rng.randint(-planet_radius // 2, planet_radius // 2)
-        depth_color = (0, 0, 139, rng.randint(1, 50))
-        draw.ellipse(
-            [
-                (depth_x - depth_radius, depth_y - depth_radius),
-                (depth_x + depth_radius, depth_y + depth_radius),
-            ],
-            fill=depth_color,
-            outline=None,
-        )
+    draw_depths(draw, center_x, center_y, planet_radius, rng)
 
     generate_abstract_land(
         draw,
@@ -1443,7 +1432,35 @@ def draw_toxic_elements(
 def draw_radioactive_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
-    num_segments = rng.randint(2, 4)
+
+    draw_planet_rings(draw, planet_radius, center_x, center_y, rng)
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(0, 0, 0, 120),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=10,
+        points_max=12,
+        seg_min=1,
+        seg_max=3,
+    )
+
+    draw_depths(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        rng,
+        num_depths_range=(40, 80),
+        depth_radius_range=(0.01, 0.05),
+        depth_color_base=(0, 0, 0),
+    )
+
+    num_segments = rng.randint(20, 35)
     for i in range(num_segments):
         segment_radius = rng.randint(4, 12)
         segment_start_angle = rng.uniform(0, 2 * math.pi)
@@ -1461,31 +1478,26 @@ def draw_radioactive_elements(
             outline="mediumspringgreen",
         )
 
-    num_arcs = rng.randint(2, 60)
-    temp_image = Image.new("RGBA", draw.im.size, (0, 0, 0, 0))
-    temp_draw = ImageDraw.Draw(temp_image)
-    for i in range(num_arcs):
-        arc_radius = rng.randint(60, 240)
-        arc_width = rng.randint(2, 5)
-        arc_start_angle = rng.uniform(0, 2 * math.pi)
-        arc_end_angle = arc_start_angle + rng.uniform(math.pi / 4, math.pi / 2)
-        arc_x = center_x
-        arc_y = center_y
-        temp_draw.arc(
-            [
-                (arc_x - arc_radius, arc_y - arc_radius),
-                (arc_x + arc_radius, arc_y + arc_radius),
-            ],
-            start=math.degrees(arc_start_angle),
-            end=math.degrees(arc_end_angle),
-            fill=(0, 255, 0, 50),
-            width=arc_width,
-        )
-    draw.bitmap((0, 0), temp_image, fill=None)
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(12, 168, 15, 255),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=16,
+        points_max=20,
+        seg_min=2,
+        seg_max=4,
+    )
 
-    num_zones = rng.randint(3, 6)
+    draw_arcs(draw, center_x, center_y, (0, 255, 0, 25), rng)
+    draw_arcs(draw, center_x, center_y, (0, 255, 0, 50), rng)
+
+    num_zones = rng.randint(8, 9)
     for i in range(num_zones):
-        zone_radius = rng.randint(15, 40)
+        zone_radius = rng.randint(10, 12)
         max_offset = planet_radius - zone_radius
         zone_x = center_x + rng.randint(-max_offset, max_offset)
         zone_y = center_y + rng.randint(-max_offset, max_offset)
@@ -1497,20 +1509,6 @@ def draw_radioactive_elements(
             "lime",
             seed,
             spaced_planet_name + f"_radioactive_zone_{i}",
-        )
-
-    if rng.random() < 0.5:
-        glow_radius = rng.randint(10, 20)
-        glow_x = center_x + rng.randint(-planet_radius, planet_radius)
-        glow_y = center_y + rng.randint(-planet_radius, planet_radius)
-        generate_clouds(
-            draw,
-            glow_x,
-            glow_y,
-            glow_radius,
-            "yellow",
-            seed,
-            spaced_planet_name + "_glow",
         )
 
 

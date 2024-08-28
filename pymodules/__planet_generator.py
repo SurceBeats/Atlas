@@ -64,28 +64,32 @@ def calculate_life_probability(planet):
     if "Silicon" in planet["Elements"]:
         if random.random() < 0.02:
             return "Silicon-Based Life"
+
     if random.random() < 0.0001:
         return "Non-Physical Entity"
+
     if planet["Atmosphere"] in ["Methane", "Ammonia"]:
         if random.random() < 0.00001:
             return "Conscious Gas"
+
     if planet["Type"] in ["Metallic", "Crystalline"]:
         if random.random() < 0.001:
             return "Robotic Entities"
+
     if (
         planet["Type"] == "Nebulous"
         and planet["Atmosphere"] == "Plasma"
         and "Moscovium" in planet["Elements"]
-        and "Divinium" in planet["Elements"]
+        and "Z-Divinium" in planet["Elements"]
     ):
-        if random.random() < 1111111111111:
+        if random.random() < 0.00001:
             return "Have I just found God?"
 
     return random.choice(possible_life_forms)
 
 
 def generate_elements_for_planet(seed, possible_elements):
-    elements, weights = zip(*periodic_table)  # Obtener elementos y sus pesos
+    elements, weights = zip(*periodic_table)
 
     random.seed(seed)
 

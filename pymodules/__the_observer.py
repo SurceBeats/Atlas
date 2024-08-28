@@ -1,4 +1,4 @@
-# pymodules\__the_observer.py
+# pymodules/__the_observer.py
 
 import gc
 from pymodules.__stargate import generate_planet_url
@@ -102,38 +102,22 @@ def observer(universe):
                             total_planets_searched += 1
 
                             if planet:
-                                found = False
-                                if (
-                                    desired_life_form
-                                    and planet["Life Forms"] == desired_life_form
-                                ):
-                                    found = True
-                                    print(f"Found {desired_life_form}!")
-                                    print(
-                                        f"Galaxy: {galaxy.name} (Coords: {x}, {y}, {z})"
-                                    )
-                                    print(
-                                        f"System #{system_index + 1}: {solar_system.name}"
-                                    )
-                                    print(f"Planet: {planet['Name']}")
-                                    print(f"Details: {planet}")
-                                    print(
-                                        f"URL: http://127.0.0.1:5000{generate_planet_url((x, y, z), system_index, planet['Name'])}"
-                                    )
-                                    print(
-                                        f"+ Galaxies Mapped: #{total_galaxies_searched}, Systems Mapped: #{total_systems_searched}, Planets Mapped: #{total_planets_searched}"
-                                    )
-                                    print("-" * 50)
-                                    print("")
+                                match = True
 
                                 if (
                                     desired_planet_type
-                                    and planet["Type"] == desired_planet_type
+                                    and planet["Type"] != desired_planet_type
                                 ):
-                                    found = True
-                                    print(
-                                        f"Found a planet of type {desired_planet_type}!"
-                                    )
+                                    match = False
+
+                                if (
+                                    desired_life_form
+                                    and planet["Life Forms"] != desired_life_form
+                                ):
+                                    match = False
+
+                                if match:
+                                    print("Found a match!")
                                     print(
                                         f"Galaxy: {galaxy.name} (Coords: {x}, {y}, {z})"
                                     )
@@ -150,8 +134,6 @@ def observer(universe):
                                     )
                                     print("-" * 50)
                                     print("")
-
-                                if found:
                                     input("Press Enter to continue searching...")
 
                             del planet
