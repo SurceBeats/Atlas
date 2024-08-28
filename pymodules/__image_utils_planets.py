@@ -1033,6 +1033,9 @@ def draw_forest_elements(
 def draw_savannah_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
+
+    draw_planet_rings(draw, planet_radius, center_x, center_y, rng)
+
     num_grass_clusters = rng.randint(5, 10)
     for i in range(num_grass_clusters):
         grass_cluster_radius = rng.randint(20, 50)
@@ -1050,11 +1053,61 @@ def draw_savannah_elements(
             points.append((x, y))
 
         for point in points:
-            draw.point(point, fill="brown")
+            opacity = rng.randint(30, 120)
+            size = rng.choice([1, 2])
 
-    num_grass_areas = rng.randint(5, 10)
+            brown_color = (139, 69, 19, opacity)
+
+            if size == 1:
+                draw.point(point, fill=brown_color)
+            else:
+                draw.rectangle([point, (point[0] + 1, point[1] + 1)], fill=brown_color)
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(244, 164, 96, 1),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=6,
+        points_max=8,
+        seg_min=2,
+        seg_max=4,
+    )
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(110, 59, 16, 200),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=10,
+        points_max=20,
+        seg_min=1,
+        seg_max=2,
+    )
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(199, 113, 40, 60),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=4,
+        points_max=6,
+        seg_min=1,
+        seg_max=2,
+    )
+
+    num_grass_areas = rng.randint(16, 24)
     for i in range(num_grass_areas):
-        grass_radius = rng.randint(15, 60)
+        grass_radius = rng.randint(6, 10)
         max_offset = planet_radius - grass_radius
         grass_x = center_x + rng.randint(-max_offset, max_offset)
         grass_y = center_y + rng.randint(-max_offset, max_offset)
@@ -1072,8 +1125,11 @@ def draw_savannah_elements(
 def draw_cave_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
+
+    draw_planet_rings(draw, planet_radius, center_x, center_y, rng)
+
     if rng.random() < 0.5:
-        num_cracks = rng.randint(1, 3)
+        num_cracks = rng.randint(20, 80)
         for i in range(num_cracks):
             crack_length = rng.randint(150, 250)
             crack_angle = rng.uniform(0, 2 * math.pi)
@@ -1083,11 +1139,13 @@ def draw_cave_elements(
             crack_y2 = crack_y1 + int(crack_length * math.sin(crack_angle))
             draw.line((crack_x1, crack_y1, crack_x2, crack_y2), fill="black", width=1)
 
-    num_shadows = rng.randint(3, 7)
+    num_shadows = rng.randint(80, 140)
     for i in range(num_shadows):
-        shadow_radius = rng.randint(5, 15)
+        shadow_radius = rng.randint(1, 8)
         shadow_x = center_x + rng.randint(-planet_radius, planet_radius)
         shadow_y = center_y + rng.randint(-planet_radius, planet_radius)
+        opacity = rng.randint(10, 240)
+
         draw.ellipse(
             (
                 shadow_x - shadow_radius,
@@ -1095,12 +1153,40 @@ def draw_cave_elements(
                 shadow_x + shadow_radius,
                 shadow_y + shadow_radius,
             ),
-            fill=(0, 0, 0, 100),
+            fill=(0, 0, 0, opacity),
         )
 
-    num_caves = rng.randint(3, 7)
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(36, 36, 36, 255),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=10,
+        points_max=20,
+        seg_min=1,
+        seg_max=12,
+    )
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(0, 0, 0, 200),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=6,
+        points_max=12,
+        seg_min=2,
+        seg_max=3,
+    )
+
+    num_caves = rng.randint(2, 5)
     for i in range(num_caves):
-        cave_radius = rng.randint(15, 40)
+        cave_radius = rng.randint(15, 30)
         max_offset = planet_radius - cave_radius
         cave_x = center_x + rng.randint(-max_offset, max_offset)
         cave_y = center_y + rng.randint(-max_offset, max_offset)
