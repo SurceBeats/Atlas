@@ -1,4 +1,4 @@
-# pymodules/elements.py
+# pymodules/__periodic_table_prob.py
 
 periodic_table = [
     ("Hydrogen", 0.7),
@@ -17,11 +17,13 @@ periodic_table = [
     ("Aluminum", 0.00008),
     ("Sodium", 0.00007),
     ("Potassium", 0.00006),
+    ("Boron", 0.00005),
     ("Phosphorus", 0.00005),
     ("Chlorine", 0.00005),
     ("Argon", 0.00005),
     ("Manganese", 0.00004),
     ("Cobalt", 0.00004),
+    ("Lithium", 0.00003),
     ("Fluorine", 0.00003),
     ("Titanium", 0.00003),
     ("Copper", 0.000025),
@@ -32,9 +34,12 @@ periodic_table = [
     ("Selenium", 0.00001),
     ("Bromine", 0.00001),
     ("Krypton", 0.00001),
+    ("Beryllium", 0.00001),
+    ("Scandium", 0.00001),
     ("Strontium", 0.00001),
     ("Yttrium", 0.00001),
     ("Zirconium", 0.00001),
+    ("Rubidium", 0.00001),
     ("Niobium", 0.000005),
     ("Molybdenum", 0.000005),
     ("Technetium", 0.000005),
@@ -45,7 +50,9 @@ periodic_table = [
     ("Cadmium", 0.000004),
     ("Indium", 0.000003),
     ("Tin", 0.000003),
+    ("Chromium", 0.00003),
     ("Antimony", 0.000003),
+    ("Vanadium", 0.000002),
     ("Tellurium", 0.000002),
     ("Iodine", 0.000002),
     ("Xenon", 0.000002),
@@ -113,5 +120,5 @@ periodic_table = [
     ("Livermorium", 0.00000001),
     ("Tennessine", 0.00000001),
     ("Oganesson", 0.00000001),
-    ("Divinium", 0.000000001),
+    ("Z-Divinium", 0.000000001),
 ]

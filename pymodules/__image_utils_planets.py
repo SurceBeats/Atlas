@@ -6,6 +6,7 @@ from pymodules.__image_utils_planets_forms import (
     generate_noise_texture,
     generate_clouds,
     generate_abstract_land,
+    draw_toxic_vegetation,
     draw_planet_rings,
     draw_cluster,
 )
@@ -1391,6 +1392,8 @@ def draw_toxic_elements(
         max_opacity=120,
         cluster_count_range=(4, 10),
     )
+
+    draw_toxic_vegetation(draw, center_x, center_y, planet_radius, rng)
 
     generate_abstract_land(
         draw,

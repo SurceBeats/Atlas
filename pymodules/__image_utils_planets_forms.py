@@ -182,3 +182,54 @@ def draw_cluster(
                 draw.point(point, fill=point_color)
             else:
                 draw.rectangle([point, (point[0] + 1, point[1] + 1)], fill=point_color)
+
+
+def draw_toxic_vegetation(draw, center_x, center_y, planet_radius, rng):
+    num_plants = rng.randint(4, 8)
+    for _ in range(num_plants):
+        plant_x = center_x + rng.randint(-planet_radius, planet_radius)
+        plant_y = center_y + rng.randint(-planet_radius, planet_radius)
+        plant_height = rng.randint(20, 100)
+        plant_width = rng.randint(10, 20)
+
+        plant_color = (255, 0, 255, 255)
+
+        for _ in range(rng.randint(3, 5)):
+            leaf_length = rng.randint(10, plant_height)
+            leaf_width = rng.randint(10, 20)
+            leaf_curve = [
+                (plant_x, plant_y),
+                (
+                    plant_x + rng.randint(-leaf_width, leaf_width),
+                    plant_y - leaf_length // 2,
+                ),
+                (plant_x + leaf_width, plant_y - leaf_length),
+            ]
+
+            draw.line(leaf_curve, fill=plant_color, width=2)
+
+        for _ in range(rng.randint(10, 30)):
+            spike_start_x = plant_x + rng.randint(-plant_width, plant_width)
+            spike_start_y = plant_y - rng.randint(0, plant_height)
+            spike_length = rng.randint(15, 35)
+            spike_curve = [
+                (spike_start_x, spike_start_y),
+                (spike_start_x + rng.randint(-5, 5), spike_start_y - spike_length // 2),
+                (spike_start_x + rng.randint(-10, 10), spike_start_y - spike_length),
+            ]
+
+            draw.line(spike_curve, fill=plant_color, width=2)
+
+        glow_color = (255, 0, 255, 200)
+        for _ in range(rng.randint(2, 4)):
+            glow_radius = rng.randint(6, 10)
+            glow_x = plant_x + rng.randint(-plant_width, plant_width)
+            glow_y = plant_y - rng.randint(0, plant_height)
+            draw.ellipse(
+                [
+                    (glow_x - glow_radius, glow_y - glow_radius),
+                    (glow_x + glow_radius, glow_y + glow_radius),
+                ],
+                fill=glow_color,
+            )
+
