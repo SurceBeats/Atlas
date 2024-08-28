@@ -11,6 +11,42 @@ def consistent_hash(input_string):
     return int(hashlib.md5(input_string.encode()).hexdigest(), 16)
 
 
+def generate_noise_texture(draw, center_x, center_y, planet_radius, seed, opacity):
+    size = planet_radius * 2
+    random.seed(seed)
+
+    noise = [[random.random() for _ in range(size)] for _ in range(size)]
+
+    def smooth_noise(x, y):
+        corners = (
+            noise[x - 1][y - 1]
+            + noise[x + 1][y - 1]
+            + noise[x - 1][y + 1]
+            + noise[x + 1][y + 1]
+        ) / 16
+        sides = (
+            noise[x - 1][y] + noise[x + 1][y] + noise[x][y - 1] + noise[x][y + 1]
+        ) / 8
+        center = noise[x][y] / 4
+        return corners + sides + center
+
+    smooth_noise_data = [
+        [smooth_noise(x, y) for y in range(1, size - 1)] for x in range(1, size - 1)
+    ]
+
+    noise_image = Image.new("L", (size, size))
+    noise_pixels = noise_image.load()
+
+    for i in range(size - 2):
+        for j in range(size - 2):
+            value = int(smooth_noise_data[i][j] * opacity)
+            noise_pixels[i, j] = value
+
+    draw.bitmap(
+        (center_x - planet_radius, center_y - planet_radius), noise_image, fill=None
+    )
+
+
 def get_planet_color_map():
     return {
         "Gas Giant": "orange",
@@ -85,7 +121,7 @@ def generate_abstract_land(
     pointmin,
     pointmax,
 ):
-    planet_seed = consistent_hash(f"{global_seed}-{planet_name}-{radius}-{color}")
+    planet_seed = consistent_hash(f"{global_seed}-{planet_name}-{radius}-{color}-{pointmax}-{pointmin}")
     rng = random.Random(planet_seed)
 
     num_segments = rng.randint(1, 3)
@@ -660,26 +696,39 @@ def draw_lava_elements(
         coloropac = rng.randint(200, 255)
         draw.line(points, fill=(255, 69, 0, coloropac), width=flow_width)
 
-    dunec_radius = rng.randint(8, 12)
-    cdune_x = center_x + rng.randint(-planet_radius, planet_radius)
-    cdune_y = center_y + rng.randint(-planet_radius, planet_radius)
+    totrad = rng.randint(8, 12)
+    smallpoxx = center_x + rng.randint(-planet_radius, planet_radius)
+    smallpoxy = center_y + rng.randint(-planet_radius, planet_radius)
     generate_abstract_shape(
         draw,
-        cdune_x,
-        cdune_y,
-        dunec_radius,
+        smallpoxx,
+        smallpoxy,
+        totrad,
         "orangered",
         seed,
-        spaced_planet_name + f"_dune_{i}",
+        spaced_planet_name + f"_smallpox_{i}",
     )
 
 
 def draw_arid_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
-    num_cracks = rng.randint(10, 50)
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        (220, 20, 60, 10),
+        seed,
+        spaced_planet_name,
+        6,
+        8,
+    )
+
+    num_cracks = rng.randint(15, 30)
     for _ in range(num_cracks):
-        crack_length = rng.randint(10, 100)
+        crack_length = rng.randint(50, 150)
         crack_angle = rng.uniform(0, 2 * math.pi)
         crack_x = center_x + rng.randint(-planet_radius, planet_radius)
         crack_y = center_y + rng.randint(-planet_radius, planet_radius)
@@ -695,6 +744,18 @@ def draw_arid_elements(
 
         draw.line(points, fill="crimson", width=rng.randint(1, 5))
 
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        (220, 20, 60, 255),
+        seed,
+        spaced_planet_name,
+        16,
+        20,
+    )
+
     num_dunes = rng.randint(2, 5)
     for _ in range(num_dunes):
         dune_radius = rng.randint(1, 3)
@@ -709,19 +770,24 @@ def draw_arid_elements(
             fill="crimson",
         )
 
-    fillier = rng.randint(6, 12)
-    max_offset = planet_radius - fillier
-    fillie_x = center_x + rng.randint(-max_offset, max_offset)
-    swamp_y = center_y + rng.randint(-max_offset, max_offset)
-    generate_abstract_shape(
-        draw,
-        fillie_x,
-        swamp_y,
-        fillier,
-        "black",
-        seed,
-        spaced_planet_name + "_fillie_",
-    )
+    rngopac = rng.randint(40, 80)
+    generate_noise_texture(draw, center_x, center_y, planet_radius, seed, rngopac)
+
+    num_whiteclouds_areas = rng.randint(2, 3)
+    for i in range(num_whiteclouds_areas):
+        whiteclouds_radius = rng.randint(8, 9)
+        max_offset = planet_radius - whiteclouds_radius
+        whiteclouds_x = center_x + rng.randint(-max_offset, max_offset)
+        whiteclouds_y = center_y + rng.randint(-max_offset, max_offset)
+        generate_abstract_shape(
+            draw,
+            whiteclouds_x,
+            whiteclouds_y,
+            whiteclouds_radius,
+            "whitesmoke",
+            seed,
+            spaced_planet_name + f"_whiteclouds_{i}",
+        )
 
 
 def draw_swamp_elements(
