@@ -4,9 +4,10 @@ from PIL import Image, ImageDraw, ImageFilter, ImageColor
 
 from pymodules.__image_utils_planets_forms import (
     generate_noise_texture,
-    generate_abstract_shape,
+    generate_clouds,
     generate_abstract_land,
     draw_planet_rings,
+    draw_cluster,
 )
 
 import math
@@ -85,7 +86,7 @@ def draw_gas_giant_elements(
     for i in range(num_shape_bands):
         band_width = planet_radius // 10
         band_offset = (i - num_shape_bands // 2) * band_width * 2
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             center_x,
             center_y + band_offset,
@@ -99,7 +100,7 @@ def draw_gas_giant_elements(
         storm_radius = rng.randint(30, 50)
         storm_x = center_x + rng.randint(-planet_radius // 3, planet_radius // 3)
         storm_y = center_y + rng.randint(-planet_radius // 3, planet_radius // 3)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             storm_x,
             storm_y,
@@ -163,7 +164,7 @@ def draw_anomaly_elements(
         anom_shaper_radius = rng.randint(10, 16)
         anom_shaper_x = center_x + rng.randint(-planet_radius, planet_radius)
         anom_shaper_y = center_y + rng.randint(-planet_radius, planet_radius)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             anom_shaper_x,
             anom_shaper_y,
@@ -247,7 +248,7 @@ def draw_rocky_elements(
         cloud_radius = rng.randint(10, 30)
         cloud_x = center_x + rng.randint(-planet_radius, planet_radius)
         cloud_y = center_y + rng.randint(-planet_radius, planet_radius)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             cloud_x,
             cloud_y,
@@ -261,7 +262,7 @@ def draw_rocky_elements(
         crater_radius = rng.randint(15, 40)
         crater_x = center_x + rng.randint(-planet_radius, planet_radius)
         crater_y = center_y + rng.randint(-planet_radius, planet_radius)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             crater_x,
             crater_y,
@@ -360,7 +361,7 @@ def draw_icy_elements(
         cap_radius = rng.randint(20, 50)
         cap_x = center_x + rng.randint(-planet_radius, planet_radius)
         cap_y = center_y + rng.randint(-planet_radius, planet_radius)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             cap_x,
             cap_y,
@@ -449,7 +450,7 @@ def draw_oceanic_elements(
         max_offset = planet_radius - cloud_radius
         cloud_x = center_x + rng.randint(-max_offset, max_offset)
         cloud_y = center_y + rng.randint(-max_offset, max_offset)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             cloud_x,
             cloud_y,
@@ -583,7 +584,7 @@ def draw_desert_elements(
         dunec_radius = rng.randint(15, 30)
         cdune_x = center_x + rng.randint(-planet_radius, planet_radius)
         cdune_y = center_y + rng.randint(-planet_radius, planet_radius)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             cdune_x,
             cdune_y,
@@ -597,7 +598,7 @@ def draw_desert_elements(
         oasis_radius = rng.randint(10, 20)
         oasis_x = center_x + rng.randint(-planet_radius, planet_radius)
         oasis_y = center_y + rng.randint(-planet_radius, planet_radius)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             oasis_x,
             oasis_y,
@@ -662,7 +663,7 @@ def draw_lava_elements(
     totrad = rng.randint(8, 12)
     smallpoxx = center_x + rng.randint(-planet_radius, planet_radius)
     smallpoxy = center_y + rng.randint(-planet_radius, planet_radius)
-    generate_abstract_shape(
+    generate_clouds(
         draw,
         smallpoxx,
         smallpoxy,
@@ -746,7 +747,7 @@ def draw_arid_elements(
         max_offset = planet_radius - whiteclouds_radius
         whiteclouds_x = center_x + rng.randint(-max_offset, max_offset)
         whiteclouds_y = center_y + rng.randint(-max_offset, max_offset)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             whiteclouds_x,
             whiteclouds_y,
@@ -811,7 +812,7 @@ def draw_swamp_elements(
         max_offset = planet_radius - swamp_radius
         swamp_x = center_x + rng.randint(-max_offset, max_offset)
         swamp_y = center_y + rng.randint(-max_offset, max_offset)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             swamp_x,
             swamp_y,
@@ -823,7 +824,7 @@ def draw_swamp_elements(
 
     if rng.random() < 0.6:
         water_radius = rng.randint(1, 20)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             swamp_x,
             swamp_y,
@@ -927,7 +928,7 @@ def draw_tundra_elements(
         max_offset = planet_radius - tundra_radius
         tundra_x = center_x + rng.randint(-max_offset, max_offset)
         tundra_y = center_y + rng.randint(-max_offset, max_offset)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             tundra_x,
             tundra_y,
@@ -944,32 +945,21 @@ def draw_forest_elements(
 
     draw_planet_rings(draw, planet_radius, center_x, center_y, rng)
 
-    num_forest_regions = rng.randint(4, 10)
-    for i in range(num_forest_regions):
-        forest_radius = rng.randint(30, 50)
-        max_offset = planet_radius - forest_radius
-        forest_x = center_x + rng.randint(-max_offset, max_offset)
-        forest_y = center_y + rng.randint(-max_offset, max_offset)
-
-        num_points = rng.randint(200, 400)
-        points = []
-        for _ in range(num_points):
-            angle = rng.uniform(0, 2 * math.pi)
-            distance = rng.uniform(0, forest_radius)
-            x = forest_x + int(distance * math.cos(angle))
-            y = forest_y + int(distance * math.sin(angle))
-            points.append((x, y))
-
-        for point in points:
-            opacity = rng.randint(30, 120)
-            size = rng.choice([1, 2])
-
-            if size == 1:
-                draw.point(point, fill=(0, 100, 0, opacity))
-            else:
-                draw.rectangle(
-                    [point, (point[0] + 1, point[1] + 1)], fill=(0, 100, 0, opacity)
-                )
+    draw_cluster(
+        draw=draw,
+        center_x=center_x,
+        center_y=center_y,
+        planet_radius=planet_radius,
+        rng=rng,
+        color=(0, 100, 0, 255),
+        min_radius=30,
+        max_radius=50,
+        min_points=200,
+        max_points=400,
+        min_opacity=30,
+        max_opacity=120,
+        cluster_count_range=(4, 10),
+    )
 
     generate_abstract_land(
         draw,
@@ -1019,7 +1009,7 @@ def draw_forest_elements(
         max_offset = planet_radius - forest_radius
         forest_x = center_x + rng.randint(-max_offset, max_offset)
         forest_y = center_y + rng.randint(-max_offset, max_offset)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             forest_x,
             forest_y,
@@ -1036,32 +1026,21 @@ def draw_savannah_elements(
 
     draw_planet_rings(draw, planet_radius, center_x, center_y, rng)
 
-    num_grass_clusters = rng.randint(5, 10)
-    for i in range(num_grass_clusters):
-        grass_cluster_radius = rng.randint(20, 50)
-        max_offset = planet_radius - grass_cluster_radius
-        grass_cluster_x = center_x + rng.randint(-max_offset, max_offset)
-        grass_cluster_y = center_y + rng.randint(-max_offset, max_offset)
-
-        num_points = rng.randint(100, 300)
-        points = []
-        for _ in range(num_points):
-            angle = rng.uniform(0, 2 * math.pi)
-            distance = rng.uniform(0, grass_cluster_radius)
-            x = grass_cluster_x + int(distance * math.cos(angle))
-            y = grass_cluster_y + int(distance * math.sin(angle))
-            points.append((x, y))
-
-        for point in points:
-            opacity = rng.randint(30, 120)
-            size = rng.choice([1, 2])
-
-            brown_color = (139, 69, 19, opacity)
-
-            if size == 1:
-                draw.point(point, fill=brown_color)
-            else:
-                draw.rectangle([point, (point[0] + 1, point[1] + 1)], fill=brown_color)
+    draw_cluster(
+        draw=draw,
+        center_x=center_x,
+        center_y=center_y,
+        planet_radius=planet_radius,
+        rng=rng,
+        color=(139, 69, 19, 255),
+        min_radius=20,
+        max_radius=50,
+        min_points=100,
+        max_points=300,
+        min_opacity=30,
+        max_opacity=120,
+        cluster_count_range=(5, 10),
+    )
 
     generate_abstract_land(
         draw,
@@ -1111,7 +1090,7 @@ def draw_savannah_elements(
         max_offset = planet_radius - grass_radius
         grass_x = center_x + rng.randint(-max_offset, max_offset)
         grass_y = center_y + rng.randint(-max_offset, max_offset)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             grass_x,
             grass_y,
@@ -1190,7 +1169,7 @@ def draw_cave_elements(
         max_offset = planet_radius - cave_radius
         cave_x = center_x + rng.randint(-max_offset, max_offset)
         cave_y = center_y + rng.randint(-max_offset, max_offset)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             cave_x,
             cave_y,
@@ -1367,7 +1346,7 @@ def draw_metallic_elements(
         max_offset = planet_radius - metal_radius
         metal_x = center_x + rng.randint(-max_offset, max_offset)
         metal_y = center_y + rng.randint(-max_offset, max_offset)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             metal_x,
             metal_y,
@@ -1394,46 +1373,60 @@ def draw_metallic_elements(
 def draw_toxic_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
-    num_twisted_vegetation_areas = rng.randint(2, 5)
-    for i in range(num_twisted_vegetation_areas):
-        veg_radius = rng.randint(10, 25)
-        veg_x = center_x + rng.randint(-planet_radius, planet_radius)
-        veg_y = center_y + rng.randint(-planet_radius, planet_radius)
-        for _ in range(rng.randint(5, 10)):
-            offset_x = rng.randint(-veg_radius, veg_radius)
-            offset_y = rng.randint(-veg_radius, veg_radius)
-            draw.ellipse(
-                (
-                    veg_x + offset_x - 1,
-                    veg_y + offset_y - 1,
-                    veg_x + offset_x + 1,
-                    veg_y + offset_y + 1,
-                ),
-                fill="darkmagenta",
-            )
 
-    num_spills = rng.randint(3, 7)
-    for i in range(num_spills):
-        spill_length = rng.randint(20, 60)
-        spill_width = rng.randint(1, 3)
-        spill_angle = rng.uniform(0, 2 * math.pi)
-        spill_x1 = center_x + rng.randint(-planet_radius, planet_radius)
-        spill_y1 = center_y + rng.randint(-planet_radius, planet_radius)
-        spill_x2 = spill_x1 + int(spill_length * math.cos(spill_angle))
-        spill_y2 = spill_y1 + int(spill_length * math.sin(spill_angle))
-        draw.line(
-            (spill_x1, spill_y1, spill_x2, spill_y2),
-            fill="blueviolet",
-            width=spill_width,
-        )
+    draw_planet_rings(draw, planet_radius, center_x, center_y, rng)
 
-    num_clouds = rng.randint(3, 6)
+    draw_cluster(
+        draw=draw,
+        center_x=center_x,
+        center_y=center_y,
+        planet_radius=planet_radius,
+        rng=rng,
+        color=(128, 0, 128, 255),
+        min_radius=30,
+        max_radius=50,
+        min_points=200,
+        max_points=400,
+        min_opacity=30,
+        max_opacity=120,
+        cluster_count_range=(4, 10),
+    )
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(255, 0, 255, 100),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=6,
+        points_max=18,
+        seg_min=2,
+        seg_max=4,
+    )
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(255, 0, 255, 200),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=6,
+        points_max=10,
+        seg_min=1,
+        seg_max=2,
+    )
+
+    num_clouds = rng.randint(4, 6)
     for i in range(num_clouds):
-        cloud_radius = rng.randint(20, 50)
+        cloud_radius = rng.randint(10, 20)
         max_offset = planet_radius - cloud_radius
         cloud_x = center_x + rng.randint(-max_offset, max_offset)
         cloud_y = center_y + rng.randint(-max_offset, max_offset)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             cloud_x,
             cloud_y,
@@ -1441,20 +1434,6 @@ def draw_toxic_elements(
             "purple",
             seed,
             spaced_planet_name + f"_cloud_{i}",
-        )
-
-    if rng.random() < 0.5:
-        pool_radius = rng.randint(10, 30)
-        pool_x = center_x + rng.randint(-planet_radius, planet_radius)
-        pool_y = center_y + rng.randint(-planet_radius, planet_radius)
-        generate_abstract_shape(
-            draw,
-            pool_x,
-            pool_y,
-            pool_radius,
-            "darkgreen",
-            seed,
-            spaced_planet_name + "_toxic_pool",
         )
 
 
@@ -1507,7 +1486,7 @@ def draw_radioactive_elements(
         max_offset = planet_radius - zone_radius
         zone_x = center_x + rng.randint(-max_offset, max_offset)
         zone_y = center_y + rng.randint(-max_offset, max_offset)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             zone_x,
             zone_y,
@@ -1521,7 +1500,7 @@ def draw_radioactive_elements(
         glow_radius = rng.randint(10, 20)
         glow_x = center_x + rng.randint(-planet_radius, planet_radius)
         glow_y = center_y + rng.randint(-planet_radius, planet_radius)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             glow_x,
             glow_y,
@@ -1541,7 +1520,7 @@ def draw_magma_elements(
         max_offset = planet_radius - lake_radius
         lake_x = center_x + rng.randint(-max_offset, max_offset)
         lake_y = center_y + rng.randint(-max_offset, max_offset)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             lake_x,
             lake_y,
@@ -1557,7 +1536,7 @@ def draw_magma_elements(
         flow_angle = rng.uniform(0, 2 * math.pi)
         flow_x = center_x + int(flow_length * math.cos(flow_angle))
         flow_y = center_y + int(flow_length * math.sin(flow_angle))
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             flow_x,
             flow_y,
@@ -1606,7 +1585,7 @@ def draw_magma_elements(
         glow_radius = rng.randint(10, 20)
         glow_x = center_x + rng.randint(-planet_radius, planet_radius)
         glow_y = center_y + rng.randint(-planet_radius, planet_radius)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             glow_x,
             glow_y,
@@ -1658,7 +1637,7 @@ def draw_molten_core_elements(
         core_radius = rng.randint(20, 40)
         core_x = center_x + rng.randint(-planet_radius, planet_radius)
         core_y = center_y + rng.randint(-planet_radius, planet_radius)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             core_x,
             core_y,
@@ -1672,7 +1651,7 @@ def draw_molten_core_elements(
         crater_radius = rng.randint(20, 40)
         crater_x = center_x + rng.randint(-planet_radius, planet_radius)
         crater_y = center_y + rng.randint(-planet_radius, planet_radius)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             crater_x,
             crater_y,
@@ -1739,7 +1718,7 @@ def draw_carbon_elements(
         max_offset = planet_radius - deposit_radius
         deposit_x = center_x + rng.randint(-max_offset, max_offset)
         deposit_y = center_y + rng.randint(-max_offset, max_offset)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             deposit_x,
             deposit_y,
@@ -1753,7 +1732,7 @@ def draw_carbon_elements(
         dark_spot_radius = rng.randint(10, 20)
         dark_spot_x = center_x + rng.randint(-planet_radius, planet_radius)
         dark_spot_y = center_y + rng.randint(-planet_radius, planet_radius)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             dark_spot_x,
             dark_spot_y,
@@ -1834,7 +1813,7 @@ def draw_diamond_elements(
     if rng.random() < 0.5:
         reflection_x = center_x + rng.randint(-planet_radius, planet_radius)
         reflection_y = center_y + rng.randint(-planet_radius, planet_radius)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             reflection_x,
             reflection_y,
@@ -1867,7 +1846,7 @@ def draw_super_earth_elements(
         max_offset = planet_radius - highland_radius
         highland_x = center_x + rng.randint(-max_offset, max_offset)
         highland_y = center_y + rng.randint(-max_offset, max_offset)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             highland_x,
             highland_y,
@@ -1881,7 +1860,7 @@ def draw_super_earth_elements(
         water_radius = rng.randint(10, 30)
         water_x = center_x + rng.randint(-planet_radius, planet_radius)
         water_y = center_y + rng.randint(-planet_radius, planet_radius)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             water_x,
             water_y,
@@ -1930,7 +1909,7 @@ def draw_sub_earth_elements(
             width=3,
         )
 
-    generate_abstract_shape(
+    generate_clouds(
         draw,
         center_x + rng.randint(-planet_radius, planet_radius),
         center_y + rng.randint(-planet_radius, planet_radius),
@@ -1940,7 +1919,7 @@ def draw_sub_earth_elements(
         spaced_planet_name + "_abstract_shape_1",
     )
 
-    generate_abstract_shape(
+    generate_clouds(
         draw,
         center_x + rng.randint(-planet_radius, planet_radius),
         center_y + rng.randint(-planet_radius, planet_radius),
@@ -2043,7 +2022,7 @@ def draw_frozen_gas_giant_elements(
     storm_radius = rng.randint(30, 150)
     storm_x = center_x + rng.randint(-planet_radius // 3, planet_radius // 3)
     storm_y = center_y + rng.randint(-planet_radius // 3, planet_radius // 3)
-    generate_abstract_shape(
+    generate_clouds(
         draw,
         storm_x,
         storm_y,
@@ -2063,7 +2042,7 @@ def draw_nebulous_elements(
         max_offset = planet_radius - nebula_radius
         nebula_x = center_x + rng.randint(-max_offset, max_offset)
         nebula_y = center_y + rng.randint(-max_offset, max_offset)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             nebula_x,
             nebula_y,
@@ -2076,7 +2055,7 @@ def draw_nebulous_elements(
         star_radius = rng.randint(10, 20)
         star_x = center_x + rng.randint(-planet_radius, planet_radius)
         star_y = center_y + rng.randint(-planet_radius, planet_radius)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             star_x,
             star_y,
@@ -2114,7 +2093,7 @@ def draw_aquifer_elements(
         max_offset = planet_radius - aquifer_radius
         aquifer_x = center_x + rng.randint(-max_offset, max_offset)
         aquifer_y = center_y + rng.randint(-max_offset, max_offset)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             aquifer_x,
             aquifer_y,
@@ -2128,7 +2107,7 @@ def draw_aquifer_elements(
         well_radius = rng.randint(10, 20)
         well_x = center_x + rng.randint(-planet_radius, planet_radius)
         well_y = center_y + rng.randint(-planet_radius, planet_radius)
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             well_x,
             well_y,
@@ -2149,7 +2128,7 @@ def draw_exotic_elements(
         exotic_x = center_x + rng.randint(-max_offset, max_offset)
         exotic_y = center_y + rng.randint(-max_offset, max_offset)
         exotic_color = f"#{rng.randint(0, 0xFFFFFF):06x}"  # Color aleatorio
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             exotic_x,
             exotic_y,
@@ -2216,7 +2195,7 @@ def draw_exotic_elements(
         exotic_x = center_x + rng.randint(-max_offset, max_offset)
         exotic_y = center_y + rng.randint(-max_offset, max_offset)
         exotic_color = f"#{rng.randint(0, 0xFFFFFF):06x}"  # Color aleatorio
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             exotic_x,
             exotic_y,
@@ -2231,7 +2210,7 @@ def draw_exotic_elements(
         additional_x = center_x + rng.randint(-planet_radius, planet_radius)
         additional_y = center_y + rng.randint(-planet_radius, planet_radius)
         additional_color = f"#{rng.randint(0, 0xFFFFFF):06x}"
-        generate_abstract_shape(
+        generate_clouds(
             draw,
             additional_x,
             additional_y,

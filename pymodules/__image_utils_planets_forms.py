@@ -11,7 +11,9 @@ def consistent_hash(input_string):
     return int(hashlib.md5(input_string.encode()).hexdigest(), 16)
 
 
-def generate_noise_texture(draw, center_x, center_y, planet_radius, seed, opacity):
+def generate_noise_texture(
+    draw, center_x, center_y, planet_radius, seed, opacity, blur_radius=1
+):
     size = planet_radius * 2
     random.seed(seed)
 
@@ -42,12 +44,14 @@ def generate_noise_texture(draw, center_x, center_y, planet_radius, seed, opacit
             value = int(smooth_noise_data[i][j] * opacity)
             noise_pixels[i, j] = value
 
+    noise_image = noise_image.filter(ImageFilter.GaussianBlur(blur_radius))
+
     draw.bitmap(
         (center_x - planet_radius, center_y - planet_radius), noise_image, fill=None
     )
 
 
-def generate_abstract_shape(
+def generate_clouds(
     draw, center_x, center_y, radius, color, global_seed, planet_name
 ):
 
@@ -136,3 +140,45 @@ def draw_planet_rings(
             ),
             width=1,
         )
+
+
+def draw_cluster(
+    draw,
+    center_x,
+    center_y,
+    planet_radius,
+    rng,
+    color,
+    min_radius=20,
+    max_radius=50,
+    min_points=100,
+    max_points=300,
+    min_opacity=30,
+    max_opacity=120,
+    cluster_count_range=(5, 10),
+):
+    num_clusters = rng.randint(cluster_count_range[0], cluster_count_range[1])
+    for i in range(num_clusters):
+        cluster_radius = rng.randint(min_radius, max_radius)
+        max_offset = planet_radius - cluster_radius
+        cluster_x = center_x + rng.randint(-max_offset, max_offset)
+        cluster_y = center_y + rng.randint(-max_offset, max_offset)
+
+        num_points = rng.randint(min_points, max_points)
+        points = []
+        for _ in range(num_points):
+            angle = rng.uniform(0, 2 * math.pi)
+            distance = rng.uniform(0, cluster_radius)
+            x = cluster_x + int(distance * math.cos(angle))
+            y = cluster_y + int(distance * math.sin(angle))
+            points.append((x, y))
+
+        for point in points:
+            opacity = rng.randint(min_opacity, max_opacity)
+            size = rng.choice([1, 2])
+            point_color = (*color[:3], opacity)
+
+            if size == 1:
+                draw.point(point, fill=point_color)
+            else:
+                draw.rectangle([point, (point[0] + 1, point[1] + 1)], fill=point_color)
