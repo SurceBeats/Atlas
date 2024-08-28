@@ -75,14 +75,22 @@ def generate_abstract_shape(
 
 
 def generate_abstract_land(
-    draw, center_x, center_y, radius, color, global_seed, planet_name
+    draw,
+    center_x,
+    center_y,
+    radius,
+    color,
+    global_seed,
+    planet_name,
+    pointmin,
+    pointmax,
 ):
     planet_seed = consistent_hash(f"{global_seed}-{planet_name}-{radius}-{color}")
     rng = random.Random(planet_seed)
 
     num_segments = rng.randint(1, 3)
     for _ in range(num_segments):
-        num_points = rng.randint(40, 60)
+        num_points = rng.randint(pointmin, pointmax)
         angle_offset = rng.uniform(0, 2 * math.pi)
         angle_step = 2 * math.pi / num_points
         points = []
@@ -219,6 +227,8 @@ def draw_rocky_elements(
         (80, 80, 80, 40),
         seed,
         spaced_planet_name,
+        40,
+        60,
     )
 
     num_mountains = rng.randint(4, 30)
@@ -298,6 +308,8 @@ def draw_icy_elements(
         (81, 106, 145, 1),
         seed,
         spaced_planet_name,
+        40,
+        60,
     )
 
     two_pi = 2 * math.pi
@@ -394,6 +406,8 @@ def draw_oceanic_elements(
         (0, 0, 139, 40),
         seed,
         spaced_planet_name,
+        40,
+        60,
     )
 
     base_green = (57, 92, 0)
@@ -513,6 +527,8 @@ def draw_desert_elements(
         (255, 215, 0, 200),
         seed,
         spaced_planet_name,
+        40,
+        60,
     )
 
     if rng.random() < 0.2:
@@ -585,11 +601,52 @@ def draw_desert_elements(
 def draw_lava_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
-    num_flows = rng.randint(2, 8)
+
+    linebreaker = rng.randint(40, 60)
+    for i in range(linebreaker):
+        edge_radius = planet_radius - i * (planet_radius // linebreaker)
+        opacity = linebreaker - (i * 2)
+        draw.ellipse(
+            [
+                (center_x - edge_radius, center_y - edge_radius),
+                (center_x + edge_radius, center_y + edge_radius),
+            ],
+            outline=(50, 0, 0, opacity),
+            width=1,
+        )
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        (255, 69, 0, 50),
+        seed,
+        spaced_planet_name,
+        12,
+        18,
+    )
+
+    num_cracks = rng.randint(10, 80)
+    for _ in range(num_cracks):
+        crack_length = rng.randint(5, 50)
+        crack_angle = rng.uniform(0, 2 * math.pi)
+        crack_x1 = center_x + rng.randint(-planet_radius, planet_radius)
+        crack_y1 = center_y + rng.randint(-planet_radius, planet_radius)
+        crack_x2 = crack_x1 + int(crack_length * math.cos(crack_angle))
+        crack_y2 = crack_y1 + int(crack_length * math.sin(crack_angle))
+
+        draw.line(
+            (crack_x1, crack_y1, crack_x2, crack_y2),
+            fill=(138, 37, 0, 50),
+            width=rng.randint(1, 6),
+        )
+
+    num_flows = rng.randint(8, 16)
     for i in range(num_flows):
-        flow_length = rng.randint(1, int(planet_radius * 2))
-        flow_width = rng.randint(1, 20)
-        flow_angle = rng.uniform(0, 6 * math.pi)
+        flow_length = rng.randint(2, int(planet_radius * 3))
+        flow_width = rng.randint(6, 20)
+        flow_angle = rng.uniform(0, 5 * math.pi)
 
         num_points = rng.randint(1, 5)
         points = []
@@ -600,37 +657,21 @@ def draw_lava_elements(
             y = center_y + int(distance * math.sin(angle))
             points.append((x, y))
 
-        draw.line(points, fill="orangered", width=flow_width)
+        coloropac = rng.randint(200, 255)
+        draw.line(points, fill=(255, 69, 0, coloropac), width=flow_width)
 
-        glow_radius = rng.randint(2, 4)
-        for x, y in points:
-            glow_x = x + rng.randint(-glow_radius, glow_radius)
-            glow_y = y + rng.randint(-glow_radius, glow_radius)
-            draw.ellipse(
-                (
-                    glow_x - glow_radius,
-                    glow_y - glow_radius,
-                    glow_x + glow_radius,
-                    glow_y + glow_radius,
-                ),
-                fill=(255, 69, 0, 50),
-            )
-
-    if rng.random() < 0.2:
-        num_cracks = rng.randint(15, 30)
-        for _ in range(num_cracks):
-            crack_length = rng.randint(2, 10)
-            crack_angle = rng.uniform(0, 8 * math.pi)
-            crack_x1 = center_x + rng.randint(-planet_radius, planet_radius)
-            crack_y1 = center_y + rng.randint(-planet_radius, planet_radius)
-            crack_x2 = crack_x1 + int(crack_length * math.cos(crack_angle))
-            crack_y2 = crack_y1 + int(crack_length * math.sin(crack_angle))
-
-            draw.line(
-                (crack_x1, crack_y1, crack_x2, crack_y2),
-                fill="darkred",
-                width=rng.randint(1, 6),
-            )
+    dunec_radius = rng.randint(8, 12)
+    cdune_x = center_x + rng.randint(-planet_radius, planet_radius)
+    cdune_y = center_y + rng.randint(-planet_radius, planet_radius)
+    generate_abstract_shape(
+        draw,
+        cdune_x,
+        cdune_y,
+        dunec_radius,
+        "orangered",
+        seed,
+        spaced_planet_name + f"_dune_{i}",
+    )
 
 
 def draw_arid_elements(
