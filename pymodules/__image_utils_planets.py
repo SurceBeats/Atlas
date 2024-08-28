@@ -121,7 +121,9 @@ def generate_abstract_land(
     pointmin,
     pointmax,
 ):
-    planet_seed = consistent_hash(f"{global_seed}-{planet_name}-{radius}-{color}-{pointmax}-{pointmin}")
+    planet_seed = consistent_hash(
+        f"{global_seed}-{planet_name}-{radius}-{color}-{pointmax}-{pointmin}"
+    )
     rng = random.Random(planet_seed)
 
     num_segments = rng.randint(1, 3)
@@ -793,6 +795,49 @@ def draw_arid_elements(
 def draw_swamp_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        (0, 100, 0, 1),
+        seed,
+        spaced_planet_name,
+        16,
+        20,
+    )
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        (6, 154, 199, 30),
+        seed,
+        spaced_planet_name,
+        20,
+        24,
+    )
+
+    num_water_areas = rng.randint(50, 100)
+    for _ in range(num_water_areas):
+        water_radius = rng.randint(2, 10)
+        water_x = center_x + rng.randint(-planet_radius, planet_radius)
+        water_y = center_y + rng.randint(-planet_radius, planet_radius)
+
+        num_water_points = rng.randint(8, 12)
+        water_points = []
+
+        for i in range(num_water_points):
+            angle = i * (2 * math.pi / num_water_points)
+            distance = rng.uniform(water_radius * 0.7, water_radius)
+            x = water_x + int(distance * math.cos(angle))
+            y = water_y + int(distance * math.sin(angle))
+            water_points.append((x, y))
+
+        draw.polygon(water_points, fill=(6, 154, 199, 1))
+
     num_swamp_areas = rng.randint(3, 7)
     for i in range(num_swamp_areas):
         swamp_radius = rng.randint(15, 40)
@@ -808,34 +853,18 @@ def draw_swamp_elements(
             seed,
             spaced_planet_name + f"_swamp_{i}",
         )
-        if rng.random() < 22:
-            num_water_areas = rng.randint(3, 6)
-            for _ in range(num_water_areas):
-                water_radius = rng.randint(2, 8)
-                water_x = center_x + rng.randint(-planet_radius, planet_radius)
-                water_y = center_y + rng.randint(-planet_radius, planet_radius)
-                num_water_points = rng.randint(5, 8)
-                water_points = []
-                for _ in range(num_water_points):
-                    angle = rng.uniform(0, 2 * math.pi)
-                    distance = rng.uniform(water_radius * 0.7, water_radius)
-                    x = water_x + int(distance * math.cos(angle))
-                    y = water_y + int(distance * math.sin(angle))
-                    water_points.append((x, y))
 
-                draw.polygon(water_points, fill="forestgreen", outline="darkgreen")
-
-        if rng.random() < 0.6:
-            water_radius = rng.randint(1, 20)
-            generate_abstract_shape(
-                draw,
-                swamp_x,
-                swamp_y,
-                water_radius,
-                "white",
-                seed,
-                spaced_planet_name + f"_water_{i}",
-            )
+    if rng.random() < 0.6:
+        water_radius = rng.randint(1, 20)
+        generate_abstract_shape(
+            draw,
+            swamp_x,
+            swamp_y,
+            water_radius,
+            "white",
+            seed,
+            spaced_planet_name + f"_water_{i}",
+        )
 
 
 def draw_tundra_elements(
