@@ -87,8 +87,8 @@ def observer(universe):
     print("Searching infinitely. Please wait...")
     x = 0
     while True:
-        for y in range(10000):
-            for z in range(10000):
+        for y in range(9999999):
+            for z in range(9999999):
                 try:
                     galaxy = universe.get_galaxy(x, y, z)
                     total_galaxies_searched += 1
@@ -135,6 +135,10 @@ def observer(universe):
                                     print("-" * 50)
                                     print("")
                                     input("Press Enter to continue searching...")
+
+                            if total_planets_searched % 1000 == 0:
+                                print(f"+ Galaxies Mapped: #{total_galaxies_searched}, Systems Mapped: #{total_systems_searched}, Planets Mapped: #{total_planets_searched}")
+                                print("-" * 50)
 
                             del planet
                             gc.collect()

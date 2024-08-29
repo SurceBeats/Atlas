@@ -364,13 +364,14 @@ def draw_flows(
     base_color=(255, 69, 0),
     num_flows_range=(8, 16),
     flow_opacity_range=(200, 255),
+    flow_width_range=(6, 20),
 ):
 
     num_flows = rng.randint(*num_flows_range)
 
     for _ in range(num_flows):
         flow_length = rng.randint(2, int(planet_radius * 3))
-        flow_width = rng.randint(6, 20)
+        flow_width = rng.randint(*flow_width_range)
         flow_angle = rng.uniform(0, 5 * math.pi)
 
         num_points = rng.randint(1, 5)
@@ -383,7 +384,6 @@ def draw_flows(
             y = center_y + int(distance * math.sin(angle))
             points.append((x, y))
 
-        # Sobrescribir opacidad si se desea
         coloropac = rng.randint(*flow_opacity_range)
         color_with_opacity = (*base_color[:3], coloropac)
 
@@ -415,3 +415,53 @@ def draw_random_lines(
         end_y = start_y + int(line_length * math.sin(angle))
 
         draw.line((start_x, start_y, end_x, end_y), fill=color, width=line_width)
+
+
+def draw_heat_wave_effect(draw, center_x, center_y, planet_radius, rng):
+
+    num_heat_waves = rng.randint(800, 1000)
+    for i in range(num_heat_waves):
+        wave_radius = rng.randint(200, 350)
+        wave_thickness = rng.randint(1, 5)
+        wave_color_variation = rng.randint(-20, 20)
+
+        wave_x = center_x + rng.randint(-planet_radius, planet_radius)
+        wave_y = center_y + rng.randint(-planet_radius, planet_radius)
+
+        distance_to_center = (
+            (wave_x - center_x) ** 2 + (wave_y - center_y) ** 2
+        ) ** 0.5
+
+        max_distance = planet_radius
+        proximity_factor = 1 - (distance_to_center / max_distance)
+        w_opac = int(40 + proximity_factor * (255 - 40))
+
+        wave_color = (
+            max(0, 255 + wave_color_variation),
+            max(0, 38 + wave_color_variation),
+            max(0, 0 + wave_color_variation),
+            w_opac,
+        )
+
+        draw.arc(
+            [
+                (wave_x - wave_radius, wave_y - wave_radius),
+                (wave_x + wave_radius, wave_y + wave_radius),
+            ],
+            start=0,
+            end=rng.randint(300, 360),
+            fill=wave_color,
+            width=wave_thickness,
+        )
+
+    grad_opac = rng.randint(220, 255)
+    grad_width = rng.randint(6, 12)
+    gradient_color = (255, 38, 0, grad_opac)
+    draw.ellipse(
+        [
+            (center_x - planet_radius, center_y - planet_radius),
+            (center_x + planet_radius, center_y + planet_radius),
+        ],
+        outline=gradient_color,
+        width=grad_width,
+    )

@@ -8,5 +8,5 @@ import hashlib
 # seed = 3.1415926535897932384626433832795028841971 # Pi
 seed = 1.618033988749895  # Golden Ratio
 
-version = "0.5.12"
+version = "0.5.14"
 versionHash = hashlib.sha256(version.encode("utf-8")).hexdigest()

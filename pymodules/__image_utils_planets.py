@@ -14,6 +14,7 @@ from pymodules.__image_utils_planets_forms import (
     draw_vents_with_smoke,
     draw_flows,
     draw_random_lines,
+    draw_heat_wave_effect,
 )
 
 import math
@@ -1529,7 +1530,7 @@ def draw_magma_elements(
         center_x,
         center_y,
         planet_radius,
-        color=(255, 68, 0, 180),
+        color=(201, 55, 2, 200),
         global_seed=seed,
         planet_name=spaced_planet_name,
         points_min=6,
@@ -1560,42 +1561,52 @@ def draw_magma_elements(
 def draw_molten_core_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
-    num_heat_waves = rng.randint(3, 7)
-    for i in range(num_heat_waves):
-        wave_radius = rng.randint(1, 450)
-        wave_thickness = rng.randint(1, 2)
-        wave_x = center_x + rng.randint(-planet_radius, planet_radius)
-        wave_y = center_y + rng.randint(-planet_radius, planet_radius)
-        draw.arc(
-            [
-                (wave_x - wave_radius, wave_y - wave_radius),
-                (wave_x + wave_radius, wave_y + wave_radius),
-            ],
-            start=0,
-            end=360,
-            fill=(0, 0, 0, 60),
-            width=wave_thickness,
-        )
 
-    num_thermal_zones = rng.randint(2, 4)
-    for i in range(num_thermal_zones):
-        zone_radius = rng.randint(5, 10)
-        zone_x = center_x + rng.randint(-planet_radius, planet_radius)
-        zone_y = center_y + rng.randint(-planet_radius, planet_radius)
-        draw.ellipse(
-            (
-                zone_x - zone_radius,
-                zone_y - zone_radius,
-                zone_x + zone_radius,
-                zone_y + zone_radius,
-            ),
-            fill=(255, 69, 0, 128),
-            outline=None,
-        )
+    draw_heat_wave_effect(draw, center_x, center_y, planet_radius, rng)
 
-    num_core_spots = rng.randint(3, 20)
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(255, 140, 0, 100),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=6,
+        points_max=30,
+        seg_min=2,
+        seg_max=3,
+    )
+
+    draw_flows(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        rng,
+        base_color=(255, 38, 0),
+        num_flows_range=(5, 8),
+        flow_opacity_range=(1, 100),
+        flow_width_range=(2, 4),
+    )
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(255, 38, 0, 255),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=10,
+        points_max=30,
+        seg_min=1,
+        seg_max=2,
+    )
+
+    num_core_spots = rng.randint(4, 8)
     for i in range(num_core_spots):
-        core_radius = rng.randint(20, 40)
+        core_radius = rng.randint(5, 7)
         core_x = center_x + rng.randint(-planet_radius, planet_radius)
         core_y = center_y + rng.randint(-planet_radius, planet_radius)
         generate_clouds(
@@ -1606,20 +1617,6 @@ def draw_molten_core_elements(
             "darkorange",
             seed,
             spaced_planet_name + f"_core_spot_{i}",
-        )
-
-    if rng.random() < 0.5:
-        crater_radius = rng.randint(20, 40)
-        crater_x = center_x + rng.randint(-planet_radius, planet_radius)
-        crater_y = center_y + rng.randint(-planet_radius, planet_radius)
-        generate_clouds(
-            draw,
-            crater_x,
-            crater_y,
-            crater_radius,
-            "darkred",
-            seed,
-            spaced_planet_name + "_molten_crater",
         )
 
 
