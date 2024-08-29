@@ -16,18 +16,18 @@
       <p><strong>Type:</strong> {{ planet['Type'] }}</p>
       <p><strong>Atmosphere:</strong> {{ planet['Atmosphere'] }}</p>
       <p><strong>Life Forms:</strong> {{ planet['Life Forms'] }}</p>
-      <p><strong>Mass:</strong> {{ planet['Mass'] }} kg</p>
-      <p><strong>Diameter:</strong> {{ planet['Diameter'] }} km</p>
-      <p><strong>Density:</strong> {{ planet['Density'] }} kg/m³</p>
-      <p><strong>Gravity:</strong> {{ planet['Gravity'] }} m/s²</p>
-      <p><strong>Orbital Radius:</strong> {{ planet['Orbital Radius'] }} AU</p>
-      <p><strong>Orbital Period:</strong> {{ planet['Orbital Period'] }} Earth years</p>
-      <p><strong>Orbital Speed:</strong> {{ planet['Orbital Speed'] }} m/s</p>
-      <p><strong>Axial Tilt:</strong> {{ planet['Axial Tilt'] }} degrees</p>
-      <p><strong>Rotation Period:</strong> {{ planet['Rotation Period'] }} hours</p>
-      <p><strong>Surface Temperature:</strong> {{ planet['Surface Temperature'] }} °C</p>
+      <p><strong>Mass:</strong> {{ "{:,.2f}".format(planet['Mass'] / 1e24) }} x 10²⁴ kg</p>
+      <p><strong>Diameter:</strong> {{ "{:,.2f}".format(planet['Diameter']) }} km</p>
+      <p><strong>Density:</strong> {{ "{:,.2f}".format(planet['Density'] / 1e12) }} x 10¹² kg/m³</p>
+      <p><strong>Gravity:</strong> {{ "{:,.2f}".format(planet['Gravity']) }} m/s²</p>
+      <p><strong>Orbital Radius:</strong> {{ "{:,.2f}".format(planet['Orbital Radius']) }} AU</p>
+      <p><strong>Orbital Period:</strong> {{ "{:,.2f}".format(planet['Orbital Period']) }} Earth years</p>
+      <p><strong>Orbital Speed:</strong> {{ "{:,.2f}".format(planet['Orbital Speed']) }} m/s</p>
+      <p><strong>Axial Tilt:</strong> {{ "{:,.2f}".format(planet['Axial Tilt']) }} degrees</p>
+      <p><strong>Rotation Period:</strong> {{ "{:,.2f}".format(planet['Rotation Period'] / 24) }} days</p>
+      <p><strong>Surface:</strong> {{ "{:,.2f}".format(planet['Surface Temperature']) }} °C ({{ "{:,.2f}".format(planet['Surface Temperature'] * 9/5 + 32) }} °F)</p>
       <p><strong>Elements:</strong> {{ ", ".join(planet['Elements']) }}</p>
-
+      
       <div id="localization-content" class="localization-content">
         <p><strong class="localize">Planet:</strong> {{ planet['Name'].replace("_", " ") }}</p>
         <p><strong class="localize">System:</strong> {{ system.name }}</p>
