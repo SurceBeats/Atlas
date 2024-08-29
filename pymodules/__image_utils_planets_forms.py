@@ -299,3 +299,119 @@ def draw_depths(
             fill=depth_color,
             outline=None,
         )
+
+
+def draw_vents_with_smoke(
+    draw,
+    center_x,
+    center_y,
+    planet_radius,
+    rng,
+    num_vents_range=(8, 18),
+    num_smoke_plumes_range=(4, 12),
+    vent_radius_range=(2, 4),
+    smoke_opacity=20,
+):
+
+    num_vents = rng.randint(*num_vents_range)
+
+    for _ in range(num_vents):
+        vent_radius = rng.randint(*vent_radius_range)
+        vent_x = center_x + rng.randint(-planet_radius, planet_radius)
+        vent_y = center_y + rng.randint(-planet_radius, planet_radius)
+
+        draw.ellipse(
+            (
+                vent_x - vent_radius,
+                vent_y - vent_radius,
+                vent_x + vent_radius,
+                vent_y + vent_radius,
+            ),
+            fill=(255, 115, 0, 20),
+        )
+
+        num_smoke_plumes = rng.randint(*num_smoke_plumes_range)
+
+        for _ in range(num_smoke_plumes):
+            plume_width = rng.randint(10, 15)
+            plume_height = rng.randint(20, 150)
+            plume_x = vent_x + rng.randint(-vent_radius, vent_radius)
+            plume_y = vent_y - vent_radius - rng.randint(10, 20)
+
+            smoke_image = Image.new("RGBA", draw.im.size, (0, 0, 0, 0))
+            smoke_draw = ImageDraw.Draw(smoke_image)
+
+            smoke_draw.ellipse(
+                (
+                    plume_x - plume_width,
+                    plume_y - plume_height,
+                    plume_x + plume_width,
+                    plume_y + plume_height,
+                ),
+                fill=(105, 105, 105, smoke_opacity),
+                outline=None,
+            )
+
+            draw.bitmap((0, 0), smoke_image, fill=None)
+
+
+def draw_flows(
+    draw,
+    center_x,
+    center_y,
+    planet_radius,
+    rng,
+    base_color=(255, 69, 0),
+    num_flows_range=(8, 16),
+    flow_opacity_range=(200, 255),
+):
+
+    num_flows = rng.randint(*num_flows_range)
+
+    for _ in range(num_flows):
+        flow_length = rng.randint(2, int(planet_radius * 3))
+        flow_width = rng.randint(6, 20)
+        flow_angle = rng.uniform(0, 5 * math.pi)
+
+        num_points = rng.randint(1, 5)
+        points = []
+
+        for j in range(num_points):
+            angle = flow_angle + rng.uniform(-0.5, 0.5)
+            distance = flow_length * (j / num_points)
+            x = center_x + int(distance * math.cos(angle))
+            y = center_y + int(distance * math.sin(angle))
+            points.append((x, y))
+
+        # Sobrescribir opacidad si se desea
+        coloropac = rng.randint(*flow_opacity_range)
+        color_with_opacity = (*base_color[:3], coloropac)
+
+        draw.line(points, fill=color_with_opacity, width=flow_width)
+
+
+def draw_random_lines(
+    draw,
+    center_x,
+    center_y,
+    planet_radius,
+    rng,
+    min_lines=100,
+    max_lines=160,
+    min_length=2,
+    max_length=15,
+    color="red",
+    line_width=1,
+):
+
+    num_wind_lines = rng.randint(min_lines, max_lines)
+
+    for _ in range(num_wind_lines):
+        line_length = rng.randint(min_length, max_length)
+        start_x = center_x + rng.randint(-planet_radius, planet_radius)
+        start_y = center_y + rng.randint(-planet_radius, planet_radius)
+        angle = rng.uniform(-math.pi / 8, math.pi / 8)
+        end_x = start_x + int(line_length * math.cos(angle))
+        end_y = start_y + int(line_length * math.sin(angle))
+
+        draw.line((start_x, start_y, end_x, end_y), fill=color, width=line_width)

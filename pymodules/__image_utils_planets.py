@@ -11,6 +11,9 @@ from pymodules.__image_utils_planets_forms import (
     draw_cluster,
     draw_arcs,
     draw_depths,
+    draw_vents_with_smoke,
+    draw_flows,
+    draw_random_lines,
 )
 
 import math
@@ -632,23 +635,7 @@ def draw_lava_elements(
             width=rng.randint(1, 6),
         )
 
-    num_flows = rng.randint(8, 16)
-    for i in range(num_flows):
-        flow_length = rng.randint(2, int(planet_radius * 3))
-        flow_width = rng.randint(6, 20)
-        flow_angle = rng.uniform(0, 5 * math.pi)
-
-        num_points = rng.randint(1, 5)
-        points = []
-        for j in range(num_points):
-            angle = flow_angle + rng.uniform(-0.5, 0.5)
-            distance = flow_length * (j / num_points)
-            x = center_x + int(distance * math.cos(angle))
-            y = center_y + int(distance * math.sin(angle))
-            points.append((x, y))
-
-        coloropac = rng.randint(200, 255)
-        draw.line(points, fill=(255, 69, 0, coloropac), width=flow_width)
+    draw_flows(draw, center_x, center_y, planet_radius, rng)
 
     totrad = rng.randint(8, 12)
     smallpoxx = center_x + rng.randint(-planet_radius, planet_radius)
@@ -660,7 +647,7 @@ def draw_lava_elements(
         totrad,
         "orangered",
         seed,
-        spaced_planet_name + f"_smallpox_{i}",
+        spaced_planet_name + "_smallpox",
     )
 
 
@@ -884,16 +871,19 @@ def draw_tundra_elements(
         seg_max=7,
     )
 
-    num_wind_lines = rng.randint(40, 90)
-    for _ in range(num_wind_lines):
-        line_length = rng.randint(2, 15)
-        start_x = center_x + rng.randint(-planet_radius, planet_radius)
-        start_y = center_y + rng.randint(-planet_radius, planet_radius)
-        angle = rng.uniform(-math.pi / 8, math.pi / 8)
-        end_x = start_x + int(line_length * math.cos(angle))
-        end_y = start_y + int(line_length * math.sin(angle))
-
-        draw.line((start_x, start_y, end_x, end_y), fill="white", width=1)
+    draw_random_lines(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        rng,
+        min_lines=40,
+        max_lines=90,
+        min_length=2,
+        max_length=15,
+        color="white",
+        line_width=1,
+    )
 
     num_snow_areas = rng.randint(60, 200)
     for _ in range(num_snow_areas):
@@ -1515,9 +1505,44 @@ def draw_radioactive_elements(
 def draw_magma_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
-    num_lakes = rng.randint(3, 5)
+
+    draw_planet_rings(draw, planet_radius, center_x, center_y, rng)
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(135, 36, 0, 200),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=16,
+        points_max=20,
+        seg_min=2,
+        seg_max=4,
+    )
+
+    draw_random_lines(draw, center_x, center_y, planet_radius, rng)
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(255, 68, 0, 180),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=6,
+        points_max=12,
+        seg_min=1,
+        seg_max=3,
+    )
+
+    draw_vents_with_smoke(draw, center_x, center_y, planet_radius, rng)
+
+    num_lakes = rng.randint(8, 12)
     for i in range(num_lakes):
-        lake_radius = rng.randint(30, 60)
+        lake_radius = rng.randint(6, 9)
         max_offset = planet_radius - lake_radius
         lake_x = center_x + rng.randint(-max_offset, max_offset)
         lake_y = center_y + rng.randint(-max_offset, max_offset)
@@ -1529,71 +1554,6 @@ def draw_magma_elements(
             "orangered",
             seed,
             spaced_planet_name + f"_magma_lake_{i}",
-        )
-
-    num_flows = rng.randint(3, 6)
-    for i in range(num_flows):
-        flow_length = rng.randint(20, 50)
-        flow_angle = rng.uniform(0, 2 * math.pi)
-        flow_x = center_x + int(flow_length * math.cos(flow_angle))
-        flow_y = center_y + int(flow_length * math.sin(flow_angle))
-        generate_clouds(
-            draw,
-            flow_x,
-            flow_y,
-            rng.randint(10, 20),
-            "red",
-            seed,
-            spaced_planet_name + f"_magma_flow_{i}",
-        )
-
-    num_vents = rng.randint(2, 4)
-    for i in range(num_vents):
-        vent_radius = rng.randint(2, 6)
-        vent_x = center_x + rng.randint(-planet_radius, planet_radius)
-        vent_y = center_y + rng.randint(-planet_radius, planet_radius)
-        draw.ellipse(
-            (
-                vent_x - vent_radius,
-                vent_y - vent_radius,
-                vent_x + vent_radius,
-                vent_y + vent_radius,
-            ),
-            fill="maroon",
-            outline="darkred",
-        )
-        num_smoke_plumes = rng.randint(1, 3)
-        for _ in range(num_smoke_plumes):
-            plume_width = rng.randint(5, 10)
-            plume_height = rng.randint(20, 40)
-            plume_x = vent_x + rng.randint(-vent_radius, vent_radius)
-            plume_y = vent_y - vent_radius - rng.randint(10, 20)
-            smoke_image = Image.new("RGBA", draw.im.size, (0, 0, 0, 0))
-            smoke_draw = ImageDraw.Draw(smoke_image)
-            smoke_draw.ellipse(
-                (
-                    plume_x - plume_width,
-                    plume_y - plume_height,
-                    plume_x + plume_width,
-                    plume_y + plume_height,
-                ),
-                fill=(105, 105, 105, 40),
-                outline=None,
-            )
-            draw.bitmap((0, 0), smoke_image, fill=None)
-
-    if rng.random() < 0.5:
-        glow_radius = rng.randint(10, 20)
-        glow_x = center_x + rng.randint(-planet_radius, planet_radius)
-        glow_y = center_y + rng.randint(-planet_radius, planet_radius)
-        generate_clouds(
-            draw,
-            glow_x,
-            glow_y,
-            glow_radius,
-            "orange",
-            seed,
-            spaced_planet_name + "_magma_glow",
         )
 
 
