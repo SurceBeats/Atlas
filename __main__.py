@@ -296,6 +296,7 @@ if __name__ == "__main__":
 
     if "--observer" in sys.argv:
         observer(universe)
+        exit("Observer out!")
 
     app.config["ENV"] = "production"
     app.config["DEBUG"] = False

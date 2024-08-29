@@ -465,3 +465,37 @@ def draw_heat_wave_effect(draw, center_x, center_y, planet_radius, rng):
         outline=gradient_color,
         width=grad_width,
     )
+
+
+def draw_poly_structures(
+    draw,
+    center_x,
+    center_y,
+    planet_radius,
+    rng,
+    structure_color=(105, 105, 105),
+    opacity_range=(100, 255),
+    size_range=(30, 70),
+    num_sides_range=(5, 9),
+    num_structures_range=(5, 30)
+):
+    num_structures = rng.randint(*num_structures_range)
+    for _ in range(num_structures):
+        structure_radius = rng.randint(*size_range)
+        structure_x = center_x + rng.randint(-planet_radius, planet_radius)
+        structure_y = center_y + rng.randint(-planet_radius, planet_radius)
+        num_sides = rng.randint(*num_sides_range)
+        angle_step = 2 * math.pi / num_sides
+        points = []
+
+        for i in range(num_sides):
+            angle = i * angle_step
+            distance = rng.uniform(structure_radius * 0.7, structure_radius)
+            x = structure_x + int(distance * math.cos(angle))
+            y = structure_y + int(distance * math.sin(angle))
+            points.append((x, y))
+
+        opacity = rng.randint(*opacity_range)
+        color_with_opacity = (*structure_color, opacity)
+
+        draw.polygon(points, fill=color_with_opacity)

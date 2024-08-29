@@ -15,6 +15,7 @@ from pymodules.__image_utils_planets_forms import (
     draw_flows,
     draw_random_lines,
     draw_heat_wave_effect,
+    draw_poly_structures,
 )
 
 import math
@@ -27,33 +28,33 @@ def consistent_hash(input_string):
 
 def get_planet_color_map():
     return {
-        "Gas Giant": "orange",
-        "Anomaly": "white",
-        "Rocky": "gray",
-        "Icy": "lightblue",
-        "Oceanic": "blue",
-        "Desert": "gold",
-        "Lava": "red",
-        "Arid": "maroon",
-        "Swamp": "green",
-        "Tundra": "aliceblue",
-        "Forest": "darkgreen",
-        "Savannah": "sandybrown",
-        "Cave": "dimgray",
-        "Crystalline": "cyan",
-        "Metallic": "silver",
-        "Toxic": "purple",
-        "Radioactive": "lime",
-        "Magma": "orangered",
-        "Molten Core": "darkorange",
-        "Carbon": "darkgray",
-        "Diamond": "lightskyblue",
-        "Super Earth": "lightgreen",
-        "Sub Earth": "darkgreen",
-        "Frozen Gas Giant": "lightblue",
-        "Nebulous": "pink",
-        "Aquifer": "aqua",
-        "Exotic": "magenta",
+        "Gas Giant": "#FFA500",
+        "Anomaly": "#FFFFFF",
+        "Rocky": "#808080",
+        "Icy": "#ADD8E6",
+        "Oceanic": "#0000FF",
+        "Desert": "#FFD700",
+        "Lava": "#FF0000",
+        "Arid": "#800000",
+        "Swamp": "#008000",
+        "Tundra": "#F0F8FF",
+        "Forest": "#006400",
+        "Savannah": "#F4A460",
+        "Cave": "#D1D1D1",
+        "Crystalline": "#00FFFF",
+        "Metallic": "#C0C0C0",
+        "Toxic": "#800080",
+        "Radioactive": "#00FF00",
+        "Magma": "#FF4500",
+        "Molten Core": "#FF8C00",
+        "Carbon": "#090909",
+        "Diamond": "#87CEFA",
+        "Super Earth": "#90EE90",
+        "Sub Earth": "#006400",
+        "Frozen Gas Giant": "#ADD8E6",
+        "Nebulous": "#FFC0CB",
+        "Aquifer": "#00FFFF",
+        "Exotic": "#FF00FF",
     }
 
 
@@ -1099,6 +1100,22 @@ def draw_cave_elements(
             crack_y2 = crack_y1 + int(crack_length * math.sin(crack_angle))
             draw.line((crack_x1, crack_y1, crack_x2, crack_y2), fill="black", width=1)
 
+    draw_cluster(
+        draw=draw,
+        center_x=center_x,
+        center_y=center_y,
+        planet_radius=planet_radius,
+        rng=rng,
+        color=(66, 66, 66, 255),
+        min_radius=20,
+        max_radius=50,
+        min_points=100,
+        max_points=300,
+        min_opacity=30,
+        max_opacity=120,
+        cluster_count_range=(5, 10),
+    )
+
     num_shadows = rng.randint(80, 140)
     for i in range(num_shadows):
         shadow_radius = rng.randint(1, 8)
@@ -1121,13 +1138,13 @@ def draw_cave_elements(
         center_x,
         center_y,
         planet_radius,
-        color=(36, 36, 36, 255),
+        color=(66, 66, 66, 255),
         global_seed=seed,
         planet_name=spaced_planet_name,
         points_min=10,
         points_max=20,
         seg_min=1,
-        seg_max=12,
+        seg_max=6,
     )
 
     generate_abstract_land(
@@ -1135,7 +1152,7 @@ def draw_cave_elements(
         center_x,
         center_y,
         planet_radius,
-        color=(0, 0, 0, 200),
+        color=(40, 40, 40, 100),
         global_seed=seed,
         planet_name=spaced_planet_name,
         points_min=6,
@@ -1146,7 +1163,7 @@ def draw_cave_elements(
 
     num_caves = rng.randint(2, 5)
     for i in range(num_caves):
-        cave_radius = rng.randint(15, 30)
+        cave_radius = rng.randint(15, 20)
         max_offset = planet_radius - cave_radius
         cave_x = center_x + rng.randint(-max_offset, max_offset)
         cave_y = center_y + rng.randint(-max_offset, max_offset)
@@ -1623,56 +1640,67 @@ def draw_molten_core_elements(
 def draw_carbon_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
-    num_textures = rng.randint(50, 100)
-    for _ in range(num_textures):
-        texture_radius = rng.randint(1, 2)
-        texture_x = center_x + rng.randint(-planet_radius, planet_radius)
-        texture_y = center_y + rng.randint(-planet_radius, planet_radius)
-        draw.ellipse(
-            (
-                texture_x - texture_radius,
-                texture_y - texture_radius,
-                texture_x + texture_radius,
-                texture_y + texture_radius,
-            ),
-            fill="dimgray",
-            outline=None,
-        )
 
-    num_structures = rng.randint(5, 10)
-    for _ in range(num_structures):
-        structure_radius = rng.randint(30, 70)
-        structure_x = center_x + rng.randint(-planet_radius, planet_radius)
-        structure_y = center_y + rng.randint(-planet_radius, planet_radius)
-        num_sides = rng.randint(5, 9)
-        angle_step = 2 * math.pi / num_sides
-        points = []
-        for i in range(num_sides):
-            angle = i * angle_step
-            distance = rng.uniform(structure_radius * 0.7, structure_radius)
-            x = structure_x + int(distance * math.cos(angle))
-            y = structure_y + int(distance * math.sin(angle))
-            points.append((x, y))
-        draw.polygon(points, fill="black", outline="darkslategray")
+    draw_planet_rings(draw, planet_radius, center_x, center_y, rng)
 
-    num_fragments = rng.randint(3, 5)
-    for _ in range(num_fragments):
-        fragment_radius = rng.randint(20, 150)
-        fragment_x = center_x + rng.randint(-planet_radius // 2, planet_radius // 2)
-        fragment_y = center_y + rng.randint(-planet_radius // 2, planet_radius // 2)
-        for i in range(5):
-            angle = rng.uniform(0, 2 * math.pi)
-            end_x = fragment_x + int(fragment_radius * math.cos(angle))
-            end_y = fragment_y + int(fragment_radius * math.sin(angle))
-            draw.line(
-                (fragment_x, fragment_y, end_x, end_y),
-                fill="black",
-                width=rng.randint(1, 5),
-            )
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(28, 28, 28),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=10,
+        points_max=16,
+        seg_min=3,
+        seg_max=6,
+    )
 
-    num_deposits = rng.randint(5, 10)
+    draw_random_lines(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        rng,
+        min_lines=60,
+        max_lines=80,
+        min_length=2,
+        max_length=16,
+        color=(66, 66, 66),
+        line_width=1,
+    )
+
+    draw_poly_structures(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        rng,
+        structure_color=(44, 44, 44),
+        opacity_range=(120, 255),
+        size_range=(15, 30),
+        num_sides_range=(15, 20),
+        num_structures_range=(6, 12),
+    )
+
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(0, 0, 0),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=8,
+        points_max=9,
+        seg_min=1,
+        seg_max=2,
+    )
+
+    num_deposits = rng.randint(10, 16)
     for i in range(num_deposits):
-        deposit_radius = rng.randint(20, 60)
+        deposit_radius = rng.randint(4, 8)
         max_offset = planet_radius - deposit_radius
         deposit_x = center_x + rng.randint(-max_offset, max_offset)
         deposit_y = center_y + rng.randint(-max_offset, max_offset)
@@ -1681,7 +1709,7 @@ def draw_carbon_elements(
             deposit_x,
             deposit_y,
             deposit_radius,
-            "darkgray",
+            "white",
             seed,
             spaced_planet_name + f"_carbon_deposit_{i}",
         )
@@ -1695,7 +1723,7 @@ def draw_carbon_elements(
             dark_spot_x,
             dark_spot_y,
             dark_spot_radius,
-            "black",
+            "white",
             seed,
             spaced_planet_name + "_dark_spot",
         )
