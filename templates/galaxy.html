@@ -24,7 +24,7 @@
     <div class="galaxy-info">
       <div class="blob-image-container">
         <canvas id="canvas"></canvas>
-        <img class="blob-image" data-high-res-url="{{ url_for('galaxy_blob') }}" id="blob-image" />
+        <img class="blob-image" data-high-res-url="{{ url_for('galaxy_blob') }}" src="{{ url_for('static', filename='images/placeholder-min.jpg') }}" id="blob-image" />
       </div>
       <div class="stargate-container">
         <a class="stargate" href="{{ galaxy_url }}"><span id="stargate-text">Aligning Stargate...</span></a>

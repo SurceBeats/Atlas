@@ -445,7 +445,7 @@ button {
   aspect-ratio: 1 / 1;
   overflow: hidden;
   border: 2px solid #72c3dc;
-  border-radius: 10px;
+  border-radius: 40px;
   background-color: #000000;
 }
 
