@@ -9,11 +9,12 @@ config = configparser.ConfigParser()
 config.read("atlas.ini")
 
 seed = float(config.get("Settings", "seed"))
+cosmic_origin_time = int(config.get("Settings", "cosmic_origin_time"))
 image_quality = int(config.get("Settings", "image_quality"))
 enable_cache = config.getboolean("Settings", "enable_cache")
 cache_cleanup_time = int(config.get("Settings", "cache_cleanup_time"))
 
-version = "0.6.51"
+version = "0.6.129"
 versionHash = hashlib.sha256(version.encode("utf-8")).hexdigest()
 
 

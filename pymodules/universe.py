@@ -2,10 +2,13 @@
 
 import hashlib
 import random
+import math
+import time
 
 from pymodules.__name_generator import generate_name
 from pymodules.__planet_generator import generate_planet
 from pymodules.__seedmaster import seedmaster
+from pymodules.__config import cosmic_origin_time
 
 
 class Universe:
@@ -15,7 +18,6 @@ class Universe:
         self.galaxies = {}
 
     def get_galaxy(self, x, y, z):
-
         max_coordinate = 10**7
         if not (
             0 <= x <= max_coordinate
@@ -34,7 +36,7 @@ class Universe:
                 16,
             )
             galaxy_name = generate_name(galaxy_seed, "galaxy")
-            galaxy_type = random.choice(["dwarf", "spiral", "elliptical"])
+            galaxy_type = random.choice(["Dwarf", "Spiral", "Elliptical"])
 
             self.galaxies[(x, y, z)] = Galaxy(
                 galaxy_seed,
@@ -42,37 +44,86 @@ class Universe:
                 self.constants,
                 galaxy_type,
                 coordinates=(x, y, z),
+                cosmic_origin_time=cosmic_origin_time,
             )
         return self.galaxies[(x, y, z)]
 
 
 class Galaxy:
     def __init__(
-        self, seed, name, constants, galaxy_type="spiral", coordinates=(0, 0, 0)
+        self,
+        seed,
+        name,
+        constants,
+        galaxy_type="spiral",
+        coordinates=(0, 0, 0),
+        cosmic_origin_time=None,
     ):
         self.seed = seed
         self.name = name
         self.constants = constants
         self.coordinates = coordinates
         self.galaxy_type = galaxy_type
+        self.cosmic_origin_time = cosmic_origin_time
         random.seed(seed)
 
-        if self.galaxy_type == "dwarf":
-            self.num_systems = random.randint(10**5, 10**7)
-        elif self.galaxy_type == "spiral":
-            self.num_systems = random.randint(10**9, 5 * 10**10)
-        elif self.galaxy_type == "elliptical":
-            self.num_systems = random.randint(10**10, 10**11)
+        if self.galaxy_type == "Dwarf":
+            self.base_min_systems = 500
+            self.base_max_systems = random.randint(10**5, 10**7)
+        elif self.galaxy_type == "Spiral":
+            self.base_min_systems = 1500
+            self.base_max_systems = random.randint(10**9, 5 * 10**10)
+        elif self.galaxy_type == "Elliptical":
+            self.base_min_systems = 5000
+            self.base_max_systems = random.randint(10**10, 10**11)
         else:
-            self.num_systems = random.randint(10**8, 10**9)
+            self.base_min_systems = 3500
+            self.base_max_systems = random.randint(10**8, 10**9)
+
+        # Centro del universo 4999999^*3
+        self.distance_to_origin = math.sqrt(
+            (self.coordinates[0] - 4999999) ** 2
+            + (self.coordinates[1] - 4999999) ** 2
+            + (self.coordinates[2] - 4999999) ** 2
+        )
+
+        self.max_distance = math.sqrt(3 * (4999999**2))
+
+        self.proximity_factor = max(
+            0, 1 - (self.distance_to_origin / self.max_distance)
+        )
+
+        self.calculate_num_systems()
 
         self.solar_systems = {}
 
-        self.black_holes = random.randint(1, 10)
-        self.pulsars = random.randint(0, 50)
-        self.quasars = random.randint(0, 2)
+        if self.num_systems <= 0:
+            self.galaxy_type = "Singularity Void"
+            self.black_holes = 0
+            self.pulsars = 0
+            self.quasars = 0
+        else:
+            self.black_holes = random.randint(1, 10)
+            self.pulsars = random.randint(0, 50)
+            self.quasars = random.randint(0, 2)
+
+    def calculate_num_systems(self):
+        tiempo_transcurrido = time.time() - self.cosmic_origin_time
+        minutos_transcurridos = tiempo_transcurrido // 60
+
+        growth_systems = int(minutos_transcurridos * self.proximity_factor * 10)
+
+        base_num_systems = int(
+            self.base_min_systems
+            + (self.base_max_systems - self.base_min_systems) * self.proximity_factor
+        )
+
+        self.num_systems = max(
+            min(base_num_systems + growth_systems, self.base_max_systems), 0
+        )
 
     def get_solar_system(self, index):
+        self.calculate_num_systems()
         if index < 0 or index >= self.num_systems:
             raise ValueError(
                 f"Solar System index out of range. Must be between 0 and {self.num_systems - 1}."

@@ -452,7 +452,9 @@ def generate_galaxy_image(galaxy):
 
     rng = random.Random(galaxy.seed)
 
-    if galaxy.galaxy_type == "spiral":
+    rotation_angle = rng.uniform(0, 2 * math.pi)
+
+    if galaxy.galaxy_type == "Spiral":
         num_arms = 4
         arm_offset = 2 * math.pi / num_arms
         max_radius = img_size // 2
@@ -460,7 +462,10 @@ def generate_galaxy_image(galaxy):
         arm_tightness = 0.5
         core_density = 0.1
 
-        num_points = 50000
+        if galaxy.num_systems < 50000:
+            num_points = galaxy.num_systems
+        else:
+            num_points = 50000
 
         mask = Image.new("L", (img_size, img_size), 0)
         mask_draw = ImageDraw.Draw(mask)
@@ -472,7 +477,7 @@ def generate_galaxy_image(galaxy):
             y = center_y + radius * math.sin(angle)
             draw.point((x, y), fill="white")
 
-        # Dibujar los brazos espirales
+        # Dibujar los brazos espirales con rotación
         for i in range(num_points):
             theta = arm_tightness * math.sqrt(i / num_points) * 2 * math.pi
             arm_angle = i % num_arms * arm_offset
@@ -480,12 +485,12 @@ def generate_galaxy_image(galaxy):
             radius = max_radius * math.sqrt(i / num_points)
             x = (
                 center_x
-                + radius * math.cos(theta + arm_angle)
+                + radius * math.cos(theta + arm_angle + rotation_angle)
                 + rng.uniform(-spread * radius, spread * radius)
             )
             y = (
                 center_y
-                + radius * math.sin(theta + arm_angle)
+                + radius * math.sin(theta + arm_angle + rotation_angle)
                 + rng.uniform(-spread * radius, spread * radius)
             )
 
@@ -497,8 +502,13 @@ def generate_galaxy_image(galaxy):
         blurred_image = image.filter(ImageFilter.GaussianBlur(radius=5))
         image.paste(blurred_image, (0, 0), mask)
 
-    elif galaxy.galaxy_type == "elliptical":
-        num_points = 100000
+    elif galaxy.galaxy_type == "Elliptical":
+
+        if galaxy.num_systems < 100000:
+            num_points = galaxy.num_systems
+        else:
+            num_points = 100000
+
         for _ in range(num_points):
             angle = rng.uniform(0, 2 * math.pi)
             radius = rng.gauss(img_size // 4, img_size // 8)
@@ -523,7 +533,7 @@ def generate_galaxy_image(galaxy):
         blurred_image = image.filter(ImageFilter.GaussianBlur(radius=10))
         image.paste(blurred_image, (0, 0), mask)
 
-    elif galaxy.galaxy_type == "dwarf":
+    elif galaxy.galaxy_type == "Dwarf":
         max_radius = img_size // 3
         spread = 0.3
 
@@ -535,8 +545,95 @@ def generate_galaxy_image(galaxy):
 
             draw.ellipse((x, y, x + 1, y + 1), fill="white")
 
+    elif galaxy.galaxy_type == "Singularity Void":
+        max_radius = img_size // 2
+
+        for i in range(120):
+            size = rng.uniform(20, 90)
+            x = rng.uniform(center_x - max_radius, center_x + max_radius)
+            y = rng.uniform(center_y - max_radius, center_y + max_radius)
+            draw.polygon(
+                [
+                    (x, y),
+                    (
+                        x + size * rng.uniform(0.5, 1.5),
+                        y + size * rng.uniform(0.5, 1.5),
+                    ),
+                    (
+                        x + size * rng.uniform(-0.5, 1.5),
+                        y + size * rng.uniform(-0.5, 1.5),
+                    ),
+                ],
+                outline=(
+                    rng.randint(150, 255),
+                    rng.randint(150, 255),
+                    rng.randint(150, 255),
+                    rng.randint(50, 150),
+                ),
+            )
+
+        for i in range(5):
+            offset = rng.randint(-5, 5)
+            glitch_line = rng.uniform(center_y - max_radius, center_y + max_radius)
+            draw.line(
+                (0, glitch_line, img_size, glitch_line + offset),
+                fill=(
+                    rng.randint(0, 255),
+                    rng.randint(0, 255),
+                    rng.randint(0, 255),
+                    255,
+                ),
+                width=3,
+            )
+
+        distorted_image = image.filter(ImageFilter.GaussianBlur(radius=20))
+        image.paste(distorted_image, (0, 0))
+
+        tunnel_radius = max_radius // 2
+
+        draw.ellipse(
+            (
+                center_x - tunnel_radius - 150,
+                center_y - tunnel_radius - 150,
+                center_x + tunnel_radius + 150,
+                center_y + tunnel_radius + 150,
+            ),
+            fill=(0, 0, 0, 255),
+        )
+
+        for i in range(tunnel_radius, tunnel_radius + 90):
+            alpha = int(255 * (90 - (i - tunnel_radius)) / 90)
+            draw.ellipse(
+                (center_x - i, center_y - i, center_x + i, center_y + i),
+                outline=(
+                    rng.randint(50, 150),
+                    rng.randint(0, 100),
+                    rng.randint(50, 150),
+                    alpha,
+                ),
+                width=3,
+            )
+
+        for i in range(1000):
+            angle = rng.uniform(0, 2 * math.pi)
+            radius = rng.gauss(max_radius / 3, max_radius / 6)
+            x = center_x + radius * math.cos(angle)
+            y = center_y + radius * math.sin(angle)
+
+            draw.ellipse(
+                (x, y, x + 2, y + 2),
+                fill=(
+                    rng.randint(100, 255),
+                    rng.randint(0, 100),
+                    rng.randint(100, 255),
+                    rng.randint(50, 150),
+                ),
+            )
+
     black_hole_positions = []
     distance_threshold = 20
+
+    rng = random.Random(galaxy.seed)
 
     for _ in range(galaxy.black_holes):
         x = rng.randint(center_x - 30, center_x + 30)
@@ -546,7 +643,7 @@ def generate_galaxy_image(galaxy):
         for i, (bx, by, size_offset) in enumerate(black_hole_positions):
             distance = math.sqrt((x - bx) ** 2 + (y - by) ** 2)
             if distance < distance_threshold:
-                black_hole_positions[i] = (bx, by, size_offset + 1.5)
+                black_hole_positions[i] = (bx, by, size_offset + 1.75)
                 grouped = True
                 break
 
