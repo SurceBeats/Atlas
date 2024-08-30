@@ -9,5 +9,5 @@ import hashlib
 seed = 1.618033988749895  # Golden Ratio
 
 image_quality = 100
-version = "0.5.18"
+version = "0.5.47"
 versionHash = hashlib.sha256(version.encode("utf-8")).hexdigest()
