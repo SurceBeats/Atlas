@@ -1,13 +1,15 @@
 # pymodules/__config.py
 
 import hashlib
+import configparser
 
-# seed = 42  # Just scifi yo
-# seed = 0.0072973525693  # Fine structure constant
-# seed = 2.7182818284590452353602874713526624977572  # Eulers constant (e)
-# seed = 3.1415926535897932384626433832795028841971 # Pi
-seed = 1.618033988749895  # Golden Ratio
+config = configparser.ConfigParser()
+config.read("atlas.ini")
 
-image_quality = 100
-version = "0.5.47"
+seed = float(config.get("Settings", "seed"))
+image_quality = int(config.get("Settings", "image_quality"))
+enable_cache = config.getboolean("Settings", "enable_cache")
+cache_cleanup_time = int(config.get("Settings", "cache_cleanup_time"))
+
+version = "0.6.49"
 versionHash = hashlib.sha256(version.encode("utf-8")).hexdigest()

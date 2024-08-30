@@ -3,10 +3,12 @@
 import os
 import sys
 
-from flask import Flask, render_template, request, redirect, url_for, send_file, session
 from io import BytesIO
+from flask import Flask, render_template, request, redirect, url_for, send_file, session
 
-from pymodules.__config import seed, image_quality, version, versionHash
+from pymodules.__cache import get_cached_image_path
+from pymodules.__cache_daemon import start_cache_daemon
+from pymodules.__config import seed, image_quality, enable_cache, version, versionHash
 from pymodules.__the_observer import observer
 from pymodules.__stargate import (
     generate_planet_url,
@@ -117,15 +119,25 @@ def view_galaxy():
 @app.route("/galaxy_blob")
 def galaxy_blob():
     current_galaxy = get_current_galaxy()
-    if not current_galaxy:
-        return redirect(url_for("index"))
 
-    print(f"Generating image for galaxy: {current_galaxy.name}")
-    image = generate_galaxy_image(current_galaxy)
-    img_io = BytesIO()
-    image.save(img_io, "WEBP", quality=image_quality)
-    img_io.seek(0)
-    return send_file(img_io, mimetype="image/webp")
+    coordinates = f"{current_galaxy.coordinates[0]}_{current_galaxy.coordinates[1]}_{current_galaxy.coordinates[2]}"
+    system_name = current_galaxy.name.lower()
+
+    cache_filepath = get_cached_image_path("galaxy", coordinates, system_name)
+
+    if enable_cache:
+        if os.path.exists(cache_filepath):
+            return send_file(cache_filepath, mimetype="image/webp")
+
+        image = generate_galaxy_image(current_galaxy)
+        image.save(cache_filepath, "WEBP", quality=image_quality)
+        return send_file(cache_filepath, mimetype="image/webp")
+    else:
+        image = generate_galaxy_image(current_galaxy)
+        img_io = BytesIO()
+        image.save(img_io, "WEBP", quality=image_quality)
+        img_io.seek(0)
+        return send_file(img_io, mimetype="image/webp")
 
 
 @app.route("/system/<int:system_index>")
@@ -177,14 +189,26 @@ def view_system(system_index):
 @app.route("/system_blob")
 def system_blob():
     current_system = get_current_system()
-    if not current_system:
-        return redirect(url_for("index"))
+    current_galaxy = get_current_galaxy()
 
-    image = generate_solar_system_image(current_system)
-    img_io = BytesIO()
-    image.save(img_io, "WEBP", quality=image_quality)
-    img_io.seek(0)
-    return send_file(img_io, mimetype="image/webp")
+    coordinates = f"{current_galaxy.coordinates[0]}_{current_galaxy.coordinates[1]}_{current_galaxy.coordinates[2]}"
+    system_name = current_system.name.lower()
+
+    cache_filepath = get_cached_image_path("system", coordinates, system_name)
+
+    if enable_cache:
+        if os.path.exists(cache_filepath):
+            return send_file(cache_filepath, mimetype="image/webp")
+
+        image = generate_solar_system_image(current_system)
+        image.save(cache_filepath, "WEBP", quality=image_quality)
+        return send_file(cache_filepath, mimetype="image/webp")
+    else:
+        image = generate_solar_system_image(current_system)
+        img_io = BytesIO()
+        image.save(img_io, "WEBP", quality=image_quality)
+        img_io.seek(0)
+        return send_file(img_io, mimetype="image/webp")
 
 
 @app.route("/planet/<planet_name>")
@@ -235,14 +259,33 @@ def view_planet(planet_name):
 @app.route("/planet_blob/<planet_name>")
 def planet_blob(planet_name):
     current_system = get_current_system()
+    current_galaxy = get_current_galaxy()
+
+    coordinates = f"{current_galaxy.coordinates[0]}_{current_galaxy.coordinates[1]}_{current_galaxy.coordinates[2]}"
+    system_name = current_system.name.lower()
     planet_name = planet_name.lower()
-    for planet in current_system.planets.values():
-        if planet["Name"].lower() == planet_name:
-            image = generate_planet_image(planet)
-            img_io = BytesIO()
-            image.save(img_io, "WEBP", quality=image_quality)
-            img_io.seek(0)
-            return send_file(img_io, mimetype="image/webp")
+
+    cache_filepath = get_cached_image_path(
+        "planet", coordinates, system_name, planet_name
+    )
+
+    if enable_cache:
+        if os.path.exists(cache_filepath):
+            return send_file(cache_filepath, mimetype="image/webp")
+
+        for planet in current_system.planets.values():
+            if planet["Name"].lower() == planet_name:
+                image = generate_planet_image(planet)
+                image.save(cache_filepath, "WEBP", quality=image_quality)
+                return send_file(cache_filepath, mimetype="image/webp")
+    else:
+        for planet in current_system.planets.values():
+            if planet["Name"].lower() == planet_name:
+                image = generate_planet_image(planet)
+                img_io = BytesIO()
+                image.save(img_io, "WEBP", quality=image_quality)
+                img_io.seek(0)
+                return send_file(img_io, mimetype="image/webp")
 
     return redirect(url_for("view_system", system_index=current_system.index))
 
@@ -297,6 +340,9 @@ if __name__ == "__main__":
     if "--observer" in sys.argv:
         observer(universe)
         exit("Observer out!")
+
+    if enable_cache:
+        start_cache_daemon()
 
     app.config["ENV"] = "production"
     app.config["DEBUG"] = False

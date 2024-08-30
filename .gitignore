@@ -6,3 +6,6 @@
 
 # Excluir todos los directorios '__pycache__' en cualquier lugar del proyecto
 **/__pycache__/
+
+# Excluir las movidas de caché
+/static/cache/

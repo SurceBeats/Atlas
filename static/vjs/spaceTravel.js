@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
     centerY = canvas.height / 2;
   }
 
-  let speed = 0;
+  let speed = 0.5;
   let decelerate = false;
 
   function update() {
@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded", function () {
       ctx.fill();
     });
 
-    if (!decelerate && speed < 100) {
+    if (!decelerate && speed < 60) {
       speed += 1;
     }
 
