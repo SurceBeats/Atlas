@@ -1,11 +1,8 @@
-# Excluir el directorio 'data' en la raíz
-/data/
-
-# Excluir el directorio 'logs' en la raíz
-/logs/
-
 # Excluir todos los directorios '__pycache__' en cualquier lugar del proyecto
 **/__pycache__/
 
 # Excluir las movidas de caché
 /static/cache/
+
+# Excluir el atlas.ini, se genera en auto
+/atlas.ini
