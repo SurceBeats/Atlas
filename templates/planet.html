@@ -39,9 +39,9 @@
     </div>
 
     <div class="planet-info">
-      <div class="planet-image-container">
+      <div class="blob-image-container">
         <canvas id="canvas"></canvas>
-        <img class="planet-image" data-high-res-url="{{ url_for('planet_blob', planet_name=planet['Name']) }}" src="{{ url_for('static', filename='images/placeholder-min.jpg') }}" alt="Image of {{ planet['Name'] }}" id="planet-image" />
+        <img class="blob-image" data-high-res-url="{{ url_for('planet_blob', planet_name=planet['Name']) }}" src="{{ url_for('static', filename='images/placeholder-min.jpg') }}" id="blob-image" />
       </div>
       <div class="stargate-container">
         <a class="stargate" href="{{ planet_url }}"><span id="stargate-text">Aligning Stargate...</span></a>
@@ -57,8 +57,6 @@
 
     <script src="{{ url_for('static', filename='vjs/script.js') }}?v={{ versionHash }}"></script>
     <script src="{{ url_for('static', filename='vjs/atlasHistoricalScript.js') }}?v={{ versionHash }}"></script>
-    <script src="{{ url_for('static', filename='vjs/stars.js') }}?v={{ versionHash }}"></script>
-
+    <script src="{{ url_for('static', filename='vjs/spaceTravel.js') }}?v={{ versionHash }}"></script>
   </body>
-
-  </html>
+</html>

@@ -77,8 +77,8 @@ document.addEventListener("DOMContentLoaded", function () {
   window.addEventListener("resize", resizeCanvas);
   init();
 
-  const imgElement = document.getElementById("planet-image");
-  const highResImageUrl = imgElement.getAttribute('data-high-res-url');
+  const imgElement = document.getElementById("blob-image");
+  const highResImageUrl = imgElement.getAttribute("data-high-res-url");
   const img = new Image();
   img.src = highResImageUrl;
 

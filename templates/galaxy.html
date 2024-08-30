@@ -22,7 +22,10 @@
     </div>
 
     <div class="galaxy-info">
-      <img class="galaxy-image" src="{{ image_url }}" alt="Image of {{ galaxy.name.replace("_", " ") }}" />
+      <div class="blob-image-container">
+        <canvas id="canvas"></canvas>
+        <img class="blob-image" data-high-res-url="{{ url_for('galaxy_blob') }}" id="blob-image" />
+      </div>
       <div class="stargate-container">
         <a class="stargate" href="{{ galaxy_url }}"><span id="stargate-text">Aligning Stargate...</span></a>
         <div class="tooltip">Right-click and select 'Copy Link' to save this Stargate location</div>
@@ -57,4 +60,5 @@
   </body>
   <script src="{{ url_for('static', filename='vjs/script.js') }}?v={{ versionHash }}"></script>
   <script src="{{ url_for('static', filename='vjs/atlasHistoricalScript.js') }}?v={{ versionHash }}"></script>
+  <script src="{{ url_for('static', filename='vjs/spaceTravel.js') }}?v={{ versionHash }}"></script>
 </html>
