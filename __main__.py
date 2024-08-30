@@ -6,7 +6,7 @@ import sys
 from flask import Flask, render_template, request, redirect, url_for, send_file, session
 from io import BytesIO
 
-from pymodules.__config import seed, version, versionHash
+from pymodules.__config import seed, image_quality, version, versionHash
 from pymodules.__the_observer import observer
 from pymodules.__stargate import (
     generate_planet_url,
@@ -123,7 +123,7 @@ def galaxy_blob():
     print(f"Generating image for galaxy: {current_galaxy.name}")
     image = generate_galaxy_image(current_galaxy)
     img_io = BytesIO()
-    image.save(img_io, "WEBP", quality=75)
+    image.save(img_io, "WEBP", quality=image_quality)
     img_io.seek(0)
     return send_file(img_io, mimetype="image/webp")
 
@@ -182,7 +182,7 @@ def system_blob():
 
     image = generate_solar_system_image(current_system)
     img_io = BytesIO()
-    image.save(img_io, "WEBP", quality=80)
+    image.save(img_io, "WEBP", quality=image_quality)
     img_io.seek(0)
     return send_file(img_io, mimetype="image/webp")
 
@@ -240,7 +240,7 @@ def planet_blob(planet_name):
         if planet["Name"].lower() == planet_name:
             image = generate_planet_image(planet)
             img_io = BytesIO()
-            image.save(img_io, "WEBP", quality=85)
+            image.save(img_io, "WEBP", quality=image_quality)
             img_io.seek(0)
             return send_file(img_io, mimetype="image/webp")
 
@@ -298,7 +298,7 @@ if __name__ == "__main__":
         observer(universe)
         exit("Observer out!")
 
-    app.config["ENV"] = "production"
-    app.config["DEBUG"] = False
+    app.config["ENV"] = "development"
+    app.config["DEBUG"] = True
 
     app.run(host="0.0.0.0")

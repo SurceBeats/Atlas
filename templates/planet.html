@@ -27,7 +27,7 @@
       <p><strong>Rotation Period:</strong> {{ "{:,.2f}".format(planet['Rotation Period'] / 24) }} days</p>
       <p><strong>Surface:</strong> {{ "{:,.2f}".format(planet['Surface Temperature']) }} °C ({{ "{:,.2f}".format(planet['Surface Temperature'] * 9/5 + 32) }} °F)</p>
       <p><strong>Elements:</strong> {{ ", ".join(planet['Elements']) }}</p>
-      
+
       <div id="localization-content" class="localization-content">
         <p><strong class="localize">Planet:</strong> {{ planet['Name'].replace("_", " ") }}</p>
         <p><strong class="localize">System:</strong> {{ system.name }}</p>
@@ -39,7 +39,10 @@
     </div>
 
     <div class="planet-info">
-      <img class="planet-image" src="{{ image_url }}" alt="Image of {{ planet['Name'] }}" />
+      <div class="planet-image-container">
+        <canvas id="canvas"></canvas>
+        <img class="planet-image" data-high-res-url="{{ url_for('planet_blob', planet_name=planet['Name']) }}" src="{{ url_for('static', filename='images/placeholder-min.jpg') }}" alt="Image of {{ planet['Name'] }}" id="planet-image" />
+      </div>
       <div class="stargate-container">
         <a class="stargate" href="{{ planet_url }}"><span id="stargate-text">Aligning Stargate...</span></a>
         <div class="tooltip">Right-click and select 'Copy Link' to save this Stargate location</div>
@@ -54,5 +57,8 @@
 
     <script src="{{ url_for('static', filename='vjs/script.js') }}?v={{ versionHash }}"></script>
     <script src="{{ url_for('static', filename='vjs/atlasHistoricalScript.js') }}?v={{ versionHash }}"></script>
+    <script src="{{ url_for('static', filename='vjs/stars.js') }}?v={{ versionHash }}"></script>
+
   </body>
-</html>
+
+  </html>
