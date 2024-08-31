@@ -14,7 +14,7 @@ The Atlas is a procedural generation engine designed to create vast, complex gal
 
 ---
 
-### Version 6: The Dawn of Time
+### Version 0.6: The Dawn of Time
 
 In our latest update, Version 6, we've gone beyond the boundaries of space and added **time** to the universe. Yes, you heard that right. Imagine "The Atlas" not as a square, but as a cube where coordinates span from xyz=0 to xyz=9999999.
 
