@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.6.143] - 2024-08-31
+- Enhanced seed handling by deriving the provided seed from `atlas.ini` into a SHA-256 hash and converting it to a base-10 integer, ensuring consistency and eliminating issues related to floating-point precision.
+- Added `__boot_messaging.py` to handle and display detailed application boot information in a structured format.
+- Implemented a more informative boot message that includes both the raw UNIX timestamp (`cosmic_origin_time`) and its human-readable date-time equivalent.
+- Improved the display of cache cleanup time by showing the value in both seconds and minutes for better clarity.
+
 ## [0.6.142] - 2024-08-31
 - Synchronization of project files.
 
