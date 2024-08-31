@@ -97,7 +97,7 @@ If you discover any security vulnerabilities in "Atlas" or "The Atlas", please c
 
 ## License
 
-Copyright © Claudio González Medina
+Created by [Claudio González](https://github.com/SurceBeats) for [Banshee](https://www.banshee.pro/).
 The Atlas is licensed under PolyForm Noncommercial License 1.0.0.
 Please refer to the [license overview](https://github.com/SurceBeats/Atlas/blob/main/LICENSE.md) for any questions.
 
