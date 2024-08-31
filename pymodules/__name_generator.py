@@ -508,10 +508,8 @@ def generate_name(seed, type="galaxy"):
         number = random.choice(
             [
                 "Original",
-                "Prime",
                 "Alpha",
                 "First",
-                "Genesis",
                 "Ultimate",
                 "Superior",
                 "Elite",
@@ -536,7 +534,6 @@ def generate_name(seed, type="galaxy"):
                 "Primary",
                 "Principal",
                 "Cardinal",
-                "Original",
                 "Paramount",
                 "Initial",
                 "Prime",
@@ -549,7 +546,6 @@ def generate_name(seed, type="galaxy"):
             [
                 "Anomaly",
                 "Error",
-                "Corrupted",
                 "malloc()",
                 "Glitched",
                 "Void",

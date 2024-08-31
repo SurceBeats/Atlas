@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.6.144] - 2024-08-31
+- Removed duplicates suffixes on (`__name_generator.py`) which were affecting the planet and galaxy name procedural generation process.
+
 ## [0.6.143] - 2024-08-31
 - Enhanced seed handling by deriving the provided seed from `atlas.ini` into a SHA-256 hash and converting it to a base-10 integer, ensuring consistency and eliminating issues related to floating-point precision.
 - Added `__boot_messaging.py` to handle and display detailed application boot information in a structured format.
