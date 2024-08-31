@@ -16,7 +16,7 @@ The Atlas is a procedural generation engine designed to create vast, complex gal
 
 ### Version 0.6: The Dawn of Time
 
-In our latest update, Version 6, we've gone beyond the boundaries of space and added **time** to the universe. Yes, you heard that right. Imagine "The Atlas" not as a square, but as a cube where coordinates span from xyz=0 to xyz=9999999.
+In our latest update, Version 0.6, we've gone beyond the boundaries of space and added **time** to the universe. Yes, you heard that right. Imagine "The Atlas" not as a square, but as a cube where coordinates span from xyz=0 to xyz=9999999.
 
 We've introduced a constant called "cosmic_origin_time" right at the center of the Universe. As minutes tick by, more systems are dynamically added to every galaxy. The closer a galaxy is to the center of the universe, the faster it grows with new systems.
 
