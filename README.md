@@ -64,4 +64,5 @@ If you discover any security vulnerabilities in The Atlas, please contact our te
 ## License
 
 Copyright © Claudio González Medina
-The Atlas is licensed under MIT license. Please refer at https://github.com/SurceBeats/Atlas.
+The Atlas is licensed under PolyForm Noncommercial License 1.0.0.
+Please refer to the [license overview](https://github.com/SurceBeats/Atlas/blob/main/LICENSE.md) for any questions.
