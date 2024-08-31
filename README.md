@@ -28,6 +28,8 @@ But that's not all. We've also implemented a caching system that stores images f
 
 Additionally, we've enabled image quality settings for those running on less powerful systems. You can now set the quality from 1 to 100, all in the highly efficient WebP format.
 
+[Check the whole Changelog](https://github.com/SurceBeats/Atlas/blob/main/CHANGELOG.md)
+
 ---
 
 ### Configuration Made Simple
