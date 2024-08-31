@@ -10,6 +10,20 @@ The Atlas is a procedural generation engine designed to create vast, complex gal
 - **Universe Simulation**: Simulate the creation of an entire universe.
 - **Customizable Parameters**: Fine-tune every aspect of the generation process to create the exact type of universe or galaxy you need, including Physical Constants (pymodules/constants.py).
 
+---
+
+### Version 6: The Dawn of Time
+
+In our latest update, Version 6, we've gone beyond the boundaries of space and added **time** to the universe. Yes, you heard that right. Imagine "The Atlas" not as a square, but as a cube where coordinates span from xyz=0 to xyz=9999999. We've introduced a constant called "cosmic_origin_time" right at the center of the Universe. As minutes tick by, more systems are dynamically added to every galaxy. The closer a galaxy is to the center of the universe, the faster it grows with new systems. The estimated time for the entire universe to fully evolve from the cosmic_origin_time is approximately 2 million years.
+
+<p align="center"><img src="https://github.com/SurceBeats/Atlas/blob/main/public/cosmic_origin_time_picture.jpg" width="400"></p>
+
+But that's not all. We've also implemented a caching system that stores images for 15 minutes, preventing the need to procedurally generate images for every visit—a resource-intensive task. This cache ensures that if the number of systems dramatically increases since your last visit, it will be reflected in the newly generated images.
+
+Additionally, we've enabled image quality settings for those running on less powerful systems. You can now set the quality from 1 to 100, all in the highly efficient WebP format.
+
+---
+
 ## How Big is "The Atlas"?
 
 In "The Atlas," you can explore a universe of staggering proportions. Here's a glimpse of just how immense it is:
@@ -38,8 +52,14 @@ In total, storing the images of all galaxies, solar systems, and planets in "The
 
 These numbers give a sense of the sheer scale of "The Atlas" and the massive data it would generate if fully documented in image form.
 
+### Configuration Made Simple
+
+From the `atlas.ini` file, you can easily disable the cache system or configure the seed of your universe. However, we strongly recommend not altering the cosmic_origin_time—doing so could lead to inconsistencies, and who knows... If you set it high enough, you might just encounter a surprise singularity.
+
+Explore, experiment, and evolve with "The Atlas"—a universe where space and time converge in infinite possibilities.
+
 ## How to run it?
-- First, install Pillow to enable image generation at runtime and Flask as a webserver. You can do this by running pip install Pillow and pip install Flask, which should work on most systems. After that, run python3 pointing to the folder. Then, open your browser and navigate to the localhost URL. You're all set!
+- First, install Pillow to enable image generation at runtime and Flask as a webserver. You can do this by running pip install Pillow and pip install Flask, which should work on most systems. After that, run python3 pointing to the folder or python3 __main__.py. Then, open your browser and navigate to the localhost URL. You're all set!
 - Alternatively, you can run pip install -r requirements.txt to install both dependencies automatically!
 
 ## Demo
