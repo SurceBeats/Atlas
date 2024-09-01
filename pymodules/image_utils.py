@@ -1,8 +1,9 @@
 # pymodules/image_utils.py
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageColor
+import time
 
-from pymodules.__config import seed
+from pymodules.__config import seed, cosmic_origin_time
 from pymodules.__image_utils_planets import (
     get_planet_color_map,
     draw_gas_giant_elements,
@@ -358,9 +359,13 @@ def generate_solar_system_image(solar_system):
     min_orbit_radius = star_radius * 2 + 50
     max_orbit_radius = img_size // 2 - 50
 
+    current_time = time.time()
     for i in range(1, num_planets + 1):
         planet = solar_system.get_planet(i - 1)
         if planet:
+
+            planet_rng_seed = int(hashlib.md5(f"{solar_system.seed}{i}".encode()).hexdigest(), 16)
+            planet_rng = random.Random(planet_rng_seed)
 
             spaced_planet_name = planet["Name"].replace("_", " ")
 
@@ -371,59 +376,93 @@ def generate_solar_system_image(solar_system):
                 relative_orbit_radius * (max_orbit_radius - min_orbit_radius)
             )
 
-            eccentricity = random.uniform(0.0, 0.3) * (1 - relative_orbit_radius)
+            eccentricity = planet_rng.uniform(0.0, 0.4) * (1 - relative_orbit_radius)
 
             semi_major_axis = orbit_radius
             semi_minor_axis = semi_major_axis * math.sqrt(1 - eccentricity**2)
 
-            draw.ellipse(
-                (
-                    center_x - semi_major_axis,
-                    center_y - semi_minor_axis,
-                    center_x + semi_major_axis,
-                    center_y + semi_minor_axis,
-                ),
-                outline="white",
-                width=1,
-            )
+            dash_length = 2
+            gap_length = 4
+            num_segments = 360
 
-            angle_seed = hash((solar_system.seed, i))
-            rng = random.Random(angle_seed)
-            angle = rng.uniform(0, 2 * math.pi)
-            planet_x = center_x + semi_major_axis * math.cos(angle)
-            planet_y = center_y + semi_minor_axis * math.sin(angle)
+            for k in range(0, num_segments, dash_length + gap_length):
+                for j in range(k, min(k + dash_length, num_segments - 1)):
+                    angle_start = (j / num_segments) * 2 * math.pi
+                    angle_end = ((j + 1) / num_segments) * 2 * math.pi
+
+                    x_start = center_x + semi_major_axis * math.cos(angle_start)
+                    y_start = center_y + semi_minor_axis * math.sin(angle_start)
+                    x_end = center_x + semi_major_axis * math.cos(angle_end)
+                    y_end = center_y + semi_minor_axis * math.sin(angle_end)
+
+                    draw.line([x_start, y_start, x_end, y_end], fill="slategray", width=1)
+
+            orbital_period = planet["Orbital Period"]
+            angle_velocity_orbit = 2 * math.pi / orbital_period
+
+            time_elapsed = current_time - cosmic_origin_time
+            time_elapsed_years = time_elapsed / (365.25 * 24 * 3600)
+
+            initial_angle_orbit = planet_rng.uniform(0, 2 * math.pi)
+            initial_angle_rotation = planet_rng.uniform(0, 2 * math.pi)
+
+            angle_orbit = (initial_angle_orbit + time_elapsed_years * angle_velocity_orbit) % (2 * math.pi)
+
+            planet_x = center_x + semi_major_axis * math.cos(angle_orbit)
+            planet_y = center_y + semi_minor_axis * math.sin(angle_orbit)
+
+            rotation_period = planet["Rotation Period"] / 365.25
+            angle_velocity_rotation = 2 * math.pi / rotation_period
+
+            angle_rotation = (initial_angle_rotation + time_elapsed_years * angle_velocity_rotation) % (2 * math.pi)
 
             planet_color = {
-                "Gas Giant": "orange",
-                "Rocky": "gray",
-                "Icy": "lightblue",
-                "Oceanic": "blue",
-                "Desert": "yellow",
-                "Lava": "red",
-                "Arid": "brown",
-                "Swamp": "green",
-                "Tundra": "aliceblue",
-                "Forest": "darkgreen",
-                "Savannah": "sandybrown",
-                "Cave": "dimgray",
-                "Crystalline": "cyan",
-                "Metallic": "silver",
-                "Toxic": "purple",
-                "Radioactive": "lime",
-                "Magma": "orangered",
-                "Molten Core": "darkorange",
-                "Carbon": "darkgray",
-                "Diamond": "lightskyblue",
-                "Super Earth": "lightgreen",
-                "Sub Earth": "darkgreen",
-                "Frozen Gas Giant": "lightblue",
-                "Nebulous": "pink",
-                "Aquifer": "aqua",
-                "Exotic": "magenta",
+                "Gas Giant": "#FFA500",
+                "Anomaly": "#FFFFFF",
+                "Rocky": "#808080",
+                "Icy": "#ADD8E6",
+                "Oceanic": "#0000FF",
+                "Desert": "#FFD700",
+                "Lava": "#FF0000",
+                "Arid": "#800000",
+                "Swamp": "#008000",
+                "Tundra": "#F0F8FF",
+                "Forest": "#006400",
+                "Savannah": "#F4A460",
+                "Cave": "#D1D1D1",
+                "Crystalline": "#00FFFF",
+                "Metallic": "#C0C0C0",
+                "Toxic": "#800080",
+                "Radioactive": "#00FF00",
+                "Magma": "#FF4500",
+                "Molten Core": "#FF8C00",
+                "Carbon": "#090909",
+                "Diamond": "#87CEFA",
+                "Super Earth": "#90EE90",
+                "Sub Earth": "#006400",
+                "Frozen Gas Giant": "#ADD8E6",
+                "Nebulous": "#FFC0CB",
+                "Aquifer": "#00FFFF",
+                "Exotic": "#FF00FF",
             }.get(planet["Type"], "white")
 
             max_diameter = max([p["Diameter"] for p in solar_system.planets.values()])
-            planet_radius = int(5 * (planet["Diameter"] / max_diameter))
+            planet_radius = int(6 * (planet["Diameter"] / max_diameter))
+
+            min_radius = 2
+            planet_radius = max(planet_radius, min_radius)
+            shadow_radius = planet_radius * 1.50
+
+            draw.ellipse(
+                (
+                    planet_x - shadow_radius,
+                    planet_y - shadow_radius,
+                    planet_x + shadow_radius,
+                    planet_y + shadow_radius,
+                ),
+                fill="black",
+            )
+
 
             draw.ellipse(
                 (
@@ -435,12 +474,18 @@ def generate_solar_system_image(solar_system):
                 fill=planet_color,
             )
 
+            line_x1 = planet_x + planet_radius * math.cos(angle_rotation) / 8
+            line_y1 = planet_y + planet_radius * math.sin(angle_rotation) / 8
+            line_x2 = planet_x - planet_radius * math.cos(angle_rotation)
+            line_y2 = planet_y - planet_radius * math.sin(angle_rotation)
+
+            draw.line((line_x1, line_y1, line_x2, line_y2), fill=(138, 138, 138), width=1)
+
             text_x = planet_x + planet_radius + 5
             text_y = planet_y - planet_radius / 2
             draw.text((text_x, text_y), spaced_planet_name, font=font, fill="white")
 
     return image
-
 
 def generate_galaxy_image(galaxy):
     img_size = 800

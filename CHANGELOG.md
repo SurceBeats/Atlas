@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.150] - 2024-08-31
+- Integrated time-based calculations derived from `cosmic_origin_time` and the current time, accurately representing the real-time rotation of each planet.
+- Implemented real-time translation of each planet around its star(s), ensuring that if a planet's orbit takes 10 years to complete, it will now take 10 real years to visually complete its cycle.
+- Implemented consistent orbital eccentricity generation using procedural RNG (rng for life props for StringManolo), ensuring that orbits remain stable and consistent across executions.
+- Added a dynamic visual representation for planetary rotation by introducing a shaded radius, enhancing the visual effect.
+- Changed the white solid orbital line into a smooth dotted orbital path representation to improve the visual aesthetics and clarity of the orbital paths.
+- Drawn an additional larger black ellipse beneath each planet to prevent orbital lines from obscuring the planet's visual representation, improving overall clarity.
+- Adjusted the visual elements to ensure that smaller planets have a minimum visible size, making them more distinguishable in the system representation.
+- Corrected the rendering order of planets and their respective shadows to ensure that the orbit lines no longer obscure the planets, maintaining visual consistency.
+- Made minor tweaks to the maximum eccentricity of planetary orbits within each system to refine their visual and physical accuracy.
+- RNGed the radial tilt of each planet in the system representation, as well as the original translational position, to ensure procedural uniqueness in planetary orientations and starting positions... Across time!
+
 ## [0.6.144] - 2024-08-31
 - Removed duplicates suffixes on (`__name_generator.py`) which were affecting the planet and galaxy name procedural generation process.
 
