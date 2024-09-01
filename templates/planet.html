@@ -16,18 +16,36 @@
       <p><strong>Type:</strong> {{ planet['Type'] }}</p>
       <p><strong>Atmosphere:</strong> {{ planet['Atmosphere'] }}</p>
       <p><strong>Life Forms:</strong> {{ planet['Life Forms'] }}</p>
-      <p><strong>Mass:</strong> {{ "{:,.2f}".format(planet['Mass'] / 1e24) }} x 10²⁴ kg</p>
+      <p><strong>Mass:</strong> {{ "{:.2e}".format(planet['Mass']) }} kg</p>
       <p><strong>Diameter:</strong> {{ "{:,.2f}".format(planet['Diameter']) }} km</p>
-      <p><strong>Density:</strong> {{ "{:,.2f}".format(planet['Density'] / 1e12) }} x 10¹² kg/m³</p>
-      <p><strong>Gravity:</strong> {{ "{:,.2f}".format(planet['Gravity']) }} m/s²</p>
+      <p><strong>Density:</strong> {{ "{:,.2f}".format(planet['Density']) }} kg/m³</p>
+      <p><strong>Gravity:</strong> {{ "{:.2f}".format(planet['Gravity']) }} m/s²</p>
       <p><strong>Orbital Radius:</strong> {{ "{:,.2f}".format(planet['Orbital Radius']) }} AU</p>
-      <p><strong>Orbital Period:</strong> {{ "{:,.2f}".format(planet['Orbital Period']) }} Earth years</p>
+      <p><strong>Orbital Period:</strong>
+        {% set years = planet['Orbital Period'] %}
+        {% if years < 1 %}
+            {{ "{:,.2f}".format(years * 365) }} days
+        {% elif years < 10 %}
+            {{ "{:,.2f}".format(years * 12) }} months
+        {% else %}
+            {{ "{:,.2f}".format(years) }} years
+        {% endif %}
+        </p>
       <p><strong>Orbital Speed:</strong> {{ "{:,.2f}".format(planet['Orbital Speed']) }} m/s</p>
       <p><strong>Axial Tilt:</strong> {{ "{:,.2f}".format(planet['Axial Tilt']) }} degrees</p>
-      <p><strong>Rotation Period:</strong> {{ "{:,.2f}".format(planet['Rotation Period'] / 24) }} days</p>
+      <p><strong>Rotation Period:</strong> 
+        {% set days = planet['Rotation Period'] / 24 %}
+        {% if days < 30 %}
+            {{ "{:,.2f}".format(days) }} days
+        {% elif days < 365 %}
+            {{ "{:,.2f}".format(days / 30) }} months
+        {% else %}
+            {{ "{:,.2f}".format(days / 365) }} years
+        {% endif %}
+        </p>
       <p><strong>Surface:</strong> {{ "{:,.2f}".format(planet['Surface Temperature']) }} °C ({{ "{:,.2f}".format(planet['Surface Temperature'] * 9/5 + 32) }} °F)</p>
       <p><strong>Elements:</strong> {{ ", ".join(planet['Elements']) }}</p>
-
+      
       <div id="localization-content" class="localization-content">
         <p><strong class="localize">Planet:</strong> {{ planet['Name'].replace("_", " ") }}</p>
         <p><strong class="localize">System:</strong> {{ system.name }}</p>

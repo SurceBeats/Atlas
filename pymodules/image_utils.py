@@ -364,7 +364,9 @@ def generate_solar_system_image(solar_system):
         planet = solar_system.get_planet(i - 1)
         if planet:
 
-            planet_rng_seed = int(hashlib.md5(f"{solar_system.seed}{i}".encode()).hexdigest(), 16)
+            planet_rng_seed = int(
+                hashlib.md5(f"{solar_system.seed}{i}".encode()).hexdigest(), 16
+            )
             planet_rng = random.Random(planet_rng_seed)
 
             spaced_planet_name = planet["Name"].replace("_", " ")
@@ -395,7 +397,9 @@ def generate_solar_system_image(solar_system):
                     x_end = center_x + semi_major_axis * math.cos(angle_end)
                     y_end = center_y + semi_minor_axis * math.sin(angle_end)
 
-                    draw.line([x_start, y_start, x_end, y_end], fill="slategray", width=1)
+                    draw.line(
+                        [x_start, y_start, x_end, y_end], fill="slategray", width=1
+                    )
 
             orbital_period = planet["Orbital Period"]
             angle_velocity_orbit = 2 * math.pi / orbital_period
@@ -406,7 +410,9 @@ def generate_solar_system_image(solar_system):
             initial_angle_orbit = planet_rng.uniform(0, 2 * math.pi)
             initial_angle_rotation = planet_rng.uniform(0, 2 * math.pi)
 
-            angle_orbit = (initial_angle_orbit + time_elapsed_years * angle_velocity_orbit) % (2 * math.pi)
+            angle_orbit = (
+                initial_angle_orbit + time_elapsed_years * angle_velocity_orbit
+            ) % (2 * math.pi)
 
             planet_x = center_x + semi_major_axis * math.cos(angle_orbit)
             planet_y = center_y + semi_minor_axis * math.sin(angle_orbit)
@@ -414,7 +420,9 @@ def generate_solar_system_image(solar_system):
             rotation_period = planet["Rotation Period"] / 365.25
             angle_velocity_rotation = 2 * math.pi / rotation_period
 
-            angle_rotation = (initial_angle_rotation + time_elapsed_years * angle_velocity_rotation) % (2 * math.pi)
+            angle_rotation = (
+                initial_angle_rotation + time_elapsed_years * angle_velocity_rotation
+            ) % (2 * math.pi)
 
             planet_color = {
                 "Gas Giant": "#FFA500",
@@ -463,7 +471,6 @@ def generate_solar_system_image(solar_system):
                 fill="black",
             )
 
-
             draw.ellipse(
                 (
                     planet_x - planet_radius,
@@ -479,13 +486,16 @@ def generate_solar_system_image(solar_system):
             line_x2 = planet_x - planet_radius * math.cos(angle_rotation)
             line_y2 = planet_y - planet_radius * math.sin(angle_rotation)
 
-            draw.line((line_x1, line_y1, line_x2, line_y2), fill=(138, 138, 138), width=1)
+            draw.line(
+                (line_x1, line_y1, line_x2, line_y2), fill=(138, 138, 138), width=1
+            )
 
             text_x = planet_x + planet_radius + 5
             text_y = planet_y - planet_radius / 2
             draw.text((text_x, text_y), spaced_planet_name, font=font, fill="white")
 
     return image
+
 
 def generate_galaxy_image(galaxy):
     img_size = 800

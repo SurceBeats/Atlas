@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.157] - 2024-09-01
+- Implemented and applied scientifically accurate formulas, such as detailed calculations for `diameter`, `volume`, `density`, `mass`, `gravity`, `surface_temperature`, and `possible_elements`, influenced by planetary type. These include Volume, Mass, Gravity (Newton's law of universal gravitation), Orbital Period (Kepler's third law), Orbital Speed, and Rotation Period (including moment of inertia and tidal effects), ensuring that each generated planet behaves according to realistic astrophysical expectations.
+- Developed an enhanced and physically accurate rotation period calculation that integrates axial tilt, tidal effects, eccentricity, and the influence of distance from the star. This method uses the moment of inertia and gravitational forces to provide a realistic and almost-accurate simulation of planetary rotation dynamics, which can be perceived in the system representation too.
+- Improved the gravity formula to better reflect the relationship between a planet's mass and its diameter. This update ensures that gravitational forces are calculated in a manner consistent with universal gravitation principles.
+- Created a detailed output structure for planetary data, displaying orbital parameters (`orbital_radius`, `orbital_period`, `orbital_speed`), rotation period, gravity, and other key characteristics. The output now includes user-friendly formatting, translating rotational periods into days, months, or years based on their length.
+- Expanded the `PhysicalConstants` class to include critical planetary constants such as the tidal dissipation factor (`Q_PLANET`) and the Love number (`K2_PLANET`), enabling more accurate modeling of tidal forces and their impact on planetary rotation.
+- Adjusted the range of potential diameters, densities, and surface temperatures across all planet types to reflect more realistic and varied planetary conditions. These changes ensure that the generated planets behave in a manner consistent with scientific observations.
+- The rotation period formula has been overhauled to account for extreme variations in planetary characteristics, particularly for anomalous and exotic types, ensuring that even the most unusual planets adhere to "realistic" (cough) rotational dynamics based on their physical properties, or at least it should be that way.
+- Corrected the application of the gravitational constant in gravity calculations, ensuring that the results are accurate and consistent across all generated planets, regardless of size or type.
+- Resolved issues with the orbital period output, ensuring that the periods are now correctly displayed as days, months, or years, depending on the calculated duration.
+- Removed the use of arbitrary limits on tidal effects, replacing them with a scientifically accurate approach that calculates the rotation period based on realistic tidal dissipation and Love number values. This change results in a more natural and physically consistent simulation of tidal braking effects on planetary rotation.
+
 ## [0.6.150] - 2024-08-31
 - Integrated time-based calculations derived from `cosmic_origin_time` and the current time, accurately representing the real-time rotation of each planet.
 - Implemented real-time translation of each planet around its star(s), ensuring that if a planet's orbit takes 10 years to complete, it will now take 10 real years to visually complete its cycle.

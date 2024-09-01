@@ -1,4 +1,4 @@
-# universe.py
+# pymodules/universe.py
 
 import hashlib
 import random

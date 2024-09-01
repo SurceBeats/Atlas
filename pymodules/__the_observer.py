@@ -137,7 +137,9 @@ def observer(universe):
                                     input("Press Enter to continue searching...")
 
                             if total_planets_searched % 1000 == 0:
-                                print(f"+ Galaxies Mapped: #{total_galaxies_searched}, Systems Mapped: #{total_systems_searched}, Planets Mapped: #{total_planets_searched}")
+                                print(
+                                    f"+ Galaxies Mapped: #{total_galaxies_searched}, Systems Mapped: #{total_systems_searched}, Planets Mapped: #{total_planets_searched}"
+                                )
                                 print("-" * 50)
 
                             del planet
