@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.17] - 2024-09-02
+- Introduced a `k_factor` that varies depending on the type of planet, specifically enhancing calculations for gas giants and frozen gas giants. This allows for a more accurate simulation of rotational dynamics based on the planet's classification.
+- Further refined the rotation period calculation by integrating the `k_factor` into the moment of inertia and gravitational calculations, ensuring that rotational dynamics are more faithful to real-world physics across different planetary types.
+- Updated the tidal effect calculations to better reflect the influence of planetary type on rotational speed, taking into account factors like eccentricity and distance influence, leading to more realistic rotational periods.
+- Resolved several inconsistencies in planetary rotation periods and orbital dynamics, particularly for edge cases involving exotic and anomalous planets. These fixes ensure that all generated planets now exhibit behavior consistent with their physical properties.
+- Verified that the axial tilt distribution remains realistic across different planetary types, ensuring a natural variety in planet orientations within their respective orbits.
+- Continued to ensure that all physical formulas and constants used in the simulation, such as gravity, orbital period, and tidal effects, adhere to real-world astrophysical principles, resulting in a robust and realistic planetary generation system.
+
 ## [0.6.157] - 2024-09-01
 - Implemented and applied scientifically accurate formulas, such as detailed calculations for `diameter`, `volume`, `density`, `mass`, `gravity`, `surface_temperature`, and `possible_elements`, influenced by planetary type. These include Volume, Mass, Gravity (Newton's law of universal gravitation), Orbital Period (Kepler's third law), Orbital Speed, and Rotation Period (including moment of inertia and tidal effects), ensuring that each generated planet behaves according to realistic astrophysical expectations.
 - Developed an enhanced and physically accurate rotation period calculation that integrates axial tilt, tidal effects, eccentricity, and the influence of distance from the star. This method uses the moment of inertia and gravitational forces to provide a realistic and almost-accurate simulation of planetary rotation dynamics, which can be perceived in the system representation too.
