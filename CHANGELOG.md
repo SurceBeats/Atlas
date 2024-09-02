@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.7.20] - 2024-09-02
+- Implemented a critical time threshold mechanism where, if `cosmic_origin_time` exceeds a specific limit relative to the current time (Unix Timestamp: 59999997000000, equivalent to nearly 1.9 million real-life years), all galaxies are marked as "Singularity Void". This ensures that scaling the simulation far into the future results in a universe-wide singularity, preventing any galaxy development.
+- Added flexibility to the `cosmic_origin_time` condition, allowing for precise control over galaxy development based on time and proximity factors.
+- Corrected an issue where galaxies at the universe's edges (`(0,0,0)` and `(9999999,9999999,9999999)`) would develop systems even when `cosmic_origin_time` should have prevented any development.
+- Revised the calculation method to prevent "inverse artifacts" where galaxies might incorrectly develop due to extreme values of `cosmic_origin_time`.
+- Introduced `custom_timestamp_to_date` in `__config_helpers.py`, allowing conversion of large timestamps into readable dates, overcoming Python's datetime limitations.
+- Introduced a safeguard against user manipulation of `cosmic_origin_time` by establishing a threshold where all galaxies default to "Singularity Void" if the time is advanced too far in the calculations (like time traveling to the beginning of the universe).
+- Streamlined galaxy development calculations, ensuring robust behavior even under extreme time advancements.
+- Verified that the new conditions and logic perform consistently across different time settings, ensuring stability and accuracy in the simulation.
+
 ## [0.7.17] - 2024-09-02
 - Introduced a `k_factor` that varies depending on the type of planet, specifically enhancing calculations for gas giants and frozen gas giants. This allows for a more accurate simulation of rotational dynamics based on the planet's classification.
 - Further refined the rotation period calculation by integrating the `k_factor` into the moment of inertia and gravitational calculations, ensuring that rotational dynamics are more faithful to real-world physics across different planetary types.

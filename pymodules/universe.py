@@ -93,7 +93,14 @@ class Galaxy:
             0, 1 - (self.distance_to_origin / self.max_distance)
         )
 
-        self.calculate_num_systems()
+        if cosmic_origin_time - time.time() >= 59999997000000:
+            self.num_systems = 0
+            self.galaxy_type = "Singularity Void"
+            self.black_holes = 0
+            self.pulsars = 0
+            self.quasars = 0
+        else:
+            self.calculate_num_systems()
 
         self.solar_systems = {}
 
