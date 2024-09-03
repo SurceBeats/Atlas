@@ -52,9 +52,9 @@
       <ul class="planets-list">
         {% for planet in system.planets.values() %}
         <li class="planet-item">
-          <div class="seen-indicator" data-planet="{{ planet['Name'].lower() }}"></div>
-          <a href="{{ url_for('view_planet', planet_name=planet['Name'].lower(), page=request.args.get('page', 1)) }}">
-            <span>{{ planet['Name'].replace("_", " ") }}</span>
+          <div class="seen-indicator" data-planet="{{ planet.name.lower() }}"></div>
+          <a href="{{ url_for('view_planet', planet_name=planet.name.lower(), page=request.args.get('page', 1)) }}">
+            <span>{{ planet.name.replace("_", " ") }}</span>
           </a>
         </li>
         {% endfor %}

@@ -80,11 +80,11 @@ def generate_gradient(draw, center_x, center_y, planet_radius, base_color, seed)
 
 
 def generate_planet_image(planet):
-    spaced_planet_name = planet["Name"].replace("_", " ")
-    planet_type = planet["Type"].replace("_", " ")
-    planet_diam = planet["Diameter"]
-    planet_dens = planet["Density"]
-    planet_grav = planet["Gravity"]
+    spaced_planet_name = planet.name.replace("_", " ")
+    planet_type = planet.planet_type.replace("_", " ")
+    planet_diam = planet.diameter
+    planet_dens = planet.density
+    planet_grav = planet.gravity
 
     img_size = 800
     image = Image.new("RGB", (img_size, img_size), "black")
@@ -104,11 +104,11 @@ def generate_planet_image(planet):
     )
     rng = random.Random(shape_seed)
 
-    planet_radius = int(150 * (planet["Diameter"] / max(planet["Diameter"], 1)))
+    planet_radius = int(150 * (planet.diameter / max(planet.diameter, 1)))
 
     planet_color_map = get_planet_color_map()
 
-    base_color = planet_color_map.get(planet["Type"], "white")
+    base_color = planet_color_map.get(planet.planet_type, "white")
 
     gradient = generate_gradient(
         draw,
@@ -175,8 +175,8 @@ def generate_planet_image(planet):
         planet_surface, Image.new("RGBA", planet_surface.size, (0, 0, 0, 0)), mask
     )
 
-    if planet["Atmosphere"] != "None":
-        atmosphere_type = planet["Atmosphere"]
+    if planet.atmosphere != "None":
+        atmosphere_type = planet.atmosphere
 
         if atmosphere_type == "Breathable":
             atmosphere_color = (144, 238, 144, 150)  # lightgreen con opacidad
@@ -266,10 +266,10 @@ def generate_planet_image(planet):
 
     draw.line(
         (
-            center_x - planet_radius * math.sin(math.radians(planet["Axial Tilt"])),
-            center_y - planet_radius * math.cos(math.radians(planet["Axial Tilt"])),
-            center_x + planet_radius * math.sin(math.radians(planet["Axial Tilt"])),
-            center_y + planet_radius * math.cos(math.radians(planet["Axial Tilt"])),
+            center_x - planet_radius * math.sin(math.radians(planet.axial_tilt)),
+            center_y - planet_radius * math.cos(math.radians(planet.axial_tilt)),
+            center_x + planet_radius * math.sin(math.radians(planet.axial_tilt)),
+            center_y + planet_radius * math.cos(math.radians(planet.axial_tilt)),
         ),
         fill="white",
         width=2,
@@ -287,7 +287,7 @@ def generate_planet_image(planet):
     life_form_layer = Image.new("RGBA", (img_size, img_size), (0, 0, 0, 0))
     life_form_draw = ImageDraw.Draw(life_form_layer)
 
-    life_form_type = planet.get("Life Forms")
+    life_form_type = planet.life_forms
 
     if life_form_type in draw_life_functions:
         draw_life_functions[life_form_type](
@@ -369,10 +369,10 @@ def generate_solar_system_image(solar_system):
             )
             planet_rng = random.Random(planet_rng_seed)
 
-            spaced_planet_name = planet["Name"].replace("_", " ")
+            spaced_planet_name = planet.name.replace("_", " ")
 
-            relative_orbit_radius = planet["Orbital Radius"] / max(
-                [p["Orbital Radius"] for p in solar_system.planets.values()]
+            relative_orbit_radius = planet.orbital_radius / max(
+                [p.orbital_radius for p in solar_system.planets.values()]
             )
             orbit_radius = min_orbit_radius + int(
                 relative_orbit_radius * (max_orbit_radius - min_orbit_radius)
@@ -401,7 +401,7 @@ def generate_solar_system_image(solar_system):
                         [x_start, y_start, x_end, y_end], fill="slategray", width=1
                     )
 
-            orbital_period = planet["Orbital Period"]
+            orbital_period = planet.orbital_period_seconds
             angle_velocity_orbit = 2 * math.pi / orbital_period
 
             time_elapsed = current_time - cosmic_origin_time
@@ -417,7 +417,7 @@ def generate_solar_system_image(solar_system):
             planet_x = center_x + semi_major_axis * math.cos(angle_orbit)
             planet_y = center_y + semi_minor_axis * math.sin(angle_orbit)
 
-            rotation_period = planet["Rotation Period"] / 365.25
+            rotation_period = planet.rotation_period_seconds / 365.25
             angle_velocity_rotation = 2 * math.pi / rotation_period
 
             angle_rotation = (
@@ -452,10 +452,10 @@ def generate_solar_system_image(solar_system):
                 "Nebulous": "#FFC0CB",
                 "Aquifer": "#00FFFF",
                 "Exotic": "#FF00FF",
-            }.get(planet["Type"], "white")
+            }.get(planet.planet_type, "white")
 
-            max_diameter = max([p["Diameter"] for p in solar_system.planets.values()])
-            planet_radius = int(6 * (planet["Diameter"] / max_diameter))
+            max_diameter = max([p.diameter for p in solar_system.planets.values()])
+            planet_radius = int(6 * (planet.diameter / max_diameter))
 
             min_radius = 2
             planet_radius = max(planet_radius, min_radius)
@@ -532,7 +532,6 @@ def generate_galaxy_image(galaxy):
             y = center_y + radius * math.sin(angle)
             draw.point((x, y), fill="white")
 
-        # Dibujar los brazos espirales con rotación
         for i in range(num_points):
             theta = arm_tightness * math.sqrt(i / num_points) * 2 * math.pi
             arm_angle = i % num_arms * arm_offset

@@ -222,23 +222,23 @@ def view_planet(planet_name):
     planet_name = planet_name.lower()
 
     for planet in current_system.planets.values():
-        if planet["Name"].lower() == planet_name:
+        if planet.name.lower() == planet_name:
             image_url = url_for("planet_blob", planet_name=planet_name)
             planet_url = generate_planet_url(
                 current_galaxy.coordinates, current_system.index, planet_name
             )
 
             planet_summary = {
-                "Type": planet["Type"],
-                "Atmosphere": planet["Atmosphere"],
-                "Mass": f"{planet['Mass']:.2e} kg",
-                "Diameter": f"{planet['Diameter'] / 1000:.2f} km",
-                "Gravity": f"{planet['Gravity']:.2f} m/s²",
-                "Orbital Radius": f"{planet['Orbital Radius']:.2f} AU",
-                "Orbital Period": f"{planet['Orbital Period']:.2f} years",
-                "Surface Temperature": f"{planet['Surface Temperature']:.2f} K",
-                "Elements": ", ".join(planet["Elements"]),
-                "Life Forms": planet["Life Forms"],
+                "Type": planet.planet_type,
+                "Atmosphere": planet.atmosphere,
+                "Mass": f"{planet.mass:.2e} kg",
+                "Diameter": f"{planet.diameter / 1000:.2f} km",
+                "Gravity": f"{planet.gravity:.2f} m/s²",
+                "Orbital Radius": f"{planet.orbital_radius:.2f} AU",
+                "Orbital Period": f"{planet.orbital_period_seconds / (365.25 * 24 * 3600):.2f} years",
+                "Surface Temperature": f"{planet.surface_temperature:.2f} K",
+                "Elements": ", ".join(planet.elements),
+                "Life Forms": planet.life_forms,
             }
 
             return render_template(
@@ -274,13 +274,13 @@ def planet_blob(planet_name):
             return send_file(cache_filepath, mimetype="image/webp")
 
         for planet in current_system.planets.values():
-            if planet["Name"].lower() == planet_name:
+            if planet.name.lower() == planet_name:
                 image = generate_planet_image(planet)
                 image.save(cache_filepath, "WEBP", quality=image_quality)
                 return send_file(cache_filepath, mimetype="image/webp")
     else:
         for planet in current_system.planets.values():
-            if planet["Name"].lower() == planet_name:
+            if planet.name.lower() == planet_name:
                 image = generate_planet_image(planet)
                 img_io = BytesIO()
                 image.save(img_io, "WEBP", quality=image_quality)
@@ -344,7 +344,7 @@ if __name__ == "__main__":
     if enable_cache:
         start_cache_daemon()
 
-    app.config["ENV"] = "production"
-    app.config["DEBUG"] = False
+    app.config["ENV"] = "development"
+    app.config["DEBUG"] = True
 
     app.run(host="0.0.0.0")

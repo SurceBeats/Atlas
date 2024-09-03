@@ -7,22 +7,22 @@
     {% include 'partials/_favicon.html' %}
 
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}" />
-    <title>Planet: {{ planet['Name'].replace("_", " ") }}</title>
+    <title>Planet: {{ planet.name.replace("_", " ") }}</title>
   </head>
-  <body data-coordinates="{{ galaxy.coordinates | join(',') }}" data-system-index="{{ system.index }}" data-planet-name="{{ planet['Name'].lower() }}">
-    <h1>Planet '{{ planet['Name'].replace("_", " ") }}'</h1>
+  <body data-coordinates="{{ galaxy.coordinates | join(',') }}" data-system-index="{{ system.index }}" data-planet-name="{{ planet.name.lower() }}">
+    <h1>Planet '{{ planet.name.replace("_", " ") }}'</h1>
 
     <div class="planet-info">
-      <p><strong>Type:</strong> {{ planet['Type'] }}</p>
-      <p><strong>Atmosphere:</strong> {{ planet['Atmosphere'] }}</p>
-      <p><strong>Life Forms:</strong> {{ planet['Life Forms'] }}</p>
-      <p><strong>Mass:</strong> {{ "{:.2e}".format(planet['Mass']) }} kg</p>
-      <p><strong>Diameter:</strong> {{ "{:,.2f}".format(planet['Diameter']) }} km</p>
-      <p><strong>Density:</strong> {{ "{:,.2f}".format(planet['Density']) }} kg/m³</p>
-      <p><strong>Gravity:</strong> {{ "{:.2f}".format(planet['Gravity']) }} m/s²</p>
-      <p><strong>Orbital Radius:</strong> {{ "{:,.2f}".format(planet['Orbital Radius']) }} AU</p>
+      <p><strong>Type:</strong> {{ planet.planet_type }}</p>
+      <p><strong>Atmosphere:</strong> {{ planet.atmosphere }}</p>
+      <p><strong>Life Forms:</strong> {{ planet.life_forms }}</p>
+      <p><strong>Mass:</strong> {{ "{:.2e}".format(planet.mass) }} kg</p>
+      <p><strong>Diameter:</strong> {{ "{:,.2f}".format(planet.diameter) }} km</p>
+      <p><strong>Density:</strong> {{ "{:,.2f}".format(planet.density) }} kg/m³</p>
+      <p><strong>Gravity:</strong> {{ "{:.2f}".format(planet.gravity) }} m/s²</p>
+      <p><strong>Orbital Radius:</strong> {{ "{:,.2f}".format(planet.orbital_radius) }} AU</p>
       <p><strong>Orbital Period:</strong>
-        {% set seconds = planet['Orbital Period'] %}
+        {% set seconds = planet.orbital_period_seconds %}
         {% set days = seconds / (60 * 60 * 24) %}
         {% if days < 30 %}
             {{ "{:,.2f}".format(days) }} days
@@ -32,10 +32,10 @@
             {{ "{:,.2f}".format(days / 365) }} years
         {% endif %}
       </p>
-      <p><strong>Orbital Speed:</strong> {{ "{:,.2f}".format(planet['Orbital Speed']) }} m/s</p>
-      <p><strong>Axial Tilt:</strong> {{ "{:,.2f}".format(planet['Axial Tilt']) }} degrees</p>
+      <p><strong>Orbital Speed:</strong> {{ "{:,.2f}".format(planet.orbital_speed) }} m/s</p>
+      <p><strong>Axial Tilt:</strong> {{ "{:,.2f}".format(planet.axial_tilt) }} degrees</p>
       <p><strong>Rotation Period:</strong> 
-        {% set seconds = planet['Rotation Period'] %}
+        {% set seconds = planet.rotation_period_seconds %}
         {% set days = seconds / (60 * 60 * 24) %}
         {% if days < 30 %}
             {{ "{:,.2f}".format(days) }} days
@@ -45,10 +45,10 @@
             {{ "{:,.2f}".format(days / 365) }} years
         {% endif %}
       </p>
-      <p><strong>Surface:</strong> {{ "{:,.2f}".format(planet['Surface Temperature']) }} °C ({{ "{:,.2f}".format(planet['Surface Temperature'] * 9/5 + 32) }} °F)</p>
-      <p><strong>Elements:</strong> {{ ", ".join(planet['Elements']) }}</p>
+      <p><strong>Surface:</strong> {{ "{:,.2f}".format(planet.surface_temperature) }} °C ({{ "{:,.2f}".format(planet.surface_temperature * 9/5 + 32) }} °F)</p>
+      <p><strong>Elements:</strong> {{ ", ".join(planet.elements) }}</p>
       <div id="localization-content" class="localization-content">
-        <p><strong class="localize">Planet:</strong> {{ planet['Name'].replace("_", " ") }}</p>
+        <p><strong class="localize">Planet:</strong> {{ planet.name.replace("_", " ") }}</p>
         <p><strong class="localize">System:</strong> {{ system.name }}</p>
         <p><strong class="localize">System ID:</strong> #{{ system.index + 1 }}</p>
         <p><strong class="localize">Galaxy:</strong> {{ galaxy.name.replace("_", " ") }}</p>
@@ -60,7 +60,7 @@
     <div class="planet-info">
       <div class="blob-image-container">
         <canvas id="canvas"></canvas>
-        <img class="blob-image" data-high-res-url="{{ url_for('planet_blob', planet_name=planet['Name']) }}" src="{{ url_for('static', filename='images/placeholder-min.jpg') }}" id="blob-image" />
+        <img class="blob-image" data-high-res-url="{{ url_for('planet_blob', planet_name=planet.name) }}" src="{{ url_for('static', filename='images/placeholder-min.jpg') }}" id="blob-image" />
       </div>
       <div class="stargate-container">
         <a class="stargate" href="{{ planet_url }}"><span id="stargate-text">Aligning Stargate...</span></a>
