@@ -29,11 +29,18 @@ from pymodules.image_utils import (
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
+universe = None
 constants = PhysicalConstants()
-universe = Universe(seed, constants)
+
+
+def RunAtlasProtocol():
+    global universe
+    universe = Universe(seed, constants)
 
 
 def get_current_galaxy():
+    if universe is None:
+        raise ValueError("The universe simulation isn't running yet.")
     galaxy_data = session.get("galaxy")
     if galaxy_data:
         galaxy = universe.get_galaxy(*galaxy_data["coordinates"])
@@ -42,6 +49,8 @@ def get_current_galaxy():
 
 
 def get_current_system():
+    if universe is None:
+        raise ValueError("The universe simulation isn't running yet.")
     galaxy = get_current_galaxy()
     system_index = session.get("system")
     if galaxy and system_index is not None:
@@ -61,6 +70,8 @@ def navigate():
     z = int(request.form["z"])
 
     try:
+        if universe is None:
+            raise ValueError("The universe simulation isn't running yet.")
         galaxy = universe.get_galaxy(x, y, z)
         session["galaxy"] = {
             "seed": galaxy.seed,
@@ -72,48 +83,53 @@ def navigate():
         session["system"] = None
         return redirect(url_for("view_galaxy"))
     except Exception as e:
-        return render_template(
-            "index.html", version=version, versionHash=versionHash, error=str(e)
-        )
+        return render_template("error.html", message=f"An error occurred: {str(e)}")
 
 
 @app.route("/galaxy")
 def view_galaxy():
-    current_galaxy = get_current_galaxy()
-    if not current_galaxy:
-        return redirect(url_for("index"))
+    try:
+        current_galaxy = get_current_galaxy()
+        if not current_galaxy:
+            return redirect(url_for("index"))
 
-    galaxy_url = generate_galaxy_url(current_galaxy.coordinates)
+        galaxy_url = generate_galaxy_url(current_galaxy.coordinates)
 
-    page = int(request.args.get("page", 1))
-    per_page = 50
-    start = (page - 1) * per_page
-    end = start + per_page
+        page = int(request.args.get("page", 1))
+        per_page = 50
+        start = (page - 1) * per_page
+        end = start + per_page
 
-    systems = [
-        {
-            "index": i,
-            "number": i + 1,
-            "name": current_galaxy.get_solar_system(i).name,
-        }
-        for i in range(start, min(end, current_galaxy.num_systems))
-    ]
+        systems = [
+            {
+                "index": i,
+                "number": i + 1,
+                "name": current_galaxy.get_solar_system(i).name,
+            }
+            for i in range(start, min(end, current_galaxy.num_systems))
+        ]
 
-    next_page = page + 1 if end < current_galaxy.num_systems else None
-    prev_page = page - 1 if start > 0 else None
+        next_page = page + 1 if end < current_galaxy.num_systems else None
+        prev_page = page - 1 if start > 0 else None
 
-    return render_template(
-        "galaxy.html",
-        galaxy=current_galaxy,
-        image_url=url_for("galaxy_blob"),
-        systems=systems,
-        page=page,
-        next_page=next_page,
-        prev_page=prev_page,
-        galaxy_url=galaxy_url,
-        version=version,
-        versionHash=versionHash,
-    )
+        return render_template(
+            "galaxy.html",
+            galaxy=current_galaxy,
+            image_url=url_for("galaxy_blob"),
+            systems=systems,
+            page=page,
+            next_page=next_page,
+            prev_page=prev_page,
+            galaxy_url=galaxy_url,
+            version=version,
+            versionHash=versionHash,
+        )
+    except ValueError as ve:
+        return render_template("error.html", message=str(ve))
+    except Exception as e:
+        return render_template(
+            "error.html", message=f"An unexpected error occurred: {str(e)}"
+        )
 
 
 @app.route("/galaxy_blob")
@@ -142,11 +158,10 @@ def galaxy_blob():
 
 @app.route("/system/<int:system_index>")
 def view_system(system_index):
-    current_galaxy = get_current_galaxy()
-    if not current_galaxy:
-        return redirect(url_for("index"))
-
     try:
+        current_galaxy = get_current_galaxy()
+        if not current_galaxy:
+            return redirect(url_for("index"))
 
         session["system"] = system_index
         current_system = current_galaxy.get_solar_system(system_index)
@@ -183,7 +198,7 @@ def view_system(system_index):
             versionHash=versionHash,
         )
     except ValueError as e:
-        return render_template("error.html", message=str(e), galaxy=current_galaxy)
+        return render_template("error.html", message=str(e))
 
 
 @app.route("/system_blob")
@@ -343,6 +358,8 @@ if __name__ == "__main__":
 
     if enable_cache:
         start_cache_daemon()
+
+    RunAtlasProtocol()
 
     app.config["ENV"] = "development"
     app.config["DEBUG"] = True

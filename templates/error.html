@@ -7,12 +7,22 @@
     {% include 'partials/_favicon.html' %}
 
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}" />
-    <title>Error</title>
+    <title>Atlas Error</title>
   </head>
   <body>
-    <h1>Error</h1>
-    <p>{{ message }}</p>
-    <a href="{{ url_for('view_galaxy') }}">Return to Galaxy</a>
+    <header class="interfaceinit">
+      <img src="/static/atlas-logo.png" alt="Atlas Logo" class="logo" />
+
+      <div class="error-message">
+        <h1 class="errorpage_view mt10">{{ message }}</h1>
+      </div>
+      <a href="{{ url_for('index') }}" class="mt10 buttonnobutton navigate-button">Return to Home</a>
+
+    </header>
+
+
+    <p class="p-version">Atlas Version {{ version }} · Created by Claudio González for <a target="_blank" href="https://www.banshee.pro/">Banshee</a></p>
+
+    <script src="{{ url_for('static', filename='vjs/script.js') }}?v={{ versionHash }}"></script>
   </body>
-  <script src="{{ url_for('static', filename='vjs/script.js') }}?v={{ versionHash }}"></script>
 </html>
