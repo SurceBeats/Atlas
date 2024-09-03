@@ -15,6 +15,11 @@ def clear_cache():
             filepath = os.path.join(cache_dir, filename)
             if os.path.isfile(filepath):
                 file_creation_time = os.path.getctime(filepath)
+                
+                # Asegúrate de que `cache_cleanup_time` no sea None
+                if cache_cleanup_time is None:
+                    raise ValueError("cache_cleanup_time is not initialized properly.")
+                
                 if now - file_creation_time > cache_cleanup_time:
                     os.remove(filepath)
         time.sleep(60)

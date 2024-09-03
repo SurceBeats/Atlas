@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atlas Simulation Setup</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <img src="/static/atlas-logo.png" alt="Atlas Logo" class="logo">
+    </header>
+
+    <div class="container">
+        <h1>Welcome to Atlas Simulation</h1>
+        <p>Would you like to create your own unique universe or explore the default universe that everyone sees?</p>
+        <form action="{{ url_for('onboarding') }}" method="POST">
+            <div class="option">
+                <input type="radio" id="default" name="universe_type" value="default" checked>
+                <label for="default">Visit the Default Universe</label>
+                <p class="description">Explore the universe that everyone can see, with the standard seed and cosmic origin time.</p>
+            </div>
+
+            <div class="option">
+                <input type="radio" id="custom" name="universe_type" value="custom">
+                <label for="custom">Create Your Own Universe</label>
+                <p class="description">Generate a unique universe with a random seed and cosmic origin time based on the moment of creation.</p>
+            </div>
+
+            <button type="submit" class="button">Initialize Universe</button>
+        </form>
+    </div>
+
+    <footer>
+        <p>Atlas Version {{ version }} · Created by Claudio González for <a href="https://www.banshee.pro/" target="_blank">Banshee</a></p>
+    </footer>
+</body>
+</html>

@@ -8,7 +8,7 @@ from flask import Flask, render_template, request, redirect, url_for, send_file,
 
 from pymodules.__cache import get_cached_image_path
 from pymodules.__cache_daemon import start_cache_daemon
-from pymodules.__config import seed, image_quality, enable_cache, version, versionHash
+from pymodules.__config import config_initialized, initialize_config, create_atlas_ini, seed, image_quality, enable_cache, version, versionHash
 from pymodules.__the_observer import observer
 from pymodules.__stargate import (
     generate_planet_url,
@@ -60,7 +60,40 @@ def get_current_system():
 
 @app.route("/")
 def index():
+    # Si no se ha inicializado correctamente la configuración o el universo, redirige a onboarding
+    if not config_initialized or universe is None:
+        return redirect(url_for("onboarding"))
     return render_template("index.html", version=version, versionHash=versionHash)
+
+
+@app.route("/onboarding", methods=["GET", "POST"])
+def onboarding():
+    if os.path.exists("atlas.ini"):
+        return redirect(url_for("index"))
+
+    if request.method == "POST":
+        universe_type = request.form.get("universe_type")
+
+        if universe_type == "default":
+            seed_str = "1.618033988749895"
+            cosmic_origin_time = 1725017449  # Valor fijo
+        else:
+            seed_str = "000"  # Semilla basada en el tiempo actual
+            cosmic_origin_time = 000
+
+        create_atlas_ini(seed_str, cosmic_origin_time)
+
+        # Recargar la configuración ahora que atlas.ini ha sido creado
+        global config_initialized
+        config_initialized = initialize_config()
+
+        # Re-inicializar el universo ahora que la configuración está lista
+        if config_initialized:
+            RunAtlasProtocol()
+
+        return redirect(url_for("index"))
+
+    return render_template("onboarding.html", version=version, versionHash=versionHash)
 
 
 @app.route("/navigate", methods=["POST"])
@@ -352,16 +385,14 @@ def stargate(encoded_url):
 
 if __name__ == "__main__":
 
-    if "--observer" in sys.argv:
-        observer(universe)
-        exit("Observer out!")
+    if config_initialized:
+        RunAtlasProtocol()
 
-    if enable_cache:
-        start_cache_daemon()
+        if "--observer" in sys.argv:
+            observer(universe)
+            exit("Observer out!")
 
-    RunAtlasProtocol()
+        if enable_cache:
+            start_cache_daemon()
 
-    app.config["ENV"] = "development"
-    app.config["DEBUG"] = True
-
-    app.run(host="0.0.0.0")
+    app.run(host="0.0.0.0", port=5000)
