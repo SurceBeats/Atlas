@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.7.47] - 2024-09-03
+
+- Introduced a new `Planet` class to represent planets, replacing the previous dictionary-based approach. This class encapsulates all logic and calculations related to the creation and behavior of planets.
+- Added methods to the `Planet` class to initialize all relevant attributes, including planet type, atmosphere, elements, temperature, gravity, mass, and more.
+- Integrated the logic for calculating the probability of life into the `Planet` class, ensuring it is called once after all attributes are fully initialized.
+- Migrated functions and logic from using dictionaries to an object-oriented implementation with the `Planet` class. This conversion improves code structure, facilitates method and attribute reuse, and enhances scalability and maintainability.
+- Removed a redundant call to the `calculate_life_probability` function, ensuring that life probability is only calculated after all planet attributes are correctly initialized, preventing inconsistencies in the results.
+- Each calculation within the `Planet` class is now separated into its own method, enhancing modularity. These methods will later be refactored into separate files (e.g., `__universe_planet_methods.py`, `__universe_system_methods.py`, etc.) to further organize and streamline the codebase.
+- Corrected inconsistencies in the assignment of life types to planets, which were caused by calculations being performed before all attributes were properly initialized.
+- The use of a `Planet` class instead of a dictionary to store planet attributes provides a clearer and more modular structure. Classes allow for better data and behavior encapsulation, making the code easier to understand and maintain. Additionally, it reduces the possibility of errors and redundancies, as all calculations related to a specific planet are contained within the same class.
+
 ## [0.7.20] - 2024-09-02
 - Implemented a critical time threshold mechanism where, if `cosmic_origin_time` exceeds a specific limit relative to the current time (Unix Timestamp: 59999997000000, equivalent to nearly 1.9 million real-life years), all galaxies are marked as "Singularity Void". This ensures that scaling the simulation far into the future results in a universe-wide singularity, preventing any galaxy development.
 - Added flexibility to the `cosmic_origin_time` condition, allowing for precise control over galaxy development based on time and proximity factors.

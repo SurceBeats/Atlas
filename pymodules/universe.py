@@ -222,7 +222,6 @@ class Planet:
         self.constants = constants
 
         self.initialize_planet_attributes()
-        self.life_forms = self.calculate_life_probability()
 
     def initialize_planet_attributes(self):
 
@@ -472,38 +471,29 @@ class Planet:
         else:
             score -= 20
 
-        atmosphere_scores = {
-            "Oxygen-Rich": 30,
-            "Nitrogen": 30,
-            "Carbon Dioxide": 10,
-            "Methane": 10,
-        }
-        score += atmosphere_scores.get(self.atmosphere, -10)
+        if self.atmosphere in ["Oxygen-Rich", "Nitrogen"]:
+            score += 30
+        elif self.atmosphere in ["Carbon Dioxide", "Methane"]:
+            score += 10
+        else:
+            score -= 10
 
-        planet_type_scores = {
-            "Oceanic": 30,
-            "Swamp": 30,
-            "Aquifer": 30,
-            "Rocky": 20,
-            "Forest": 20,
-            "Savannah": 20,
-            "Gas Giant": -10,
-            "Frozen Gas Giant": -10,
-        }
-        score += planet_type_scores.get(self.planet_type, 0)
+        if self.planet_type in ["Oceanic", "Swamp", "Aquifer"]:
+            score += 30
+        elif self.planet_type in ["Rocky", "Forest", "Savannah"]:
+            score += 20
+        elif self.planet_type in ["Gas Giant", "Frozen Gas Giant"]:
+            score -= 10
 
-        element_bonus = {
-            "Water": 20,
-            "Carbon": 10,
-            "Silicon": 5,
-        }
-        score += sum(
-            bonus
-            for element, bonus in element_bonus.items()
-            if element in self.elements
-        )
+        if "Water" in self.elements:
+            score += 20
+        if "Carbon" in self.elements:
+            score += 10
+        if "Silicon" in self.elements:
+            score += 5
 
         possible_life_forms = ["None"]
+
         if score >= 60:
             possible_life_forms.extend(
                 [
@@ -521,48 +511,29 @@ class Planet:
         elif 20 <= score < 40:
             possible_life_forms.extend(["Bacteria", "Vegetation"])
 
-        special_cases = [
-            (
-                lambda: (
-                    "Silicon-Based Life"
-                    if "Silicon" in self.elements and random.random() < 0.02
-                    else None
-                )
-            ),
-            (lambda: "Non-Physical Entity" if random.random() < 0.0001 else None),
-            (
-                lambda: (
-                    "Conscious Gas"
-                    if self.atmosphere in ["Methane", "Ammonia"]
-                    and random.random() < 0.00001
-                    else None
-                )
-            ),
-            (
-                lambda: (
-                    "Robotic Entities"
-                    if self.planet_type in ["Metallic", "Crystalline"]
-                    and random.random() < 0.001
-                    else None
-                )
-            ),
-            (
-                lambda: (
-                    "Have I just found God?"
-                    if self.planet_type == "Nebulous"
-                    and self.atmosphere == "Plasma"
-                    and "Moscovium" in self.elements
-                    and "Z-Divinium" in self.elements
-                    and random.random() < 0.00001
-                    else None
-                )
-            ),
-        ]
+        if "Silicon" in self.elements:
+            if random.random() < 0.02:
+                return "Silicon-Based Life"
 
-        for case in special_cases:
-            result = case()
-            if result:
-                return result
+        if random.random() < 0.0001:
+            return "Non-Physical Entity"
+
+        if self.atmosphere in ["Methane", "Ammonia"]:
+            if random.random() < 0.00001:
+                return "Conscious Gas"
+
+        if self.planet_type in ["Metallic", "Crystalline"]:
+            if random.random() < 0.001:
+                return "Robotic Entities"
+
+        if (
+            self.planet_type == "Nebulous"
+            and self.atmosphere == "Plasma"
+            and "Moscovium" in self.elements
+            and "Z-Divinium" in self.elements
+        ):
+            if random.random() < 0.00001:
+                return "Have I just found God?"
 
         return random.choice(possible_life_forms)
 
