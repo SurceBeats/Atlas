@@ -80,7 +80,7 @@ To get started with *The Atlas*:
 
 1. Install the required dependencies: `pip install Pillow Flask tornado`.
 2. Run `python3 __main__.py`.
-3. Open your browser and navigate to `localhost` to select your Universse through the Atlas Initialization Protocol and explore your universe.
+3. Open your browser and navigate to `localhost` to select your Universe through the Atlas Initialization Protocol and explore your universe.
 
 Alternatively, you can install all dependencies by running: `pip install -r requirements.txt`.
 
