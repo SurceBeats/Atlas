@@ -154,7 +154,13 @@ def generate_planet_image(planet):
 
     if planet_type in draw_functions:
         draw_functions[planet_type](
-            draw, center_x, center_y, planet_radius, rng, config.seed, spaced_planet_name
+            draw,
+            center_x,
+            center_y,
+            planet_radius,
+            rng,
+            config.seed,
+            spaced_planet_name,
         )
     else:
         raise ValueError(f"Unknown planet type: {planet_type}")
@@ -404,24 +410,23 @@ def generate_solar_system_image(solar_system):
             orbital_period = planet.orbital_period_seconds
             angle_velocity_orbit = 2 * math.pi / orbital_period
 
-            time_elapsed = current_time - config.cosmic_origin_time
-            time_elapsed_years = time_elapsed / (365.25 * 24 * 3600)
+            time_elapsed_seconds = current_time - config.cosmic_origin_time
 
             initial_angle_orbit = planet_rng.uniform(0, 2 * math.pi)
             initial_angle_rotation = planet_rng.uniform(0, 2 * math.pi)
 
             angle_orbit = (
-                initial_angle_orbit + time_elapsed_years * angle_velocity_orbit
+                initial_angle_orbit + time_elapsed_seconds * angle_velocity_orbit
             ) % (2 * math.pi)
 
             planet_x = center_x + semi_major_axis * math.cos(angle_orbit)
             planet_y = center_y + semi_minor_axis * math.sin(angle_orbit)
 
-            rotation_period = planet.rotation_period_seconds / 365.25
-            angle_velocity_rotation = 2 * math.pi / rotation_period
+            rotation_period_seconds = planet.rotation_period_seconds
+            angle_velocity_rotation = 2 * math.pi / rotation_period_seconds
 
             angle_rotation = (
-                initial_angle_rotation + time_elapsed_years * angle_velocity_rotation
+                initial_angle_rotation + time_elapsed_seconds * angle_velocity_rotation
             ) % (2 * math.pi)
 
             planet_color = {

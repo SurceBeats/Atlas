@@ -5,14 +5,14 @@ import configparser
 import os
 import time
 import random
-from pymodules.__boot_message import display_boot_message
+from pymodules.__boot_message import display_boot_message, display_intro_message
 from pymodules.__config_helpers import custom_timestamp_to_date
+from pymodules.__fixed import VERSION, VERSION_HASH, PORT
 
 
 class Config:
     _instance = None
-    version = "0.8.192"
-    version_hash = hashlib.sha256(version.encode("utf-8")).hexdigest()
+    display_intro_message(PORT)
 
     def __new__(cls):
         if cls._instance is None:
@@ -21,6 +21,8 @@ class Config:
         return cls._instance
 
     def initialize(self):
+
+
         if self._initialized:
             return True
 
@@ -49,9 +51,6 @@ class Config:
         self.cache_cleanup_time = config.get("Settings", "cache_cleanup_time")
         self.cache_cleanup_time = int(self.cache_cleanup_time)
 
-        self.version = "0.7.47"
-        self.version_hash = hashlib.sha256(self.version.encode("utf-8")).hexdigest()
-
         display_boot_message(
             self.seed_str,
             self.seed_hash,
@@ -61,8 +60,8 @@ class Config:
             self.image_quality,
             self.enable_cache,
             self.cache_cleanup_time,
-            self.version,
-            self.version_hash,
+            VERSION,
+            VERSION_HASH,
         )
 
         self._initialized = True

@@ -2,114 +2,138 @@
 
 ## About The Atlas
 
-The Atlas is a procedural generation engine designed to create vast, complex galaxies and universes. Built with advanced algorithms and some astrophysical phenomena, The Atlas offers an unparalleled toolset for generating realistic and immersive cosmic environments. It has been widely inspired by the team behind No Man's Sky.
+**The Atlas** is a procedural generation engine designed to create vast, complex galaxies and universes. Built with advanced algorithms and inspired by real astrophysical phenomena, *The Atlas* offers an unparalleled toolset for generating realistic and immersive cosmic environments. It draws inspiration from the team behind *No Man's Sky* and pushes the boundaries of space simulation.
 
 ---
 
 ## Key Features
 
 - **Procedural Galaxy Creation**: Generate diverse galaxies with unique star systems, planetary bodies, and cosmic events.
-- **Universe Simulation**: Simulate the creation of an entire universe.
-- **Customizable Parameters**: Fine-tune every aspect of the generation process to create the exact type of universe or galaxy you need, including Physical Constants (pymodules/constants.py).
-
----
-
-### Version 0.6: The Dawn of Time
-
-In our latest update, Version 0.6, we've gone beyond the boundaries of space and added **time** to the universe. Yes, you heard that right. Imagine "The Atlas" not as a square, but as a cube where coordinates span from xyz=0 to xyz=9999999.
-
-We've introduced a constant called "cosmic_origin_time" right at the center of the Universe. As minutes tick by, more systems are dynamically added to every galaxy. The closer a galaxy is to the center of the universe, the faster it grows with new systems.
-
-The estimated time for the entire universe to fully evolve from the cosmic_origin_time is approximately 2 million years.
-
-<p align="center"><img src="https://github.com/SurceBeats/Atlas/blob/main/public/cosmic_origin_time_picture.jpg" width="400"></p>
-
-But that's not all. We've also implemented a caching system that stores images for 15 minutes, preventing the need to procedurally generate images for every visit—a resource-intensive task. This cache ensures that if the number of systems dramatically increases since your last visit, it will be reflected in the newly generated images.
-
-Additionally, we've enabled image quality settings for those running on less powerful systems. You can now set the quality from 1 to 100, all in the highly efficient WebP format.
-
-[Check the whole Changelog](https://github.com/SurceBeats/Atlas/blob/main/CHANGELOG.md)
+- **Universe Simulation**: Simulate the creation and evolution of entire universes, complete with expanding galaxies and planetary motion.
+- **Customizable Parameters**: Fine-tune every aspect of the generation process, from physical constants to universe seeds, ensuring a personalized experience (editable via `pymodules/__constants.py`).
 
 ---
 
 ### Configuration Made Simple
 
-From the `atlas.ini` file, you can easily disable the cache system or configure the seed of your universe. However, we strongly recommend not altering the cosmic_origin_time—doing so could lead to inconsistencies, and who knows... If you set it high enough, you might just encounter a surprise singularity.
+We've recently introduced the *Atlas Initialization Protocol*, a detailed onboarding process that guides you through configuring your universe on its first start. You can now choose between exploring the `Core Continuum` (the default shared universe) or creating your own unique universe via the `Design the Multiverse` option, which uses a seed-based initialization system.
 
-Explore, experiment, and evolve with "The Atlas"—a universe where space and time converge in infinite possibilities.
+**Stargate links** will only function properly within the `Core Continuum`. If you opt to create a custom universe using the `Design The Multiverse` feature, for stargates to work with others, both parties must have the same `cosmic_origin_time` and seed configured in their `atlas.ini` files. Without this, stargates won’t connect unless your Atlas server is publicly accessible on the internet.
+
+Explore, experiment, and evolve with *The Atlas*—a universe where space and time converge in infinite possibilities.
 
 ---
 
 ## How Big is "The Atlas"?
 
-In "The Atlas," you can explore a universe of staggering proportions. Here's a glimpse of just how immense it is:
+In *The Atlas*, you can explore a universe of staggering proportions:
 
-- **Number of Galaxies**: The universe can contain up to **1 sextillion** (10²¹) galaxies, each situated within a vast space with coordinates ranging from 0 to 10 million in each direction.
-- **Galaxy Types and Sizes**:
-  - **Dwarf Galaxies**: Contain between **100,000 and 10 million** solar systems.
-  - **Spiral Galaxies**: Typically host between **1 billion and 50 billion** solar systems.
-  - **Elliptical Galaxies**: These massive galaxies can contain between **10 billion and 100 billion** solar systems.
-- **Total Solar Systems**: Across all galaxies, the universe can have approximately **50 tredecillion** (5 × 10³¹) solar systems.
-- **Planets**: Each solar system can have between **1 and 6 planets**, resulting in an estimated **300 tredecillion** (3 × 10³²) planets spread throughout the universe.
+- **Galaxies**: Up to **1 sextillion** (10²¹) galaxies, each located within a vast 10-million-unit coordinate system.
+- **Galaxy Types**:
+  - **Dwarf Galaxies**: 100,000 to 10 million solar systems.
+  - **Spiral Galaxies**: 1 billion to 50 billion solar systems.
+  - **Elliptical Galaxies**: 10 billion to 100 billion solar systems.
+- **Solar Systems**: Approximately **50 tredecillion** (5 × 10³¹) solar systems across all galaxies.
+- **Planets**: Each solar system has 1 to 6 planets, resulting in an estimated **300 tredecillion** (3 × 10³²) planets.
 
-These numbers highlight the incredible scale and richness of "The Atlas," where every exploration reveals new galaxies, stars, and worlds within a nearly infinite cosmos.
+These numbers showcase the incredible scale of *The Atlas*, where every exploration reveals new cosmic wonders within a nearly infinite cosmos.
 
 ---
 
 ## Storage Requirements for "The Atlas" Images
 
-If all the image files generated by "The Atlas" during runtime were saved (which is not the case), the storage requirements would be astronomical:
+If all the images generated by *The Atlas* were stored (which isn't the case), the storage requirements would be astronomical:
 
-- **Galaxies**: With **1 sextillion** (10²¹) galaxies, each represented by an 800x800px PNG image, the total storage required would be approximately **1,920,000,000 petabytes** (1.92 zettabytes).
-- **Solar Systems**: With **50 tredecillion** (5 × 10³¹) solar systems, each represented by an 800x800px PNG image, the total storage required would be approximately **96 yottabytes** (9.6 × 10²² petabytes).
-- **Planets**: With **300 tredecillion** (3 × 10³²) planets, each represented by an 800x800px PNG image, the total storage required would be approximately **576 yottabytes** (5.76 × 10²³ petabytes).
-
----
+- **Galaxies**: **1.92 zettabytes** for 1 sextillion galaxies.
+- **Solar Systems**: **96 yottabytes** for 50 tredecillion solar systems.
+- **Planets**: **576 yottabytes** for 300 tredecillion planets.
 
 ### Total Storage
 
-In total, storing the images of all galaxies, solar systems, and planets in "The Atlas" would require around **672 yottabytes** (6.72 × 10²³ petabytes).
+In total, fully documenting *The Atlas* in images would require **672 yottabytes** (6.72 × 10²³ petabytes). However, thanks to our cache system, storage isn't an issue.
 
-These numbers give a sense of the sheer scale of "The Atlas" and the massive data it would generate if fully documented in image form.
+Even with the cache disabled, images are generated as BLOBs and sent in real-time during execution. While this is not recommended due to the increased server load, it remains an option. When the cache is disabled, no images are stored—everything is generated on-the-fly and discarded after being sent.
 
 ---
 
-## How to run it?
-- First, install Pillow to enable image generation at runtime and Flask as a webserver. You can do this by running pip install Pillow and pip install Flask, which should work on most systems. After that, run python3 pointing to the folder or python3 __main__.py. Then, open your browser and navigate to the localhost URL. You're all set!
-- Alternatively, you can run pip install -r requirements.txt to install both dependencies automatically!
+## Daemon Cache Thread
+
+To optimize performance, we've implemented a **daemon cache thread** that renders and stores images temporarily in `static/cache` for 15 minutes before deleting them. This reduces server load and ensures that images are updated and regenerated with each view, reflecting dynamic changes such as galaxy expansion and planetary rotation.
+
+You can disable the cache in the `atlas.ini` file by setting `enable_cache` to `False` and also adjust the default cache cleanup interval by modifying the `cache_cleanup_time` to suit your preferred time limit.
+
+---
+
+### Important News
+
+Since Version 0.6, we've added **time** to the space, making it possible for you to finally travel through space-time—just as it sounds! The *cosmic_origin_time* marks the beginning, with `xyz4999999` as the center of the universe, which we named as the **Bit Bang**. As time passes, galaxies dynamically grow and evolve. According to our calculations, the estimated time for the universe to fully evolve from the *cosmic_origin_time* is **around 4.2 million years**. However, there are artifacts at the edges of the universe, as the growth factor, which is based on distance from the center, approaches zero.
+
+New systems are continually added to galaxies, especially those near the center of the universe, which grow faster than outer systems. Additionally, we've introduced a **real-time simulation** of planetary orbits and rotations. Planets move in real-time based on their physical properties, with dynamic orbital paths and rotations.
+
+<p align="center"><img src="https://github.com/SurceBeats/Atlas/blob/main/public/cosmic_origin_time_picture.jpg" width="400"></p>
+
+---
+
+## Installation and Running Atlas
+
+To get started with *The Atlas*:
+
+1. Install the required dependencies: `pip install Pillow Flask tornado`.
+2. Run `python3 __main__.py`.
+3. Open your browser and navigate to `localhost` to select your Universse through the Atlas Initialization Protocol and explore your universe.
+
+Alternatively, you can install all dependencies by running: `pip install -r requirements.txt`.
+
+---
 
 ## Demo
-- View it live (and slow cause it's free) at https://the-atlas.glitch.me !!!
 
-## Galaxy Screenshots
-<p align="center"><img src="https://github.com/SurceBeats/Atlas/blob/main/public/galaxy.png" width="400" alt="The Atlas Logo"></p>
-<p align="center"><img src="https://github.com/SurceBeats/Atlas/blob/main/public/galaxy-systems.png" width="400" alt="The Atlas Logo"></p>
+Explore *The Atlas* live (and free, so it might be a bit slow): [The Atlas Demo](https://the-atlas.glitch.me)
 
-## Solar Systems Screenshots
-<p align="center"><img src="https://github.com/SurceBeats/Atlas/blob/main/public/system.png" width="400" alt="The Atlas Logo"></p>
-<p align="center"><img src="https://github.com/SurceBeats/Atlas/blob/main/public/planets-system.png" width="400" alt="The Atlas Logo"></p>
+---
+
+## Screenshots
+
+### Galaxy Screenshots
+<p align="center"><img src="https://github.com/SurceBeats/Atlas/blob/main/public/galaxy.png" width="400"></p>
+<p align="center"><img src="https://github.com/SurceBeats/Atlas/blob/main/public/galaxy-systems.png" width="400"></p>
+
+### Solar Systems Screenshots
+<p align="center"><img src="https://github.com/SurceBeats/Atlas/blob/main/public/system.png" width="400"></p>
+<p align="center"><img src="https://github.com/SurceBeats/Atlas/blob/main/public/planets-system.png" width="400"></p>
+
+---
 
 ## Contributing
 
-We welcome contributions to The Atlas! Whether you're fixing bugs, adding features, or improving documentation, your help is greatly appreciated.
+We welcome contributions to *The Atlas*! Whether you are fixing bugs, adding features, or improving documentation, your input is greatly appreciated.
+
+---
 
 ## Security Vulnerabilities
 
-If you discover any security vulnerabilities in "Atlas" or "The Atlas", please contact our team immediately at [hello@banshee.pro](mailto:hello@banshee.pro). We take security issues seriously and will address them as quickly as possible.
+If you discover any security vulnerabilities, please contact us at [hello@banshee.pro](mailto:hello@banshee.pro). We take security seriously and will address any issues as soon as possible.
+
+---
 
 ## License
 
-Created by [Claudio González](https://github.com/SurceBeats) for [Banshee](https://www.banshee.pro/).
-The Atlas is licensed under PolyForm Noncommercial License 1.0.0.
-Please refer to the [license overview](https://github.com/SurceBeats/Atlas/blob/main/LICENSE.md) for any questions.
+Created by [Claudio González](https://github.com/SurceBeats) for [Banshee](https://www.banshee.pro/).  
+*The Atlas* is licensed under the PolyForm Noncommercial License 1.0.0.  
+Refer to the [license overview](https://github.com/SurceBeats/Atlas/blob/main/LICENSE.md) for more details.
 
-## Important Notice on Commercial Use
+### Important Notice on Commercial Use
 
-This software is licensed under the [PolyForm Noncommercial License 1.0.0](https://github.com/SurceBeats/Atlas/blob/main/LICENSE.md), which prohibits all commercial uses. For clarity, the following activities are ALSO considered commercial uses and are not permitted under this license:
+This software is licensed under the [PolyForm Noncommercial License 1.0.0](https://github.com/SurceBeats/Atlas/blob/main/LICENSE.md), which prohibits all commercial uses, including but not limited to:
 
-- Creating, selling, or distributing NFTs (Non-Fungible Tokens) or any related digital assets generated by this software.
-- Any involvement with cryptocurrencies, including mining, trading, or transactions involving digital currencies.
-- Selling artwork, products, assets, or services generated by this software, or distributing them in exchange for tokens, cryptocurrencies, or any other type of blockchain-related compensation.
-- Engaging in any activities related to the procedurally generated content produced by this software for commercial gain.
+- Creating, selling, or distributing NFTs.
+- Using the software for cryptocurrency-related activities.
+- Selling artwork or services generated by the software for commercial gain.
 
-These restrictions ensure the software is used solely for noncommercial purposes, as defined by the license.
+These restrictions ensure the software is used solely for noncommercial purposes.
+
+---
+
+## Changelog
+
+Refer to the full [Changelog](https://github.com/SurceBeats/Atlas/blob/main/CHANGELOG.md) for details on all updates, including new features, fixes, and improvements.

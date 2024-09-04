@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.8.217] - 2024-09-04
+
+- **Added Tornado** as the WSGI server for production, replacing Flask. Flask is now relegated to development use only.
+- Introduced several static constants in `__fixed.py`, ensuring certain variables are available throughout the entire app. These variables should not be modified via `__config.py` or `atlas.ini`.
+- Enhanced the main loop logic to select the web server based on the `RUN` static variable defined in `__fixed.py`, allowing flexible server selection.
+- Implemented the `get_local_addresses` function to display local IP addresses in the Atlas Initialization Protocol prompt during the first app startup, guiding users through the setup process.
+- Significant updates were made to the **README**, but should this be reflected in the changelog? It might not fit the typical criteria, but it's worth noting.
+- Refactored the `__boot_message.py` file into multiple components, improving modularity. The Atlas Initialization Sequence has also been redesigned for a smoother experience when running the Atlas Initialization Protocol.
+- Updated the `requirements.txt` to include the Tornado WSGI server. While Tornado isn't ideal for all cases, it's a necessary dependency for production environments.
+
 ## [0.8.192] - 2024-09-04
 
 - The `Config` part has been converted into a singleton, ensuring that only one instance of the configuration is created and used across the entire application, improving memory usage and consistency.

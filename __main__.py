@@ -3,9 +3,14 @@
 import os
 import sys
 
+from tornado.wsgi import WSGIContainer
+from tornado.httpserver import HTTPServer
+from tornado.ioloop import IOLoop
+
 from io import BytesIO
 from flask import Flask, render_template, request, redirect, url_for, send_file, session
 
+from pymodules.__fixed import VERSION, VERSION_HASH, PORT, RUN
 from pymodules.__cache import get_cached_image_path
 from pymodules.__cache_daemon import start_cache_daemon
 from pymodules.__config import config
@@ -65,7 +70,7 @@ def index():
         if not RunAtlasProtocol():
             return redirect(url_for("onboarding"))
     return render_template(
-        "index.html", version=config.version, versionHash=config.version_hash
+        "index.html", version=VERSION, versionHash=VERSION_HASH
     )
 
 
@@ -81,7 +86,7 @@ def onboarding():
             return redirect(url_for("index"))
 
     return render_template(
-        "onboarding.html", version=config.version, versionHash=config.version_hash
+        "onboarding.html", version=VERSION, versionHash=VERSION_HASH
     )
 
 
@@ -143,8 +148,8 @@ def view_galaxy():
             next_page=next_page,
             prev_page=prev_page,
             galaxy_url=galaxy_url,
-            version=config.version,
-            versionHash=config.version_hash,
+            version=VERSION,
+            versionHash=VERSION_HASH,
         )
     except ValueError as ve:
         return render_template("error.html", message=str(ve))
@@ -216,8 +221,8 @@ def view_system(system_index):
             summary=system_summary,
             system_index=system_index,
             system_url=system_url,
-            version=config.version,
-            versionHash=config.version_hash,
+            version=VERSION,
+            versionHash=VERSION_HASH,
         )
     except ValueError as e:
         return render_template("error.html", message=str(e))
@@ -286,8 +291,8 @@ def view_planet(planet_name):
                 image_url=image_url,
                 summary=planet_summary,
                 planet_url=planet_url,
-                version=config.version,
-                versionHash=config.version_hash,
+                version=VERSION,
+                versionHash=VERSION_HASH,
             )
 
     return redirect(url_for("view_system", system_index=current_system.index))
@@ -382,6 +387,9 @@ if __name__ == "__main__":
         if config.enable_cache:
             start_cache_daemon()
 
-    app.config["ENV"] = "production"
-    app.config["DEBUG"] = False
-    app.run(host="0.0.0.0", port=5000, use_reloader=False)
+    if RUN == "DEV":
+        app.run(host="0.0.0.0", port=PORT, debug=True, use_reloader=True, threaded=True)
+    else:
+        http_server = HTTPServer(WSGIContainer(app))
+        http_server.listen(PORT)
+        IOLoop.instance().start()
