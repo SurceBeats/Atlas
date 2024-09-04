@@ -1,6 +1,5 @@
 # pymodules/__config_helpers.py
 
-import time
 import configparser
 
 config = configparser.ConfigParser()
@@ -21,18 +20,3 @@ def custom_timestamp_to_date(timestamp):
     second = int(remaining_seconds % 60)
 
     return f"Year: {year}, Day of Year: {day_of_year}, Time: {hour:02}:{minute:02}:{second:02}"
-
-
-def create_default_config(filename="atlas.ini"):
-    cosmic_origin_time = int(time.time())
-
-    config["Settings"] = {
-        "seed": "1.618033988749895",
-        "cosmic_origin_time": str(cosmic_origin_time),
-        "image_quality": "100",
-        "enable_cache": "True",
-        "cache_cleanup_time": "900",
-    }
-
-    with open(filename, "w") as configfile:
-        config.write(configfile)

@@ -3,7 +3,7 @@
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageColor
 import time
 
-from pymodules.__config import seed, cosmic_origin_time
+from pymodules.__config import config
 from pymodules.__image_utils_planets import (
     get_planet_color_map,
     draw_gas_giant_elements,
@@ -100,7 +100,7 @@ def generate_planet_image(planet):
     center_y = img_size // 2
 
     shape_seed = consistent_hash(
-        f"{seed}-{spaced_planet_name}-{planet_type}-{planet_diam}-{planet_dens}-{planet_grav}-_safe_shaper"
+        f"{config.seed}-{spaced_planet_name}-{planet_type}-{planet_diam}-{planet_dens}-{planet_grav}-_safe_shaper"
     )
     rng = random.Random(shape_seed)
 
@@ -154,7 +154,7 @@ def generate_planet_image(planet):
 
     if planet_type in draw_functions:
         draw_functions[planet_type](
-            draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
+            draw, center_x, center_y, planet_radius, rng, config.seed, spaced_planet_name
         )
     else:
         raise ValueError(f"Unknown planet type: {planet_type}")
@@ -296,7 +296,7 @@ def generate_planet_image(planet):
             center_y,
             planet_radius,
             rng,
-            seed,
+            config.seed,
             spaced_planet_name,
             img_size,
         )
@@ -404,7 +404,7 @@ def generate_solar_system_image(solar_system):
             orbital_period = planet.orbital_period_seconds
             angle_velocity_orbit = 2 * math.pi / orbital_period
 
-            time_elapsed = current_time - cosmic_origin_time
+            time_elapsed = current_time - config.cosmic_origin_time
             time_elapsed_years = time_elapsed / (365.25 * 24 * 3600)
 
             initial_angle_orbit = planet_rng.uniform(0, 2 * math.pi)

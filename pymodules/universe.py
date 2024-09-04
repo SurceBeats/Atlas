@@ -8,7 +8,7 @@ import time
 from pymodules.__name_generator import generate_name
 from pymodules.__periodic_table_prob import periodic_table
 from pymodules.__seedmaster import seedmaster
-from pymodules.__config import cosmic_origin_time
+from pymodules.__config import config
 
 
 class Universe:
@@ -44,7 +44,7 @@ class Universe:
                 self.constants,
                 galaxy_type,
                 coordinates=(x, y, z),
-                cosmic_origin_time=cosmic_origin_time,
+                cosmic_origin_time=config.cosmic_origin_time,
             )
         return self.galaxies[(x, y, z)]
 

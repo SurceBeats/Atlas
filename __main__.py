@@ -8,7 +8,7 @@ from flask import Flask, render_template, request, redirect, url_for, send_file,
 
 from pymodules.__cache import get_cached_image_path
 from pymodules.__cache_daemon import start_cache_daemon
-from pymodules.__config import config_initialized, initialize_config, create_atlas_ini, seed, image_quality, enable_cache, version, versionHash
+from pymodules.__config import config
 from pymodules.__the_observer import observer
 from pymodules.__stargate import (
     generate_planet_url,
@@ -35,12 +35,15 @@ constants = PhysicalConstants()
 
 def RunAtlasProtocol():
     global universe
-    universe = Universe(seed, constants)
+    if not config.is_initialized:
+        if not config.initialize():
+            return False
+
+    universe = Universe(config.seed, constants)
+    return True
 
 
 def get_current_galaxy():
-    if universe is None:
-        raise ValueError("The universe simulation isn't running yet.")
     galaxy_data = session.get("galaxy")
     if galaxy_data:
         galaxy = universe.get_galaxy(*galaxy_data["coordinates"])
@@ -49,8 +52,6 @@ def get_current_galaxy():
 
 
 def get_current_system():
-    if universe is None:
-        raise ValueError("The universe simulation isn't running yet.")
     galaxy = get_current_galaxy()
     system_index = session.get("system")
     if galaxy and system_index is not None:
@@ -60,10 +61,12 @@ def get_current_system():
 
 @app.route("/")
 def index():
-    # Si no se ha inicializado correctamente la configuración o el universo, redirige a onboarding
-    if not config_initialized or universe is None:
-        return redirect(url_for("onboarding"))
-    return render_template("index.html", version=version, versionHash=versionHash)
+    if not config.is_initialized or universe is None:
+        if not RunAtlasProtocol():
+            return redirect(url_for("onboarding"))
+    return render_template(
+        "index.html", version=config.version, versionHash=config.version_hash
+    )
 
 
 @app.route("/onboarding", methods=["GET", "POST"])
@@ -74,26 +77,12 @@ def onboarding():
     if request.method == "POST":
         universe_type = request.form.get("universe_type")
 
-        if universe_type == "default":
-            seed_str = "1.618033988749895"
-            cosmic_origin_time = 1725017449  # Valor fijo
-        else:
-            seed_str = "000"  # Semilla basada en el tiempo actual
-            cosmic_origin_time = 000
+        if config.setup_universe(universe_type):
+            return redirect(url_for("index"))
 
-        create_atlas_ini(seed_str, cosmic_origin_time)
-
-        # Recargar la configuración ahora que atlas.ini ha sido creado
-        global config_initialized
-        config_initialized = initialize_config()
-
-        # Re-inicializar el universo ahora que la configuración está lista
-        if config_initialized:
-            RunAtlasProtocol()
-
-        return redirect(url_for("index"))
-
-    return render_template("onboarding.html", version=version, versionHash=versionHash)
+    return render_template(
+        "onboarding.html", version=config.version, versionHash=config.version_hash
+    )
 
 
 @app.route("/navigate", methods=["POST"])
@@ -154,8 +143,8 @@ def view_galaxy():
             next_page=next_page,
             prev_page=prev_page,
             galaxy_url=galaxy_url,
-            version=version,
-            versionHash=versionHash,
+            version=config.version,
+            versionHash=config.version_hash,
         )
     except ValueError as ve:
         return render_template("error.html", message=str(ve))
@@ -174,17 +163,17 @@ def galaxy_blob():
 
     cache_filepath = get_cached_image_path("galaxy", coordinates, system_name)
 
-    if enable_cache:
+    if config.enable_cache:
         if os.path.exists(cache_filepath):
             return send_file(cache_filepath, mimetype="image/webp")
 
         image = generate_galaxy_image(current_galaxy)
-        image.save(cache_filepath, "WEBP", quality=image_quality)
+        image.save(cache_filepath, "WEBP", quality=config.image_quality)
         return send_file(cache_filepath, mimetype="image/webp")
     else:
         image = generate_galaxy_image(current_galaxy)
         img_io = BytesIO()
-        image.save(img_io, "WEBP", quality=image_quality)
+        image.save(img_io, "WEBP", quality=config.image_quality)
         img_io.seek(0)
         return send_file(img_io, mimetype="image/webp")
 
@@ -227,8 +216,8 @@ def view_system(system_index):
             summary=system_summary,
             system_index=system_index,
             system_url=system_url,
-            version=version,
-            versionHash=versionHash,
+            version=config.version,
+            versionHash=config.version_hash,
         )
     except ValueError as e:
         return render_template("error.html", message=str(e))
@@ -244,17 +233,17 @@ def system_blob():
 
     cache_filepath = get_cached_image_path("system", coordinates, system_name)
 
-    if enable_cache:
+    if config.enable_cache:
         if os.path.exists(cache_filepath):
             return send_file(cache_filepath, mimetype="image/webp")
 
         image = generate_solar_system_image(current_system)
-        image.save(cache_filepath, "WEBP", quality=image_quality)
+        image.save(cache_filepath, "WEBP", quality=config.image_quality)
         return send_file(cache_filepath, mimetype="image/webp")
     else:
         image = generate_solar_system_image(current_system)
         img_io = BytesIO()
-        image.save(img_io, "WEBP", quality=image_quality)
+        image.save(img_io, "WEBP", quality=config.image_quality)
         img_io.seek(0)
         return send_file(img_io, mimetype="image/webp")
 
@@ -297,8 +286,8 @@ def view_planet(planet_name):
                 image_url=image_url,
                 summary=planet_summary,
                 planet_url=planet_url,
-                version=version,
-                versionHash=versionHash,
+                version=config.version,
+                versionHash=config.version_hash,
             )
 
     return redirect(url_for("view_system", system_index=current_system.index))
@@ -317,21 +306,21 @@ def planet_blob(planet_name):
         "planet", coordinates, system_name, planet_name
     )
 
-    if enable_cache:
+    if config.enable_cache:
         if os.path.exists(cache_filepath):
             return send_file(cache_filepath, mimetype="image/webp")
 
         for planet in current_system.planets.values():
             if planet.name.lower() == planet_name:
                 image = generate_planet_image(planet)
-                image.save(cache_filepath, "WEBP", quality=image_quality)
+                image.save(cache_filepath, "WEBP", quality=config.image_quality)
                 return send_file(cache_filepath, mimetype="image/webp")
     else:
         for planet in current_system.planets.values():
             if planet.name.lower() == planet_name:
                 image = generate_planet_image(planet)
                 img_io = BytesIO()
-                image.save(img_io, "WEBP", quality=image_quality)
+                image.save(img_io, "WEBP", quality=config.image_quality)
                 img_io.seek(0)
                 return send_file(img_io, mimetype="image/webp")
 
@@ -385,14 +374,14 @@ def stargate(encoded_url):
 
 if __name__ == "__main__":
 
-    if config_initialized:
-        RunAtlasProtocol()
-
+    if RunAtlasProtocol():
         if "--observer" in sys.argv:
             observer(universe)
             exit("Observer out!")
 
-        if enable_cache:
+        if config.enable_cache:
             start_cache_daemon()
 
-    app.run(host="0.0.0.0", port=5000)
+    app.config["ENV"] = "production"
+    app.config["DEBUG"] = False
+    app.run(host="0.0.0.0", port=5000, use_reloader=False)

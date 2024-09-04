@@ -1,93 +1,104 @@
+# pymodules/__config.py
+
 import hashlib
 import configparser
 import os
+import time
+import random
 from pymodules.__boot_message import display_boot_message
 from pymodules.__config_helpers import custom_timestamp_to_date
 
-config = configparser.ConfigParser()
 
-# Variables globales
-seed = None
-cosmic_origin_time = None
-image_quality = None
-enable_cache = None
-cache_cleanup_time = None
-version = "0.7.47"
-versionHash = hashlib.sha256(version.encode("utf-8")).hexdigest()
+class Config:
+    _instance = None
+    version = "0.7.47"
+    version_hash = hashlib.sha256(version.encode("utf-8")).hexdigest()
 
-def create_atlas_ini(seed_str, cosmic_origin_time):
-    """Crea el archivo atlas.ini con la configuración inicial."""
-    config["Settings"] = {
-        "seed": seed_str,
-        "cosmic_origin_time": str(cosmic_origin_time),
-        "image_quality": "100",
-        "enable_cache": "True",
-        "cache_cleanup_time": "900",
-    }
-    with open("atlas.ini", "w") as configfile:
-        config.write(configfile)
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(Config, cls).__new__(cls)
+            cls._instance._initialized = False
+        return cls._instance
 
-def initialize_config():
-    """Inicializa la configuración leyendo el archivo atlas.ini y configurando los valores globales."""
-    global seed, cosmic_origin_time, image_quality, enable_cache, cache_cleanup_time, version, versionHash
+    def initialize(self):
+        if self._initialized:
+            return True
 
-    if not os.path.exists("atlas.ini"):
-        return False
+        if not os.path.exists("atlas.ini"):
+            return False
 
-    config.read("atlas.ini")
+        config = configparser.ConfigParser()
+        config.read("atlas.ini")
 
-    seed_str = config.get("Settings", "seed")
-    print("Seed:", seed_str)
-    if seed_str is None:
-        raise ValueError("Seed is not defined in the config file.")
-    
-    seed_hash = hashlib.sha256(seed_str.encode("utf-8")).hexdigest()
-    seed = int(seed_hash, 16)
-    print("Final Seed (int):", seed)  # Verifica que seed ha sido correctamente inicializada
+        self.seed_str = config.get("Settings", "seed")
 
-    cosmic_origin_time = config.get("Settings", "cosmic_origin_time")
-    print("Cosmic Origin Time (raw):", cosmic_origin_time)
-    if cosmic_origin_time is None:
-        raise ValueError("Cosmic origin time is not defined in the config file.")
-    cosmic_origin_time = int(cosmic_origin_time)
-    print("Cosmic Origin Time (int):", cosmic_origin_time)
-    
-    cosmic_origin_datetime = custom_timestamp_to_date(cosmic_origin_time)
+        self.seed_hash = hashlib.sha256(self.seed_str.encode("utf-8")).hexdigest()
+        self.seed = int(self.seed_hash, 16)
 
-    image_quality = config.get("Settings", "image_quality")
-    print("Image Quality:", image_quality)
-    if image_quality is None:
-        raise ValueError("Image quality is not defined in the config file.")
-    image_quality = int(image_quality)
+        self.cosmic_origin_time = config.get("Settings", "cosmic_origin_time")
+        self.cosmic_origin_time = int(self.cosmic_origin_time)
 
-    enable_cache = config.get("Settings", "enable_cache")
-    print("Enable Cache:", enable_cache)
-    if enable_cache is None:
-        raise ValueError("Enable cache setting is not defined in the config file.")
-    enable_cache = config.getboolean("Settings", "enable_cache")
+        self.cosmic_origin_datetime = custom_timestamp_to_date(self.cosmic_origin_time)
 
-    cache_cleanup_time = config.get("Settings", "cache_cleanup_time")
-    print("Cache Cleanup Time (raw):", cache_cleanup_time)
-    if cache_cleanup_time is None:
-        raise ValueError("Cache cleanup time is not defined in the config file.")
-    cache_cleanup_time = int(cache_cleanup_time)
-    print("Cache Cleanup Time (int):", cache_cleanup_time)
+        self.image_quality = config.get("Settings", "image_quality")
+        self.image_quality = int(self.image_quality)
 
-    display_boot_message(
-        seed_str,
-        seed_hash,
-        seed,
-        cosmic_origin_time,
-        cosmic_origin_datetime,
-        image_quality,
-        enable_cache,
-        cache_cleanup_time,
-        version,
-        versionHash,
-    )
+        self.enable_cache = config.get("Settings", "enable_cache")
+        self.enable_cache = config.getboolean("Settings", "enable_cache")
 
-    print("Configuration initialized successfully with seed:", seed)
-    return True
+        self.cache_cleanup_time = config.get("Settings", "cache_cleanup_time")
+        self.cache_cleanup_time = int(self.cache_cleanup_time)
 
-# Intentar inicializar la configuración al importar el módulo
-config_initialized = initialize_config()
+        self.version = "0.7.47"
+        self.version_hash = hashlib.sha256(self.version.encode("utf-8")).hexdigest()
+
+        display_boot_message(
+            self.seed_str,
+            self.seed_hash,
+            self.seed,
+            self.cosmic_origin_time,
+            self.cosmic_origin_datetime,
+            self.image_quality,
+            self.enable_cache,
+            self.cache_cleanup_time,
+            self.version,
+            self.version_hash,
+        )
+
+        self._initialized = True
+        return True
+
+    def create_atlas_ini(self, seed_str, cosmic_origin_time):
+        config = configparser.ConfigParser()
+        config["Settings"] = {
+            "seed": seed_str,
+            "cosmic_origin_time": str(cosmic_origin_time),
+            "image_quality": "100",
+            "enable_cache": "True",
+            "cache_cleanup_time": "900",
+        }
+        with open("atlas.ini", "w") as configfile:
+            config.write(configfile)
+
+    def generate_hex_seed(self):
+        hex_seed = f"0x{random.randint(0, 0xFFFFFFFF):08X}"
+        return hex_seed
+
+    def setup_universe(self, universe_type):
+        if universe_type == "default":
+            seed_str = "1.618033988749895"
+            cosmic_origin_time = 514080000
+        else:
+            seed_str = f"{self.generate_hex_seed()}-{self.generate_hex_seed()}-{self.generate_hex_seed()}"
+            cosmic_origin_time = int(time.time())
+
+        self.create_atlas_ini(seed_str, cosmic_origin_time)
+
+        return self.initialize()
+
+    @property
+    def is_initialized(self):
+        return self._initialized
+
+
+config = Config()

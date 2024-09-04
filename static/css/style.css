@@ -492,3 +492,106 @@ button,
   opacity: 0;
   filter: blur(50px);
 }
+
+.card-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.option-card {
+  background-color: #0b1d2b;
+  border-radius: 15px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  margin: 10px;
+  width: 35%;
+  min-width: 250px;
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.option-card:hover {
+  transform: scale(1.01);
+  box-shadow: 0 0 25px rgba(11, 29, 43, 1);
+}
+
+.option-card.selected {
+  border-color: #72c3dc;
+  box-shadow: 0 0 25px rgba(114, 195, 220, 1);
+}
+
+.card-button {
+  background: none;
+  border: none;
+  padding: 20px;
+  border-radius: 15px;
+  text-align: left;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: #72c3dc;
+  text-decoration: none;
+  outline: none;
+  height: 100%;
+  cursor: pointer;
+}
+
+.card-button h2 {
+  margin: 0 0 10px;
+  font-size: 1.5em;
+}
+
+.card-button p {
+  margin: 0;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  font-size: 1em;
+  max-width: 100%;
+}
+
+.start-button {
+  background-color: #72c3dc;
+  color: #0b1d2b;
+  padding: 15px 30px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.2em;
+  cursor: pointer;
+  margin-top: 20px;
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.start-button:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .option-card {
+    width: 90%;
+  }
+
+  .card-button h2 {
+    font-size: 1.3em;
+  }
+
+  .card-button p {
+    font-size: 0.9em;
+  }
+
+  .intro-text {
+    text-align: center;
+  }
+}
