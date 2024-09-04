@@ -59,31 +59,10 @@ form:hover {
   box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
 }
 
-.coordinate-inputs {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 20px;
-}
-
 label {
   color: #a1d9f2;
   margin-bottom: 5px;
   flex: none;
-}
-
-input[type="number"] {
-  padding: 8px;
-  border: none;
-  border-radius: 5px;
-  margin-bottom: 15px;
-  text-align: center;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
 }
 
 button,
@@ -108,16 +87,6 @@ button,
   margin: 0 auto;
 }
 
-.navigate-button {
-  background-color: #4b9eaf;
-  color: #fff;
-}
-
-.navigate-button:hover {
-  background-color: #39869a;
-  transform: scale(1.05);
-}
-
 .back-button {
   width: 100%;
   background-color: #4b9eaf;
@@ -126,16 +95,6 @@ button,
 
 .back-button:hover {
   background-color: #39869a;
-}
-
-.random-button {
-  background-color: #72c3dc;
-  color: #fff;
-}
-
-.random-button:hover {
-  background-color: #5a9db1;
-  transform: scale(1.05);
 }
 
 .error {
@@ -438,8 +397,8 @@ button,
 }
 
 .system-text {
-  display: block; /* Asegúrate de que el span sea un bloque para ocupar espacio */
-  max-width: 100%; /* O establece un valor específico, como 200px */
+  display: block;
+  max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -594,4 +553,189 @@ button,
   .intro-text {
     text-align: center;
   }
+}
+
+.coordinate-selector {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+  background-color: #0b1d2b;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(11, 29, 43, 0.5);
+  width: 100%;
+  max-width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.coordinate-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 0px;
+}
+
+.coordinate-group label {
+  font-size: 1.2em;
+  color: #72c3dc;
+  margin-bottom: 10px;
+}
+
+.coordinate-name {
+  width: 80%;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #1e2f3d;
+  color: #72c3dc;
+  border: 1px solid #72c3dc;
+  border-radius: 10px;
+  font-size: 1em;
+}
+
+.coordinate-input {
+  background-color: #1e2f3d;
+  color: #72c3dc;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 1em;
+  width: 80%;
+  text-align: center;
+  margin-top: 0px;
+  border: none;
+  margin-bottom: 15px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.navigate-button,
+.random-button {
+  background-color: #1e2f3d;
+  color: #72c3dc;
+  border: 1px solid #72c3dc;
+  padding: 10px 10px;
+  font-size: 1em;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.navigate-button:hover,
+.random-button:hover {
+  background-color: #00ffff;
+  color: #0b1d2b;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.random-button {
+  background-color: #2a3a48;
+  border-color: #00ffff;
+}
+
+.random-button:hover {
+  background-color: #0b1d2b;
+  color: #00ffff;
+}
+
+@media (max-width: 768px) {
+  .coordinate-group {
+    margin-bottom: 35px;
+  }
+}
+
+@media (min-width: 768px) {
+  .coordinate-selector {
+    grid-template-columns: repeat(3, 2fr);
+  }
+}
+
+.coordinate-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 80%;
+  height: 10px;
+  background-color: #1e2f3d;
+  border: 1px solid #72c3dc;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.coordinate-slider:hover {
+  background-color: #2a3a48;
+}
+
+/* Track (shared across browsers) */
+.coordinate-slider::-webkit-slider-runnable-track,
+.coordinate-slider::-moz-range-track,
+.coordinate-slider::-ms-track {
+  width: 100%;
+  height: 10px;
+  background: #1e2f3d;
+  border-radius: 5px;
+  border: 1px solid #72c3dc;
+}
+
+/* Thumb (for WebKit-based browsers) */
+.coordinate-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  background: #72c3dc;
+  border-radius: 50%;
+  border: 2px solid #00ffff;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+/* Thumb (for Mozilla-based browsers) */
+.coordinate-slider::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  background: #72c3dc;
+  border-radius: 50%;
+  border: 2px solid #00ffff;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  position: relative;
+  z-index: 1; /* Ensure thumb is visible */
+}
+
+/* Thumb (for MS-based browsers) */
+.coordinate-slider::-ms-thumb {
+  width: 15px;
+  height: 15px;
+  background: #72c3dc;
+  border-radius: 50%;
+  border: 2px solid #00ffff;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+/* Hover effect for all thumbs */
+.coordinate-slider::-webkit-slider-thumb:hover,
+.coordinate-slider::-moz-range-thumb:hover,
+.coordinate-slider::-ms-thumb:hover {
+  background-color: #00d0ff;
+  transform: scale(1.1);
+}
+
+/* Specific for MS track to hide the line */
+.coordinate-slider::-ms-track {
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
 }

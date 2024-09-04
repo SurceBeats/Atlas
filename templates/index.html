@@ -15,17 +15,68 @@
     </header>
 
     <form action="{{ url_for('navigate') }}" method="POST">
-      <div class="coordinate-inputs">
-        <label for="x">X:</label>
-        <input type="number" name="x" required />
-        <label for="y">Y:</label>
-        <input type="number" name="y" required />
-        <label for="z">Z:</label>
-        <input type="number" name="z" required />
+      <div class="coordinate-selector">
+        <div class="coordinate-group">
+          <label for="x-name">X Coordinate Name</label>
+          <select id="x-name" class="coordinate-name" onchange="updateCoordinate('x')">
+            <option value="0">The Edge</option>
+            <option value="1000000">Alpha</option>
+            <option value="2000000">Beta</option>
+            <option value="3000000">Gamma</option>
+            <option value="4000000">Delta</option>
+            <option value="5000000">Epsilon</option>
+            <option value="6000000">Zeta</option>
+            <option value="7000000">Eta</option>
+            <option value="8000000">Theta</option>
+            <option value="9000000">Iota</option>
+            <option value="10000000">The Unknown</option>
+          </select>
+          <input type="number" id="x-value" name="x" value="1000000" class="coordinate-input" onchange="syncSlider('x')" />
+          <input type="range" id="x-slider" name="x" min="0" max="10000000" value="1000000" class="coordinate-slider" oninput="updateValue('x')" />
+        </div>
+
+        <div class="coordinate-group">
+          <label for="y-name">Y Coordinate Name</label>
+          <select id="y-name" class="coordinate-name" onchange="updateCoordinate('y')">
+            <option value="0">The Edge</option>
+            <option value="1000000">Lambda</option>
+            <option value="2000000">Mu</option>
+            <option value="3000000">Nu</option>
+            <option value="4000000">Xi</option>
+            <option value="5000000">Omicron</option>
+            <option value="6000000">Pi</option>
+            <option value="7000000">Rho</option>
+            <option value="8000000">Sigma</option>
+            <option value="9000000">Tau</option>
+            <option value="10000000">The Unknown</option>
+          </select>
+          <input type="number" id="y-value" name="y" value="1000000" class="coordinate-input" onchange="syncSlider('y')" />
+          <input type="range" id="y-slider" name="y" min="0" max="10000000" value="1000000" class="coordinate-slider" oninput="updateValue('y')" />
+        </div>
+
+        <div class="coordinate-group">
+          <label for="z-name">Z Coordinate Name</label>
+          <select id="z-name" class="coordinate-name" onchange="updateCoordinate('z')">
+            <option value="0">The Edge</option>
+            <option value="1000000">Phi</option>
+            <option value="2000000">Chi</option>
+            <option value="3000000">Psi</option>
+            <option value="4000000">Omega</option>
+            <option value="5000000">Vega</option>
+            <option value="6000000">Rigel</option>
+            <option value="7000000">Sirius</option>
+            <option value="8000000">Antares</option>
+            <option value="9000000">Procyon</option>
+            <option value="10000000">The Unknown</option>
+          </select>
+          <input type="number" id="z-value" name="z" value="1000000" class="coordinate-input" onchange="syncSlider('z')" />
+          <input type="range" id="z-slider" name="z" min="0" max="10000000" value="1000000" class="coordinate-slider" oninput="updateValue('z')" />
+        </div>
       </div>
+
       <div class="form-actions">
-        <button type="submit" class="navigate-button">Navigate</button>
-        <button type="button" class="random-button" onclick="getRandomCoordinates()">Get me somewhere!</button>
+        <button type="submit" class="navigate-button">Initialize Jump</button>
+        <button type="button" class="random-button" onclick="randomizeCoordinates()">Get me somewhere!</button>
       </div>
     </form>
 
@@ -36,5 +87,6 @@
     <p class="p-version">Atlas Version {{ version }} · Created by Claudio González for <a target="_blank" href="https://www.banshee.pro/">Banshee</a></p>
 
     <script src="{{ url_for('static', filename='vjs/script.js') }}?v={{ versionHash }}"></script>
+    <script src="{{ url_for('static', filename='vjs/atlasRuntimeFactor.js') }}?v={{ versionHash }}"></script>
   </body>
 </html>

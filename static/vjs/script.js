@@ -21,6 +21,27 @@ window.onload = function () {
   }
 };
 
+function generateCoordinates() {
+  const xPattern = document.getElementById("x-pattern").value;
+  const yPattern = document.getElementById("y-pattern").value;
+  const zPattern = document.getElementById("z-pattern").value;
+
+  console.log(`Coordinates generated: X=${xPattern}, Y=${yPattern}, Z=${zPattern}`);
+}
+
+function randomizeCoordinates() {
+  const maxCoordinate = 10000000;
+  const randomX = Math.floor(Math.random() * maxCoordinate);
+  const randomY = Math.floor(Math.random() * maxCoordinate);
+  const randomZ = Math.floor(Math.random() * maxCoordinate);
+
+  document.getElementById("x-pattern").value = randomX;
+  document.getElementById("y-pattern").value = randomY;
+  document.getElementById("z-pattern").value = randomZ;
+
+  generateCoordinates();
+}
+
 // Random coords home bruh
 function getRandomCoordinates() {
   const maxCoordinate = 10000000;

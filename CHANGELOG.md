@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.8.192] - 2024-09-04
+
+- The `Config` part has been converted into a singleton, ensuring that only one instance of the configuration is created and used across the entire application, improving memory usage and consistency.
+- Introduced a method `generate_hex_seed` that generates random 8-digit hexadecimal seeds in the format `0xXXXXXXXX`. These seeds are used for initializing custom universes, providing unique and visually distinct identifiers.
+- Added the `setup_universe` method, which allows the creation of either the *default universe* or a *custom universe* with random seeds and a cosmic origin time based on the current timestamp.
+- Custom universes now generate their own cosmic origin time based on the current system time, further enhancing uniqueness.
+- Fixed issues where the configuration initialization did not properly trigger under certain conditions, ensuring a smoother experience when reloading or initializing the `atlas.ini` file.
+- Cleaned up the seed-handling logic, allowing for more robust generation and management of seeds in both default and custom universes.
+- New Universe Initialization Process, where we added a detailed onboarding flow to allow users to create or explore different universes. Users can now choose between exploring the *Core Continuum* (default universe) or creating their own universe via the *Design the Multiverse* option, with a seed-based initialization.
+- Users can now input and navigate galaxies using X, Y, and Z coordinates. Each coordinate is customizable via sliders, numerical inputs, and name-based selections.
+- Implemented automatic random coordinate generation upon page load and a "Get me somewhere!" button to explore random galaxy locations.
+- Resolved issues where coordinate sliders and inputs weren't correctly synchronizing with the name-based selections. All input methods are now fully synchronized across sliders, inputs, and select boxes.
+- Improved error handling for when the universe simulation isn't running, providing clear feedback to users.
+- Fixed issues where cached images were not properly served, ensuring that all cached images are fetched correctly from the file system.
+- Refined the UI to be more consistent and visually appealing, including improvements to form elements, sliders, buttons, and hover effects for a more cohesive experience.
+- Cleaned up and refactored code to better separate logic and improve readability. This includes modularizing the universe and system generation, along with the integration of new Flask routes for galaxy, system, and planet viewing.
+
+
 ## [0.7.47] - 2024-09-03
 
 - Introduced a new `Planet` class to represent planets, replacing the previous dictionary-based approach. This class encapsulates all logic and calculations related to the creation and behavior of planets.

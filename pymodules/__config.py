@@ -11,7 +11,7 @@ from pymodules.__config_helpers import custom_timestamp_to_date
 
 class Config:
     _instance = None
-    version = "0.7.47"
+    version = "0.8.192"
     version_hash = hashlib.sha256(version.encode("utf-8")).hexdigest()
 
     def __new__(cls):
