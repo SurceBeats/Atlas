@@ -1,7 +1,7 @@
 # pymodules/__seedmaster.py
 
 import base64
-from pymodules.__config import config
+from pymodules.__atlasconfig import config
 
 
 def seedmaster(iterations):

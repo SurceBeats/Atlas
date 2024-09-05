@@ -6,7 +6,7 @@ import os
 import time
 import random
 from pymodules.__boot_message import display_boot_message, display_intro_message
-from pymodules.__config_helpers import custom_timestamp_to_date
+from pymodules.__atlasconfig_helpers import custom_timestamp_to_date
 from pymodules.__fixed import VERSION, VERSION_HASH, PORT
 
 
@@ -21,7 +21,6 @@ class Config:
         return cls._instance
 
     def initialize(self):
-
 
         if self._initialized:
             return True

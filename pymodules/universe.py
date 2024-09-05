@@ -8,7 +8,7 @@ import time
 from pymodules.__name_generator import generate_name
 from pymodules.__periodic_table_prob import periodic_table
 from pymodules.__seedmaster import seedmaster
-from pymodules.__config import config
+from pymodules.__atlasconfig import config
 
 
 class Universe:
@@ -839,7 +839,19 @@ class Planet:
         distance_influence = (1 / (self.orbital_radius**1.5)) * random.uniform(0.9, 1.1)
         rotation_period_seconds *= max(1, eccentricity_factor * distance_influence)
 
-        return max(6 * 3600, min(rotation_period_seconds, 365 * 24 * 3600))
+        if (
+            self.orbital_radius < 1.0
+            and rotation_period_seconds > 365 * 24 * 3600
+            and rotation_period_seconds > 2 * self.orbital_period_seconds
+        ):
+            divisor = 2 + (1 - self.orbital_radius) * 10
+            rotation_period_seconds = random.uniform(
+                6 * 3600, rotation_period_seconds / divisor
+            )
+
+        min_rotation_period = 0.1 * 3600
+
+        return max(min_rotation_period, rotation_period_seconds)
 
     def calculate_eccentricity_factor(self):
         return random.uniform(0, 0.5)

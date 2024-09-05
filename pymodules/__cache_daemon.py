@@ -4,7 +4,7 @@ import os
 import time
 from threading import Thread
 from pymodules.__cache import cache_dir
-from pymodules.__config import config
+from pymodules.__atlasconfig import config
 
 
 def clear_cache():

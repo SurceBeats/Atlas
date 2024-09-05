@@ -78,7 +78,7 @@ New systems are continually added to galaxies, especially those near the center 
 
 To get started with *The Atlas*:
 
-1. Install the required dependencies: `pip install Pillow Flask tornado`.
+1. Install the required dependencies: `pip install Pillow Flask Hypercorn`.
 2. Run `python3 __main__.py`.
 3. Open your browser and navigate to `localhost` to select your Universe through the Atlas Initialization Protocol and explore your universe.
 

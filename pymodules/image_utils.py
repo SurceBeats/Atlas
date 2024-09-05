@@ -3,7 +3,7 @@
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageColor
 import time
 
-from pymodules.__config import config
+from pymodules.__atlasconfig import config
 from pymodules.__image_utils_planets import (
     get_planet_color_map,
     draw_gas_giant_elements,

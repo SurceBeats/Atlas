@@ -106,13 +106,13 @@ def observer(universe):
 
                                 if (
                                     desired_planet_type
-                                    and planet["Type"] != desired_planet_type
+                                    and planet.planet_type != desired_planet_type
                                 ):
                                     match = False
 
                                 if (
                                     desired_life_form
-                                    and planet["Life Forms"] != desired_life_form
+                                    and planet.life_forms != desired_life_form
                                 ):
                                     match = False
 
@@ -124,13 +124,12 @@ def observer(universe):
                                     print(
                                         f"System #{system_index + 1}: {solar_system.name}"
                                     )
-                                    print(f"Planet: {planet['Name']}")
-                                    print(f"Details: {planet}")
+                                    print(f"Planet: {planet.name}")
                                     print(
-                                        f"URL: http://127.0.0.1:5000{generate_planet_url((x, y, z), system_index, planet['Name'])}"
+                                        f"URL: http://127.0.0.1:5000{generate_planet_url((x, y, z), system_index, planet.name)}"
                                     )
                                     print(
-                                        f"+ Galaxies Mapped: #{total_galaxies_searched}, Systems Mapped: #{total_systems_searched}, Planets Mapped: #{total_planets_searched}"
+                                        f"+ Galaxies Mapped: #{total_galaxies_searched} (now {x}, {y}, {z}), Systems Mapped: #{total_systems_searched}, Planets Mapped: #{total_planets_searched}"
                                     )
                                     print("-" * 50)
                                     print("")
@@ -138,7 +137,7 @@ def observer(universe):
 
                             if total_planets_searched % 1000 == 0:
                                 print(
-                                    f"+ Galaxies Mapped: #{total_galaxies_searched}, Systems Mapped: #{total_systems_searched}, Planets Mapped: #{total_planets_searched}"
+                                    f"+ Galaxies Mapped: #{total_galaxies_searched} (now {x}, {y}, {z}), Systems Mapped: #{total_systems_searched}, Planets Mapped: #{total_planets_searched}"
                                 )
                                 print("-" * 50)
 
