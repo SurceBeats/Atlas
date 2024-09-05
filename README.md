@@ -88,8 +88,8 @@ Alternatively, you can install all dependencies by running: `pip install -r requ
 
 ## Demo
 
-Explore _The Atlas_ live at Render.com (and free, so it might be a bit slow):
-[The Atlas Demo live on Render.com](https://atlas-95r1.onrender.com/)
+Explore _The Atlas_ live at Koyeb.com (and free, so it might be a bit slow):
+[The Atlas Demo live on Koyeb.com](https://the-atlas.koyeb.app/)
 
 ---
 
