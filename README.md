@@ -88,7 +88,8 @@ Alternatively, you can install all dependencies by running: `pip install -r requ
 
 ## Demo
 
-Explore *The Atlas* live (and free, so it might be a bit slow): [The Atlas Demo](https://the-atlas.glitch.me)
+Explore *The Atlas* live at Render.com (and free, so it might be a bit slow):
+[The Atlas Demo live on Render.com](https://atlas-95r1.onrender.com/)
 
 ---
 
