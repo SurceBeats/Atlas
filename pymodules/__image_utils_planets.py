@@ -5,6 +5,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageColor
 from pymodules.__image_utils_planets_forms import (
     generate_noise_texture,
     generate_clouds,
+    generate_cloud_bands,
     generate_abstract_land,
     draw_toxic_vegetation,
     draw_planet_rings,
@@ -62,33 +63,9 @@ def draw_gas_giant_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
 
-    num_cloud_bands = rng.randint(3, 20)
-
-    rotation_angle = math.radians(rng.uniform(-15, 15))
-    sin_angle = math.sin(rotation_angle)
-    cos_angle = math.cos(rotation_angle)
-
-    for i in range(num_cloud_bands):
-        band_width = rng.randint(2, 4)
-        band_position_y = rng.randint(
-            center_y - planet_radius, center_y + planet_radius
-        )
-        cloud_color = (255, 165, 0, 1)
-
-        rotated_points = [
-            (
-                cos_angle * (x - center_x) - sin_angle * (y - center_y) + center_x,
-                sin_angle * (x - center_x) + cos_angle * (y - center_y) + center_y,
-            )
-            for x, y in [
-                (center_x - planet_radius, band_position_y - band_width // 2),
-                (center_x + planet_radius, band_position_y - band_width // 2),
-                (center_x + planet_radius, band_position_y + band_width // 2),
-                (center_x - planet_radius, band_position_y + band_width // 2),
-            ]
-        ]
-
-        draw.polygon(rotated_points, fill=cloud_color, outline=None)
+    generate_cloud_bands(
+        draw, rng, center_x, center_y, planet_radius, min_num_bands=3, max_num_bands=20
+    )
 
     num_shape_bands = rng.randint(3, 6)
     for i in range(num_shape_bands):
@@ -1919,6 +1896,7 @@ def draw_sub_earth_elements(
 def draw_frozen_gas_giant_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
+
     num_gas_layers = rng.randint(4, 800)
     for i in range(num_gas_layers):
         layer_radius = planet_radius - (i * 20)
@@ -2016,6 +1994,10 @@ def draw_frozen_gas_giant_elements(
         "white",
         seed,
         spaced_planet_name + "_ice_storm",
+    )
+
+    generate_cloud_bands(
+        draw, rng, center_x, center_y, planet_radius, min_num_bands=3, max_num_bands=6
     )
 
 

@@ -340,7 +340,6 @@ def stargate(encoded_url):
     try:
         decoded_data = decode_url(encoded_url)
         if decoded_data is None:
-            print("Decoding failed")
             return redirect(url_for("index"))
 
         params = {}

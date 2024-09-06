@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.8.221] - 2024-09-06
+
+- Refactored the logic used in gas giants into the `generate_cloud_bands` function, allowing for reuse in other types of gas planets.
+- Integrated the `generate_cloud_bands` function into the image generation process for Frozen Gas Giants as well.
+- Fixed an issue in the `__the_observer.py` file, where passing the page in sessions stopped working after changes were made to how Stargate links operate.
+- Updated the `generate_gradient` function, which was previously not working as expected. The issue stemmed from drawing ellipses starting from the center towards the outer `planet_radius`, causing internal layers to be hidden. The function was rebranded to `generate_rndback`, making it significantly less CPU-intensive while also introducing subtle variations in depth and RGB values, giving planets a more distinct appearance.
+- Fixed the inconsistency in the seed used in the previous function by switching to the `shape_seed`, which is determined by various planetary attributes instead of just relying on the planet's name.
+- Removed leftover debugging prints from the code... Again lulz
+
 ## [0.8.220] - 2024-09-06
 
 - Implementation of `handle_image_generation` to unify image generation for planets, solar systems, and galaxies using `ThreadPoolExecutor`.

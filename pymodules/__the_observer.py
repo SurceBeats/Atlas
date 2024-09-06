@@ -126,7 +126,7 @@ def observer(universe):
                                     )
                                     print(f"Planet: {planet.name}")
                                     print(
-                                        f"URL: http://127.0.0.1:5000{generate_planet_url((x, y, z), system_index, planet.name)}"
+                                        f"URL: http://127.0.0.1:5000{generate_planet_url((x, y, z), system_index, planet.name, (system_index - 1) // 50 + 1)}"
                                     )
                                     print(
                                         f"+ Galaxies Mapped: #{total_galaxies_searched} (now {x}, {y}, {z}), Systems Mapped: #{total_systems_searched}, Planets Mapped: #{total_planets_searched}"

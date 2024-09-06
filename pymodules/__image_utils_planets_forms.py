@@ -80,6 +80,38 @@ def generate_clouds(draw, center_x, center_y, radius, color, global_seed, planet
     draw.bitmap((0, 0), blurred_image, fill=None)
 
 
+def generate_cloud_bands(
+    draw, rng, center_x, center_y, planet_radius, min_num_bands, max_num_bands
+):
+    num_bands = rng.randint(min_num_bands, max_num_bands)
+
+    rotation_angle = math.radians(rng.uniform(-15, 15))
+    sin_angle = math.sin(rotation_angle)
+    cos_angle = math.cos(rotation_angle)
+
+    for i in range(num_bands):
+        band_width = rng.randint(2, 4)
+        band_position_y = rng.randint(
+            center_y - planet_radius, center_y + planet_radius
+        )
+        cloud_color = (255, 165, 0, 1)
+
+        rotated_points = [
+            (
+                cos_angle * (x - center_x) - sin_angle * (y - center_y) + center_x,
+                sin_angle * (x - center_x) + cos_angle * (y - center_y) + center_y,
+            )
+            for x, y in [
+                (center_x - planet_radius, band_position_y - band_width // 2),
+                (center_x + planet_radius, band_position_y - band_width // 2),
+                (center_x + planet_radius, band_position_y + band_width // 2),
+                (center_x - planet_radius, band_position_y + band_width // 2),
+            ]
+        ]
+
+        draw.polygon(rotated_points, fill=cloud_color, outline=None)
+
+
 def generate_abstract_land(
     draw,
     center_x,
@@ -477,7 +509,7 @@ def draw_poly_structures(
     opacity_range=(100, 255),
     size_range=(30, 70),
     num_sides_range=(5, 9),
-    num_structures_range=(5, 30)
+    num_structures_range=(5, 30),
 ):
     num_structures = rng.randint(*num_structures_range)
     for _ in range(num_structures):

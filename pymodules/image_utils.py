@@ -57,30 +57,49 @@ def consistent_hash(input_string):
     return int(hashlib.md5(input_string.encode()).hexdigest(), 16)
 
 
-def generate_gradient(draw, center_x, center_y, planet_radius, base_color, seed):
+def generate_rndback(planet_radius, base_color, seed):
     rng = random.Random(seed)
     gradient_img = Image.new(
         "RGBA", (2 * planet_radius, 2 * planet_radius), color=(0, 0, 0, 0)
     )
     gradient_draw = ImageDraw.Draw(gradient_img)
 
-    for i in range(planet_radius):
-        gradient_color = ImageColor.getrgb(base_color)
-        opacity = int(255 * (0.5 + 0.5 * i / planet_radius))
-        random_opacity = rng.randint(-20, 20)
-        gradient_color = (*gradient_color, max(0, min(255, opacity + random_opacity)))
+    base_rgb = ImageColor.getrgb(base_color)
 
-        gradient_draw.ellipse(
-            (
-                planet_radius - i,
-                planet_radius - i,
-                planet_radius + i,
-                planet_radius + i,
-            ),
-            fill=gradient_color,
-        )
+    random_r = rng.randint(-15, 15)
+    random_g = rng.randint(-15, 15)
+    random_b = rng.randint(-15, 15)
+
+    modified_color = (
+        max(0, min(255, base_rgb[0] + random_r)),
+        max(0, min(255, base_rgb[1] + random_g)),
+        max(0, min(255, base_rgb[2] + random_b)),
+    )
+
+    opacity = rng.randint(240, 255)
+    gradient_color = (*modified_color, opacity)
+    gradient_draw.ellipse(
+        (0, 0, 2 * planet_radius, 2 * planet_radius), fill=gradient_color, outline=None
+    )
 
     return gradient_img
+
+
+def generate_watermark(image):
+    draw = ImageDraw.Draw(image)
+    img_size = image.size[0]
+
+    try:
+        font = ImageFont.truetype("arial.ttf", 12)
+    except IOError:
+        font = ImageFont.load_default()
+
+    footer_text = f"© {time.strftime('%Y')} The Atlas by Banshee · All Rights Reserved"
+    text_bbox = draw.textbbox((0, 0), footer_text, font=font)
+    text_width = text_bbox[2] - text_bbox[0]
+    text_x = img_size - text_width - 20
+    text_y = img_size - 30
+    draw.text((text_x, text_y), footer_text, font=font, fill="#404040")
 
 
 async def handle_image_generation(objs):
@@ -148,14 +167,12 @@ def generate_planet_image(planet):
 
     base_color = planet_color_map.get(planet.planet_type, "white")
 
-    gradient = generate_gradient(
-        draw,
-        center_x,
-        center_y,
+    gradient = generate_rndback(
         planet_radius,
         base_color,
-        seed=hash(spaced_planet_name),
+        seed=shape_seed,
     )
+
     image.paste(
         gradient, (center_x - planet_radius, center_y - planet_radius), gradient
     )
@@ -356,6 +373,8 @@ def generate_planet_image(planet):
         (text_x, text_y), spaced_planet_name, font=font, fill="white", anchor="mm"
     )
 
+    generate_watermark(image)
+
     return image
 
 
@@ -374,7 +393,7 @@ def generate_solar_system_image(solar_system):
     center_y = img_size // 2
 
     star_positions = []
-    separation = 50
+    separation = 25
     if solar_system.star_system_type == "single":
         star_positions.append((center_x, center_y))
     elif solar_system.star_system_type == "binary":
@@ -385,10 +404,10 @@ def generate_solar_system_image(solar_system):
         star_positions.append((center_x + separation, center_y))
         star_positions.append((center_x, center_y - separation))
 
-    max_star_radius = 50
+    max_star_radius = 25
     for i, star in enumerate(solar_system.stars):
         star_x, star_y = star_positions[i]
-        star_radius = min(int(15 * star["Radius Factor"]), max_star_radius)
+        star_radius = min(int(10 * star["Radius Factor"]), max_star_radius)
         draw.ellipse(
             (
                 star_x - star_radius,
@@ -400,10 +419,12 @@ def generate_solar_system_image(solar_system):
         )
 
     num_planets = solar_system.num_planets
+
     min_orbit_radius = star_radius * 2 + 50
     max_orbit_radius = img_size // 2 - 50
 
     current_time = time.time()
+
     for i in range(1, num_planets + 1):
         planet = solar_system.get_planet(i - 1)
         if planet:
@@ -536,6 +557,8 @@ def generate_solar_system_image(solar_system):
             text_x = planet_x + planet_radius + 5
             text_y = planet_y - planet_radius / 2
             draw.text((text_x, text_y), spaced_planet_name, font=font, fill="white")
+
+    generate_watermark(image)
 
     return image
 
@@ -798,5 +821,7 @@ def generate_galaxy_image(galaxy):
         pulsars_quasars_draw.line((x, y - 10, x, y + 10), fill="yellow", width=2)
 
     image = Image.alpha_composite(image, pulsars_quasars_layer)
+
+    generate_watermark(image)
 
     return image
