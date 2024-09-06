@@ -38,7 +38,7 @@
         {% for system in systems %}
         <li class="system-item">
           <div class="seen-indicator" data-system="{{ system.index }}"></div>
-          <a href="{{ url_for('view_system', system_index=system.index, page=page) }}">
+          <a href="{{ url_for('view_system', system_index=system.index) }}">
             <span class="system-text">#{{ system.number }} {{ system.name }}</span>
           </a>
         </li>
@@ -51,10 +51,18 @@
     </div>
 
     <div class="page-navigation">
-      {% if prev_page %}
-      <a href="{{ url_for('view_galaxy', page=prev_page) }}">Previous</a>
-      {% endif %} {% if next_page %}
-      <a href="{{ url_for('view_galaxy', page=next_page) }}">Next</a>
+      {% if not page==1 %}
+      <a href="{{ url_for('view_galaxy', page=1) }}">«</a>
+      {% endif %} {% if prev_page %}
+      <a href="{{ url_for('view_galaxy', page=prev_page) }}">◃</a>
+      {% endif %}
+
+      <span>{{page}}</span>
+
+      {% if next_page %}
+      <a href="{{ url_for('view_galaxy', page=next_page) }}">▹</a>
+      {% endif %} {% if page != finish %}
+      <a href="{{ url_for('view_galaxy', page=finish) }}">»</a>
       {% endif %}
     </div>
   </body>

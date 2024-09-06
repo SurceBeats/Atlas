@@ -110,19 +110,22 @@ def navigate():
         return render_template("error.html", message=f"An error occurred: {str(e)}")
 
 
-@app.route("/galaxy")
-def view_galaxy():
+@app.route("/galaxy", defaults={"page": 1})
+@app.route("/galaxy/<int:page>")
+def view_galaxy(page):
     try:
         current_galaxy = get_current_galaxy()
         if not current_galaxy:
             return redirect(url_for("index"))
 
-        galaxy_url = generate_galaxy_url(current_galaxy.coordinates)
+        session[f"page_{current_galaxy.coordinates}"] = page
 
-        page = int(request.args.get("page", 1))
+        galaxy_url = generate_galaxy_url(current_galaxy.coordinates, page)
+
         per_page = 50
         start = (page - 1) * per_page
         end = start + per_page
+        finish = (current_galaxy.num_systems - 1) // 50 + 1
 
         systems = [
             {
@@ -145,6 +148,7 @@ def view_galaxy():
             next_page=next_page,
             prev_page=prev_page,
             galaxy_url=galaxy_url,
+            finish=finish,
             version=VERSION,
             versionHash=VERSION_HASH,
         )
@@ -189,8 +193,11 @@ def view_system(system_index):
 
         session["system"] = system_index
         current_system = current_galaxy.get_solar_system(system_index)
+
+        page = session.get(f"page_{current_galaxy.coordinates}", 1)
+
         system_url = generate_system_url(
-            current_galaxy.coordinates, current_system.index
+            current_galaxy.coordinates, current_system.index, page
         )
 
         image_url = url_for("system_blob")
@@ -220,6 +227,7 @@ def view_system(system_index):
             system_url=system_url,
             version=VERSION,
             versionHash=VERSION_HASH,
+            page=page,
         )
     except ValueError as e:
         return render_template("error.html", message=str(e))
@@ -260,11 +268,13 @@ def view_planet(planet_name):
 
     planet_name = planet_name.lower()
 
+    page = session.get(f"page_{current_galaxy.coordinates}", 1)
+
     for planet in current_system.planets.values():
         if planet.name.lower() == planet_name:
             image_url = url_for("planet_blob", planet_name=planet_name)
             planet_url = generate_planet_url(
-                current_galaxy.coordinates, current_system.index, planet_name
+                current_galaxy.coordinates, current_system.index, planet_name, page
             )
 
             planet_summary = {
@@ -332,10 +342,12 @@ def planet_blob(planet_name):
 @app.route("/stargate/<encoded_url>", endpoint="stargate")
 def stargate(encoded_url):
     try:
-
         decoded_data = decode_url(encoded_url)
         if decoded_data is None:
+            print("Decoding failed")
             return redirect(url_for("index"))
+
+        print(f"Decoded URL data: {decoded_data}")
 
         params = {}
         for param in decoded_data.split("&"):
@@ -345,6 +357,11 @@ def stargate(encoded_url):
         coordinates = params.get("coordinates")
         system_index = params.get("system")
         planet_name = params.get("planet")
+        page = params.get("page", 1)
+
+        print(
+            f"Params: coordinates={coordinates}, system_index={system_index}, planet_name={planet_name}, page={page}"
+        )
 
         x, y, z = map(int, coordinates.split(","))
 
@@ -355,22 +372,26 @@ def stargate(encoded_url):
         if system_index:
             session["system"] = int(system_index)
 
-        if not system_index and not planet_name:
+        if page:
+            session[f"page_{(x, y, z)}"] = int(page)
 
-            return redirect(url_for("view_galaxy", x=x, y=y, z=z))
+        if not system_index and not planet_name:
+            print(f"Redirecting to galaxy at coordinates {x}, {y}, {z}, page {page}")
+            return redirect(url_for("view_galaxy", page=page))
 
         elif system_index and not planet_name:
-
+            print(f"Redirecting to system {system_index}")
             return redirect(url_for("view_system", system_index=int(system_index)))
 
         elif system_index and planet_name:
-
+            print(f"Redirecting to planet {planet_name} in system {system_index}")
             return redirect(url_for("view_planet", planet_name=planet_name))
 
         else:
             raise ValueError("Malformed URL")
 
     except Exception as e:
+        print(f"Error: {e}")
         return redirect(url_for("index", error=str(e)))
 
 

@@ -69,7 +69,7 @@
     </div>
 
     <div class="planet-info">
-      <a href="{{ url_for('view_system', system_index=system.index, page=request.args.get('page', 1)) }}">
+      <a href="{{ url_for('view_system', system_index=system.index, page=request.args.get('page')) }}">
         <button class="back-button">Go Back to System '{{ system.name }}'</button>
       </a>
     </div>

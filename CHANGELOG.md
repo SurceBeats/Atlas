@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.8.219] - 2024-09-06
+
+- Removed query strings (e.g. ?page=863378) and key arguments from galaxy navigation URLs. Navigation state is now stored in session, resulting in cleaner and more readable URLs.
+- Stargate links now retain galaxy navigation information, resolving the issue where navigating to a high-numbered system via a Stargate would reset the galaxy view to the first page upon returning. Users are now returned to the correct page within the galaxy.
+- Added "Start" and "End" navigation buttons for galaxies, allowing users to quickly jump to the beginning or end of a galaxy. This provides easier exploration of the galaxy's expanding boundaries.
+
 ## [0.8.218] - 2024-09-05
 
 - Removed `Tornado` in favor of `Hypercorn`, which offers better performance and is an ASGI web server instead of WSGI. While `Tornado` remains one of my favorite options, alongside `CherryPy` (and of course, **Flask** remains king for development), we needed to address the issue of image rendering blocking at runtime. This is something we will continue to refine in future versions.

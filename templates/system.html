@@ -53,7 +53,7 @@
         {% for planet in system.planets.values() %}
         <li class="planet-item">
           <div class="seen-indicator" data-planet="{{ planet.name.lower() }}"></div>
-          <a href="{{ url_for('view_planet', planet_name=planet.name.lower(), page=request.args.get('page', 1)) }}">
+          <a href="{{ url_for('view_planet', planet_name=planet.name.lower(), page=request.args.get('page')) }}">
             <span>{{ planet.name.replace("_", " ") }}</span>
           </a>
         </li>
@@ -62,7 +62,7 @@
     </div>
 
     <div class="solar-system-info">
-      <a href="{{ url_for('view_galaxy', page=request.args.get('page', 1)) }}">
+      <a href="{{ url_for('view_galaxy', page=page) }}">
         <button class="back-button">Back to Galaxy '{{ galaxy.name.replace("_", " ") }}'</button>
       </a>
     </div>

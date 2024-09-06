@@ -24,9 +24,10 @@ def decode_url(encoded_data):
             return None
 
         decoded_data = base64.urlsafe_b64decode(encoded_data.encode()).decode()
+        print(f"Decoded data: {decoded_data}")
 
         if not re.match(
-            r"^coordinates=\d+,\d+,\d+(&system=\d+(&planet=[A-Za-z0-9_\-]+)?)?$",
+            r"^coordinates=\d+,\d+,\d+(&system=\d+(&planet=[A-Za-z0-9_\-]+)?)?(&page=\d+)?$",
             decoded_data,
         ):
             return None
@@ -36,20 +37,20 @@ def decode_url(encoded_data):
         return None
 
 
-def generate_galaxy_url(galaxy_coordinates):
-    data = f"coordinates={galaxy_coordinates[0]},{galaxy_coordinates[1]},{galaxy_coordinates[2]}"
+def generate_galaxy_url(galaxy_coordinates, page):
+    data = f"coordinates={galaxy_coordinates[0]},{galaxy_coordinates[1]},{galaxy_coordinates[2]}&page={page}"
     encoded_data = encode_url(data)
     return f"/stargate/{encoded_data}"
 
 
-def generate_system_url(galaxy_coordinates, system_index):
-    data = f"coordinates={galaxy_coordinates[0]},{galaxy_coordinates[1]},{galaxy_coordinates[2]}&system={system_index}"
+def generate_system_url(galaxy_coordinates, system_index, page):
+    data = f"coordinates={galaxy_coordinates[0]},{galaxy_coordinates[1]},{galaxy_coordinates[2]}&system={system_index}&page={page}"
     encoded_data = encode_url(data)
     return f"/stargate/{encoded_data}"
 
 
-def generate_planet_url(galaxy_coordinates, system_index, planet_name):
+def generate_planet_url(galaxy_coordinates, system_index, planet_name, page):
     planet_name = planet_name.lower()
-    data = f"coordinates={galaxy_coordinates[0]},{galaxy_coordinates[1]},{galaxy_coordinates[2]}&system={system_index}&planet={planet_name}"
+    data = f"coordinates={galaxy_coordinates[0]},{galaxy_coordinates[1]},{galaxy_coordinates[2]}&system={system_index}&planet={planet_name}&page={page}"
     encoded_data = encode_url(data)
     return f"/stargate/{encoded_data}"
