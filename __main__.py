@@ -25,11 +25,7 @@ from pymodules.__stargate import (
 
 from pymodules.__constants import PhysicalConstants
 from pymodules.universe import Universe
-from pymodules.image_utils import (
-    generate_solar_system_image,
-    generate_planet_image,
-    generate_galaxy_image,
-)
+from pymodules.image_utils import handle_image_generation
 
 
 app = Flask(__name__)
@@ -173,11 +169,11 @@ def galaxy_blob():
         if os.path.exists(cache_filepath):
             return send_file(cache_filepath, mimetype="image/webp")
 
-        image = generate_galaxy_image(current_galaxy)
+        image = asyncio.run(handle_image_generation(current_galaxy))
         image.save(cache_filepath, "WEBP", quality=config.image_quality)
         return send_file(cache_filepath, mimetype="image/webp")
     else:
-        image = generate_galaxy_image(current_galaxy)
+        image = asyncio.run(handle_image_generation(current_galaxy))
         img_io = BytesIO()
         image.save(img_io, "WEBP", quality=config.image_quality)
         img_io.seek(0)
@@ -247,11 +243,11 @@ def system_blob():
         if os.path.exists(cache_filepath):
             return send_file(cache_filepath, mimetype="image/webp")
 
-        image = generate_solar_system_image(current_system)
+        image = asyncio.run(handle_image_generation(current_system))
         image.save(cache_filepath, "WEBP", quality=config.image_quality)
         return send_file(cache_filepath, mimetype="image/webp")
     else:
-        image = generate_solar_system_image(current_system)
+        image = asyncio.run(handle_image_generation(current_system))
         img_io = BytesIO()
         image.save(img_io, "WEBP", quality=config.image_quality)
         img_io.seek(0)
@@ -324,13 +320,13 @@ def planet_blob(planet_name):
 
         for planet in current_system.planets.values():
             if planet.name.lower() == planet_name:
-                image = generate_planet_image(planet)
+                image = asyncio.run(handle_image_generation(planet))
                 image.save(cache_filepath, "WEBP", quality=config.image_quality)
                 return send_file(cache_filepath, mimetype="image/webp")
     else:
         for planet in current_system.planets.values():
             if planet.name.lower() == planet_name:
-                image = generate_planet_image(planet)
+                image = asyncio.run(handle_image_generation(planet))
                 img_io = BytesIO()
                 image.save(img_io, "WEBP", quality=config.image_quality)
                 img_io.seek(0)
@@ -347,8 +343,6 @@ def stargate(encoded_url):
             print("Decoding failed")
             return redirect(url_for("index"))
 
-        print(f"Decoded URL data: {decoded_data}")
-
         params = {}
         for param in decoded_data.split("&"):
             key, value = param.split("=")
@@ -358,10 +352,6 @@ def stargate(encoded_url):
         system_index = params.get("system")
         planet_name = params.get("planet")
         page = params.get("page", 1)
-
-        print(
-            f"Params: coordinates={coordinates}, system_index={system_index}, planet_name={planet_name}, page={page}"
-        )
 
         x, y, z = map(int, coordinates.split(","))
 
@@ -376,15 +366,12 @@ def stargate(encoded_url):
             session[f"page_{(x, y, z)}"] = int(page)
 
         if not system_index and not planet_name:
-            print(f"Redirecting to galaxy at coordinates {x}, {y}, {z}, page {page}")
             return redirect(url_for("view_galaxy", page=page))
 
         elif system_index and not planet_name:
-            print(f"Redirecting to system {system_index}")
             return redirect(url_for("view_system", system_index=int(system_index)))
 
         elif system_index and planet_name:
-            print(f"Redirecting to planet {planet_name} in system {system_index}")
             return redirect(url_for("view_planet", planet_name=planet_name))
 
         else:

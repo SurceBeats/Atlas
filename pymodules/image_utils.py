@@ -1,8 +1,16 @@
 # pymodules/image_utils.py
 
-from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageColor
 import time
+import math
+import random
+import hashlib
+import asyncio
 
+from concurrent.futures import ThreadPoolExecutor
+from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageColor
+
+from pymodules.__fixed import MAX_PILLOW_WORKERS
+from pymodules.universe import Galaxy, Planet, SolarSystem
 from pymodules.__atlasconfig import config
 from pymodules.__image_utils_planets import (
     get_planet_color_map,
@@ -44,10 +52,6 @@ from pymodules.__image_utils_life_forms import (
     draw_god,
 )
 
-import math
-import random
-import hashlib
-
 
 def consistent_hash(input_string):
     return int(hashlib.md5(input_string.encode()).hexdigest(), 16)
@@ -77,6 +81,40 @@ def generate_gradient(draw, center_x, center_y, planet_radius, base_color, seed)
         )
 
     return gradient_img
+
+
+async def handle_image_generation(objs):
+    loop = asyncio.get_event_loop()
+    results = []
+
+    if not isinstance(objs, list):
+        objs = [objs]
+
+    with ThreadPoolExecutor(max_workers=MAX_PILLOW_WORKERS) as executor:
+        futures = []
+        for obj in objs:
+            if isinstance(obj, Planet):
+                futures.append(
+                    loop.run_in_executor(executor, generate_planet_image, obj)
+                )
+            elif isinstance(obj, SolarSystem):
+                futures.append(
+                    loop.run_in_executor(executor, generate_solar_system_image, obj)
+                )
+            elif isinstance(obj, Galaxy):
+                futures.append(
+                    loop.run_in_executor(executor, generate_galaxy_image, obj)
+                )
+            else:
+                raise ValueError("Unknown object type for image generation, wyd bro?")
+
+        for future in asyncio.as_completed(futures):
+            result = await future
+            results.append(result)
+
+    if len(results) == 1:
+        return results[0]
+    return results
 
 
 def generate_planet_image(planet):

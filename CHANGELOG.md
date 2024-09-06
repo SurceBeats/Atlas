@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.8.220] - 2024-09-06
+
+- Implementation of `handle_image_generation` to unify image generation for planets, solar systems, and galaxies using `ThreadPoolExecutor`.
+- Use of `asyncio.as_completed` to process images as they complete, improving concurrency and user experience under heavy loads.
+- Optimized handling of multiple simultaneous users, ensuring images are delivered as they complete without waiting for all to finish.
+- Improved concurrency management by utilizing `asyncio` and adjusting the number of workers via `MAX_PILLOW_WORKERS` on the file `pymodules/__fixed.py`.
+- Data isolation to prevent procedural generation inconsistencies when processing multiple images in parallel.
+- Replaced imports for individual image generation functions (`generate_planet_image`, `generate_solar_system_image`, `generate_galaxy_image`) with the unified `handle_image_generation` function for cleaner and more efficient code.
+- Adjusted image generation logic to accept both single objects and lists of objects (planets, solar systems, galaxies).
+- Enhanced error handling to ensure the image generation function can handle multiple object types without causing bottlenecks.
+- Resolved compatibility issues between `asyncio.run` and `concurrent.futures.as_completed`, switching to `asyncio.as_completed` to avoid `_asyncio.Future` type errors.
+- Fixed concurrency issues that could cause the system to wait for all tasks to complete before returning any results.
+- Removed useless debug prints on Stargate method and routes.
+
 ## [0.8.219] - 2024-09-06
 
 - Removed query strings (e.g. ?page=863378) and key arguments from galaxy navigation URLs. Navigation state is now stored in session, resulting in cleaner and more readable URLs.
