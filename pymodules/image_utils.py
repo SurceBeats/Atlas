@@ -66,9 +66,9 @@ def generate_rndback(planet_radius, base_color, seed):
 
     base_rgb = ImageColor.getrgb(base_color)
 
-    random_r = rng.randint(-15, 15)
-    random_g = rng.randint(-15, 15)
-    random_b = rng.randint(-15, 15)
+    random_r = rng.randint(-10, 10)
+    random_g = rng.randint(-10, 10)
+    random_b = rng.randint(-10, 10)
 
     modified_color = (
         max(0, min(255, base_rgb[0] + random_r)),
@@ -83,6 +83,45 @@ def generate_rndback(planet_radius, base_color, seed):
     )
 
     return gradient_img
+
+
+def depth_gradient(planet_img, planet_radius, img_size):
+    gradient_img_size = img_size
+    gradient_img = Image.new(
+        "RGBA", (gradient_img_size, gradient_img_size), (0, 0, 0, 0)
+    )
+
+    alpha = Image.new("L", (gradient_img_size, gradient_img_size))
+    draw = ImageDraw.Draw(alpha)
+
+    for i in range(planet_radius * 2):
+        opacity = int(255 * (1 - i / (planet_radius * 1)))
+        draw.ellipse((i, i, gradient_img_size - i, gradient_img_size - i), fill=opacity)
+
+    gradient_img.putalpha(alpha)
+
+    offset = (
+        -planet_radius + 60,
+        -planet_radius + 60,
+    )
+    planet_img.paste(gradient_img, offset, gradient_img)
+
+    mask = Image.new("L", (img_size, img_size), 255)
+    mask_draw = ImageDraw.Draw(mask)
+
+    mask_draw.ellipse(
+        (
+            img_size // 2 - planet_radius,
+            img_size // 2 - planet_radius,
+            img_size // 2 + planet_radius,
+            img_size // 2 + planet_radius,
+        ),
+        fill=255,
+    )
+
+    planet_img.putalpha(mask)
+
+    return planet_img
 
 
 def generate_watermark(image):
@@ -144,7 +183,7 @@ def generate_planet_image(planet):
     planet_grav = planet.gravity
 
     img_size = 800
-    image = Image.new("RGB", (img_size, img_size), "black")
+    image = Image.new("RGBA", (img_size, img_size), "black")
     planet_surface = Image.new("RGBA", (img_size, img_size), (0, 0, 0, 0))
     draw = ImageDraw.Draw(planet_surface)
 
@@ -161,21 +200,19 @@ def generate_planet_image(planet):
     )
     rng = random.Random(shape_seed)
 
-    planet_radius = int(150 * (planet.diameter / max(planet.diameter, 1)))
+    planet_radius = int(200 * (planet.diameter / max(planet.diameter, 1)))
 
     planet_color_map = get_planet_color_map()
 
     base_color = planet_color_map.get(planet.planet_type, "white")
 
-    gradient = generate_rndback(
+    rndback = generate_rndback(
         planet_radius,
         base_color,
         seed=shape_seed,
     )
 
-    image.paste(
-        gradient, (center_x - planet_radius, center_y - planet_radius), gradient
-    )
+    image.paste(rndback, (center_x - planet_radius, center_y - planet_radius), rndback)
 
     draw_functions = {
         "Gas Giant": draw_gas_giant_elements,
@@ -207,9 +244,12 @@ def generate_planet_image(planet):
         "Exotic": draw_exotic_elements,
     }
 
+    surface_layer = Image.new("RGBA", (img_size, img_size), (0, 0, 0, 0))
+    surface_draw = ImageDraw.Draw(surface_layer)
+
     if planet_type in draw_functions:
         draw_functions[planet_type](
-            draw,
+            surface_draw,
             center_x,
             center_y,
             planet_radius,
@@ -219,6 +259,10 @@ def generate_planet_image(planet):
         )
     else:
         raise ValueError(f"Unknown planet type: {planet_type}")
+
+    image.paste(surface_layer, (0, 0), surface_layer)
+
+    depth_gradient(image, planet_radius, img_size)
 
     mask = Image.new("L", (img_size, img_size), 0)
     mask_draw = ImageDraw.Draw(mask)
@@ -232,76 +276,75 @@ def generate_planet_image(planet):
         fill=255,
     )
 
-    planet_surface = Image.composite(
-        planet_surface, Image.new("RGBA", planet_surface.size, (0, 0, 0, 0)), mask
-    )
+    image_with_black_background = Image.new("RGBA", (img_size, img_size), "black")
+    image = Image.composite(image, image_with_black_background, mask)
 
     if planet.atmosphere != "None":
         atmosphere_type = planet.atmosphere
 
         if atmosphere_type == "Breathable":
             atmosphere_color = (144, 238, 144, 150)  # lightgreen con opacidad
-            atmosphere_width = 10
+            atmosphere_width = 13
         elif atmosphere_type == "Thick":
             atmosphere_color = (169, 169, 169, 200)  # gray con opacidad
-            atmosphere_width = 15
+            atmosphere_width = 17
         elif atmosphere_type == "Thin":
             atmosphere_color = (211, 211, 211, 100)  # lightgray con opacidad
-            atmosphere_width = 8
+            atmosphere_width = 11
         elif atmosphere_type == "Carbon Dioxide":
             atmosphere_color = (165, 42, 42, 150)  # brown con opacidad
-            atmosphere_width = 12
+            atmosphere_width = 15
         elif atmosphere_type == "Methane":
             atmosphere_color = (0, 0, 139, 150)  # darkblue con opacidad
-            atmosphere_width = 12
+            atmosphere_width = 15
         elif atmosphere_type == "Nitrogen":
             atmosphere_color = (0, 0, 255, 150)  # blue con opacidad
-            atmosphere_width = 12
+            atmosphere_width = 15
         elif atmosphere_type == "Oxygen-Rich":
             atmosphere_color = (255, 255, 255, 150)  # white con opacidad
-            atmosphere_width = 12
+            atmosphere_width = 15
         elif atmosphere_type == "Sulfur Dioxide":
             atmosphere_color = (255, 255, 0, 150)  # yellow con opacidad
-            atmosphere_width = 12
+            atmosphere_width = 15
         elif atmosphere_type == "Superheated":
             atmosphere_color = (255, 0, 0, 200)  # red con opacidad
-            atmosphere_width = 15
+            atmosphere_width = 18
         elif atmosphere_type == "Acidic":
             atmosphere_color = (0, 100, 0, 150)  # darkgreen con opacidad
-            atmosphere_width = 12
+            atmosphere_width = 15
         elif atmosphere_type == "Toxic":
             atmosphere_color = (128, 0, 128, 150)  # purple con opacidad
-            atmosphere_width = 12
+            atmosphere_width = 15
         elif atmosphere_type == "Hydrogen":
             atmosphere_color = (255, 182, 193, 150)  # lightpink con opacidad
-            atmosphere_width = 12
+            atmosphere_width = 15
         elif atmosphere_type == "Helium":
             atmosphere_color = (255, 255, 224, 150)  # lightyellow con opacidad
-            atmosphere_width = 12
+            atmosphere_width = 15
         elif atmosphere_type == "Ammonia":
             atmosphere_color = (240, 230, 140, 150)  # khaki con opacidad
-            atmosphere_width = 12
+            atmosphere_width = 15
         elif atmosphere_type == "Ionic":
             atmosphere_color = (0, 191, 255, 150)  # deepskyblue con opacidad
-            atmosphere_width = 15
+            atmosphere_width = 18
         elif atmosphere_type == "Plasma":
             atmosphere_color = (255, 105, 180, 200)  # hotpink con opacidad
-            atmosphere_width = 15
+            atmosphere_width = 18
         elif atmosphere_type == "Exotic Gases":
             atmosphere_color = (186, 85, 211, 150)  # mediumorchid con opacidad
-            atmosphere_width = 15
+            atmosphere_width = 18
         elif atmosphere_type == "Water Vapor":
             atmosphere_color = (173, 216, 230, 150)  # lightblue con opacidad
-            atmosphere_width = 12
+            atmosphere_width = 15
         elif atmosphere_type == "Frozen":
             atmosphere_color = (240, 248, 255, 150)  # aliceblue con opacidad
-            atmosphere_width = 12
+            atmosphere_width = 15
         elif atmosphere_type == "None":
             atmosphere_width = 0
             atmosphere_color = None
         else:
             atmosphere_color = (169, 169, 169, 150)  # gray con opacidad por defecto
-            atmosphere_width = 12
+            atmosphere_width = 15
 
         if atmosphere_color:
             atmosphere_img = Image.new("RGBA", (img_size, img_size), (0, 0, 0, 0))
@@ -309,10 +352,7 @@ def generate_planet_image(planet):
 
             atmosphere_draw.ellipse(
                 (
-                    center_x
-                    - planet_radius
-                    - atmosphere_width
-                    - 5,  # separar del planeta
+                    center_x - planet_radius - atmosphere_width - 5,
                     center_y - planet_radius - atmosphere_width - 5,
                     center_x + planet_radius + atmosphere_width + 5,
                     center_y + planet_radius + atmosphere_width + 5,
@@ -324,17 +364,6 @@ def generate_planet_image(planet):
             atmosphere_img = atmosphere_img.filter(ImageFilter.GaussianBlur(radius=5))
 
             image.paste(atmosphere_img, (0, 0), atmosphere_img)
-
-    draw.line(
-        (
-            center_x - planet_radius * math.sin(math.radians(planet.axial_tilt)),
-            center_y - planet_radius * math.cos(math.radians(planet.axial_tilt)),
-            center_x + planet_radius * math.sin(math.radians(planet.axial_tilt)),
-            center_y + planet_radius * math.cos(math.radians(planet.axial_tilt)),
-        ),
-        fill="white",
-        width=2,
-    )
 
     draw_life_functions = {
         "Intelligent Life": draw_intelligent_life,
@@ -364,10 +393,22 @@ def generate_planet_image(planet):
 
     image = Image.alpha_composite(image.convert("RGBA"), life_form_layer)
 
+    # ORBITAL AXIS
+    # draw.line(
+    #     (
+    #         center_x - planet_radius * math.sin(math.radians(planet.axial_tilt)),
+    #         center_y - planet_radius * math.cos(math.radians(planet.axial_tilt)),
+    #         center_x + planet_radius * math.sin(math.radians(planet.axial_tilt)),
+    #         center_y + planet_radius * math.cos(math.radians(planet.axial_tilt)),
+    #     ),
+    #     fill=(0, 0, 0, 10),
+    #     width=10,
+    # )
+
     image.paste(planet_surface, (0, 0), planet_surface)
 
     text_x = center_x
-    text_y = center_y + planet_radius + 40
+    text_y = center_y + planet_radius + 60
     draw = ImageDraw.Draw(image)
     draw.text(
         (text_x, text_y), spaced_planet_name, font=font, fill="white", anchor="mm"

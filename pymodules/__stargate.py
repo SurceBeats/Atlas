@@ -24,7 +24,6 @@ def decode_url(encoded_data):
             return None
 
         decoded_data = base64.urlsafe_b64decode(encoded_data.encode()).decode()
-        print(f"Decoded data: {decoded_data}")
 
         if not re.match(
             r"^coordinates=\d+,\d+,\d+(&system=\d+(&planet=[A-Za-z0-9_\-]+)?)?(&page=\d+)?$",

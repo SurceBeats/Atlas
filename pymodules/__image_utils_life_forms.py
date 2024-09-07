@@ -18,7 +18,7 @@ def draw_intelligent_life(
         num_dots = 50
         for j in range(num_dots):
             start_angle = 2 * math.pi * j / num_dots
-            end_angle = 2 * math.pi * (j + 0.5) / num_dots  # 0.5 para dejar hueco
+            end_angle = 2 * math.pi * (j + 0.5) / num_dots
             start_x = center_x + satellite_distance * math.cos(start_angle)
             start_y = center_y + satellite_distance * math.sin(start_angle)
             end_x = center_x + satellite_distance * math.cos(end_angle)
@@ -313,7 +313,7 @@ def draw_god(
             width=3,
         )
 
-    halo_radius = planet_radius + 180
+    halo_radius = planet_radius + 140
     halo_width = rng.randint(15, 30)
 
     halo_img = Image.new("RGBA", (img_size, img_size), (0, 0, 0, 0))

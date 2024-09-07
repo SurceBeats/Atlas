@@ -2162,7 +2162,7 @@ def draw_exotic_elements(
         max_offset = planet_radius - exotic_radius
         exotic_x = center_x + rng.randint(-max_offset, max_offset)
         exotic_y = center_y + rng.randint(-max_offset, max_offset)
-        exotic_color = f"#{rng.randint(0, 0xFFFFFF):06x}"  # Color aleatorio
+        exotic_color = f"#{rng.randint(0, 0xFFFFFF):06x}"
         generate_clouds(
             draw,
             exotic_x,

@@ -1,5 +1,18 @@
 # Changelog
 
+
+## [0.9.14] - 2024-09-07
+
+- Increased planet size by 200%, it's been optimized to better fit screen dimensions, reducing unused space in the rendered images. This change brings more detail and improved graphics.
+- Implemented `depth_gradient` function, renders now add realistic depth to the planets, simulating a view from space. This is a breaking change, as the forms of planets (even with the same seed) will differ due to the depth adjustment being applied via their respective `draw_functions`.
+- Adjusted drawing functions retweaking the `draw_functions` to adapt to the increased planet size, ensuring a seamless appearance.
+- Reordered the layers of the planet images to accommodate the new size, providing better visual consistency.
+- Scaled atmosphere by increasing the size of the atmosphere layers to match larger planet generative images.
+- Although the orbital axis is now applied correctly, the visual result is unsatisfactory. The feature is currently commented out while I explore better representation methods.
+- Refined `generate_rndback` function to make the random background colors less aggressive for a more balanced aesthetic.
+- Restored CSS the `border-radius` for `blob_image_container` to better align with the current frontend. Future updates will migrate to VueJS and Vite for further improvements.
+- This will be the last version before integrating Semantic Kernel into the core generation system. This addition will allow the simulation to reprogram itself via Python middlewares, transforming it from an initially deterministic simulation into a fully arbitrary and unpredictable one as the Semantic Kernel cycles progress.
+
 ## [0.8.221] - 2024-09-06
 
 - Refactored the logic used in gas giants into the `generate_cloud_bands` function, allowing for reuse in other types of gas planets.
