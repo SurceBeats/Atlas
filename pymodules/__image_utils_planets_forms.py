@@ -12,10 +12,20 @@ def consistent_hash(input_string):
 
 
 def generate_noise_texture(
-    draw, center_x, center_y, planet_radius, seed, opacity, blur_radius=1
+    draw,
+    center_x,
+    center_y,
+    planet_radius,
+    seed,
+    opacity,
+    spaced_planet_name,
+    blur_radius=1,
 ):
+
     size = planet_radius * 2
-    random.seed(seed)
+    random.seed(
+        f"{seed}-{spaced_planet_name}-{planet_radius}-{opacity}-{blur_radius}-{center_x}-{center_y}"
+    )
 
     noise = [[random.random() for _ in range(size)] for _ in range(size)]
 
@@ -153,12 +163,16 @@ def generate_abstract_land(
 
 
 def draw_planet_rings(
-    draw, planet_radius, center_x, center_y, rng, color=(50, 0, 0, 100)
+    draw, planet_radius, center_x, center_y, rng, color=(0, 0, 0, 100)
 ):
-    linebreaker = rng.randint(40, 60)
+    linebreaker = rng.randint(60, 80)
+    base_opacity = color[3]
+
     for i in range(linebreaker):
         edge_radius = planet_radius - i * (planet_radius // linebreaker)
-        opacity = linebreaker - (i * 2)
+
+        opacity = max(0, int(base_opacity * ((linebreaker - i) / linebreaker) ** 4))
+
         draw.ellipse(
             [
                 (center_x - edge_radius, center_y - edge_radius),

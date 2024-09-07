@@ -66,9 +66,9 @@ def generate_rndback(planet_radius, base_color, seed):
 
     base_rgb = ImageColor.getrgb(base_color)
 
-    random_r = rng.randint(-10, 10)
-    random_g = rng.randint(-10, 10)
-    random_b = rng.randint(-10, 10)
+    random_r = rng.randint(-13, 13)
+    random_g = rng.randint(-13, 13)
+    random_b = rng.randint(-13, 13)
 
     modified_color = (
         max(0, min(255, base_rgb[0] + random_r)),

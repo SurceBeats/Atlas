@@ -63,6 +63,8 @@ def draw_gas_giant_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
 
+    draw_planet_rings(draw, planet_radius, center_x, center_y, rng, color=(0, 0, 0, 20))
+
     generate_cloud_bands(
         draw, rng, center_x, center_y, planet_radius, min_num_bands=3, max_num_bands=20
     )
@@ -164,6 +166,8 @@ def draw_rocky_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
 
+    draw_planet_rings(draw, planet_radius, center_x, center_y, rng, color=(0, 0, 0, 75))
+
     generate_abstract_land(
         draw,
         center_x,
@@ -262,7 +266,7 @@ def draw_icy_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
 
-    draw_planet_rings(draw, planet_radius, center_x, center_y, rng)
+    draw_planet_rings(draw, planet_radius, center_x, center_y, rng, color=(0, 0, 0, 60))
 
     generate_abstract_land(
         draw,
@@ -361,7 +365,7 @@ def draw_oceanic_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
 
-    draw_planet_rings(draw, planet_radius, center_x, center_y, rng)
+    draw_planet_rings(draw, planet_radius, center_x, center_y, rng, color=(0, 0, 0, 60))
 
     draw_depths(draw, center_x, center_y, planet_radius, rng)
 
@@ -436,6 +440,7 @@ def draw_oceanic_elements(
 def draw_desert_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
+
     draw_planet_rings(draw, planet_radius, center_x, center_y, rng)
 
     for _ in range(rng.randint(400, 800)):
@@ -635,7 +640,7 @@ def draw_arid_elements(
 ):
 
     draw_planet_rings(
-        draw, planet_radius, center_x, center_y, rng, color=(255, 255, 255)
+        draw, planet_radius, center_x, center_y, rng, color=(255, 255, 255, 60)
     )
 
     generate_abstract_land(
@@ -695,7 +700,9 @@ def draw_arid_elements(
         )
 
     rngopac = rng.randint(40, 80)
-    generate_noise_texture(draw, center_x, center_y, planet_radius, seed, rngopac)
+    generate_noise_texture(
+        draw, center_x, center_y, planet_radius, seed, rngopac, spaced_planet_name
+    )
 
     num_whiteclouds_areas = rng.randint(2, 3)
     for i in range(num_whiteclouds_areas):
@@ -1180,10 +1187,24 @@ def draw_crystalline_elements(
             fill=sparkle_color_with_opacity,
         )
 
+    generate_abstract_land(
+        draw,
+        center_x,
+        center_y,
+        planet_radius,
+        color=(0, 174, 194, 200),
+        global_seed=seed,
+        planet_name=spaced_planet_name,
+        points_min=100,
+        points_max=240,
+        seg_min=1,
+        seg_max=6,
+    )
+
     num_crystals = rng.randint(120, 600)
     for _ in range(num_crystals):
-        crystal_height = rng.randint(10, 26)
-        crystal_base_width = rng.randint(6, 12)
+        crystal_height = rng.randint(20, 125)
+        crystal_base_width = rng.randint(12, 24)
 
         angle_to_border = rng.uniform(0, 2 * math.pi)
         distance_to_border = rng.uniform(planet_radius * 0.9, planet_radius * 1.1)
@@ -1209,7 +1230,7 @@ def draw_crystalline_elements(
             ),
         ]
 
-        draw.polygon(rotated_points, fill="cyan", outline=(0, 0, 0, 5))
+        draw.polygon(rotated_points, fill=(0, 209, 209), outline=(0, 0, 0, 5))
 
     num_bright_areas = rng.randint(120, 600)
     for _ in range(num_bright_areas):
@@ -1220,7 +1241,7 @@ def draw_crystalline_elements(
 
         color_choice = rng.choice([(173, 216, 230), (1, 255, 255)])
 
-        opacity = rng.randint(0, 55)
+        opacity = rng.randint(0, 120)
 
         color_with_opacity = color_choice + (opacity,)
 
@@ -1233,20 +1254,6 @@ def draw_crystalline_elements(
             points.append((x, y))
 
         draw.polygon(points, fill=color_with_opacity)
-
-    generate_abstract_land(
-        draw,
-        center_x,
-        center_y,
-        planet_radius,
-        color=(0, 174, 194, 40),
-        global_seed=seed,
-        planet_name=spaced_planet_name,
-        points_min=100,
-        points_max=140,
-        seg_min=2,
-        seg_max=3,
-    )
 
 
 def draw_metallic_elements(
@@ -1709,13 +1716,16 @@ def draw_carbon_elements(
 def draw_diamond_elements(
     draw, center_x, center_y, planet_radius, rng, seed, spaced_planet_name
 ):
-    num_diamond_crystals = rng.randint(8, 12)
+
+    draw_planet_rings(draw, planet_radius, center_x, center_y, rng)
+
+    num_diamond_crystals = rng.randint(18, 26)
     for i in range(num_diamond_crystals):
-        crystal_height = rng.randint(10, 80)
-        crystal_base_width = rng.randint(5, 40)
+        crystal_height = rng.randint(20, 60)
+        crystal_base_width = rng.randint(10, 60)
         crystal_x = center_x + rng.randint(-planet_radius, planet_radius)
         crystal_y = center_y + rng.randint(-planet_radius, planet_radius)
-        num_facets = rng.randint(5, 20)
+        num_facets = rng.randint(4, 20)
         angle_step = 2 * math.pi / num_facets
         points = []
         for j in range(num_facets):
@@ -1727,9 +1737,9 @@ def draw_diamond_elements(
         points.append((crystal_x, crystal_y - crystal_height))
         draw.polygon(points, fill="lightskyblue", outline="deepskyblue")
 
-    num_reflections = rng.randint(5, 14)
+    num_reflections = rng.randint(5, 16)
     for i in range(num_reflections):
-        reflection_radius = rng.randint(10, 100)
+        reflection_radius = rng.randint(10, 80)
         reflection_x = center_x + rng.randint(-planet_radius, planet_radius)
         reflection_y = center_y + rng.randint(-planet_radius, planet_radius)
         temp_image = Image.new("RGBA", draw.im.size, (0, 0, 0, 0))
@@ -2095,7 +2105,7 @@ def draw_exotic_elements(
         max_offset = planet_radius - exotic_radius
         exotic_x = center_x + rng.randint(-max_offset, max_offset)
         exotic_y = center_y + rng.randint(-max_offset, max_offset)
-        exotic_color = f"#{rng.randint(0, 0xFFFFFF):06x}"  # Color aleatorio
+        exotic_color = f"#{rng.randint(0, 0xFFFFFF):06x}"
         generate_clouds(
             draw,
             exotic_x,
