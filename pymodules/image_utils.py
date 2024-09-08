@@ -181,6 +181,9 @@ def generate_planet_image(planet):
     planet_diam = planet.diameter
     planet_dens = planet.density
     planet_grav = planet.gravity
+    tilt_factor = math.sin(math.radians(planet.axial_tilt))
+
+    print(f"tilt factor: {tilt_factor}")
 
     img_size = 800
     image = Image.new("RGBA", (img_size, img_size), "black")
@@ -278,6 +281,26 @@ def generate_planet_image(planet):
 
     image_with_black_background = Image.new("RGBA", (img_size, img_size), "black")
     image = Image.composite(image, image_with_black_background, mask)
+
+    # Generar valores aleatorios para los anillos
+    ring_inner_radius = planet_radius + rng.randint(120, 160)
+    ring_outer_radius = ring_inner_radius + rng.randint(
+        20, 40
+    )  # Radio externo basado en el interno
+    num_points = 2000
+
+    # Llamar a la función para dibujar el anillo completo
+    draw_full_ring(
+        image,
+        center_x,
+        center_y,
+        planet_radius,
+        ring_inner_radius,
+        ring_outer_radius,
+        rng,  # Pasa el RNG para asegurar que los puntos sean reproducibles
+        tilt_factor=tilt_factor,
+        num_points=num_points,  # Cantidad de puntos en el anillo
+    )
 
     if planet.atmosphere != "None":
         atmosphere_type = planet.atmosphere
@@ -393,19 +416,30 @@ def generate_planet_image(planet):
 
     image = Image.alpha_composite(image.convert("RGBA"), life_form_layer)
 
-    # ORBITAL AXIS
-    # draw.line(
-    #     (
-    #         center_x - planet_radius * math.sin(math.radians(planet.axial_tilt)),
-    #         center_y - planet_radius * math.cos(math.radians(planet.axial_tilt)),
-    #         center_x + planet_radius * math.sin(math.radians(planet.axial_tilt)),
-    #         center_y + planet_radius * math.cos(math.radians(planet.axial_tilt)),
-    #     ),
-    #     fill=(0, 0, 0, 10),
-    #     width=10,
-    # )
+    draw.line(
+        (
+            center_x - planet_radius * math.sin(math.radians(planet.axial_tilt)),
+            center_y - planet_radius * math.cos(math.radians(planet.axial_tilt)),
+            center_x + planet_radius * math.sin(math.radians(planet.axial_tilt)),
+            center_y + planet_radius * math.cos(math.radians(planet.axial_tilt)),
+        ),
+        fill=(0, 0, 0, 10),
+        width=10,
+    )
 
     image.paste(planet_surface, (0, 0), planet_surface)
+
+    # Llamar a la función para dibujar el anillo superior
+    draw_ontop_ring(
+        image,
+        center_x,
+        center_y,
+        ring_inner_radius,
+        ring_outer_radius,
+        rng,  # Pasa el RNG para asegurar que los puntos sean reproducibles
+        tilt_factor=tilt_factor,
+        num_points=num_points,  # Cantidad de puntos en el anillo superior
+    )
 
     text_x = center_x
     text_y = center_y + planet_radius + 60
@@ -866,3 +900,85 @@ def generate_galaxy_image(galaxy):
     generate_watermark(image)
 
     return image
+
+
+def draw_full_ring(
+    image,
+    center_x,
+    center_y,
+    planet_radius,
+    ring_inner_radius,
+    ring_outer_radius,
+    rng,
+    tilt_factor=0.3,
+    num_points=1000,
+):
+    if not (0.1 < tilt_factor < 0.50):
+        return
+
+    img_size = image.size[0]
+
+    ring_layer = Image.new("RGBA", (img_size, img_size), (0, 0, 0, 0))
+    ring_draw = ImageDraw.Draw(ring_layer)
+
+    for _ in range(num_points):
+        angle = rng.uniform(0, 360)
+        radius = rng.uniform(ring_inner_radius, ring_outer_radius)
+
+        x = center_x + radius * math.cos(math.radians(angle))
+        y = center_y + radius * math.sin(math.radians(angle)) * tilt_factor
+
+        opacity = rng.randint(0, 255)
+
+        point_color = (100, 100, 100, opacity)
+
+        ring_draw.point((x, y), fill=point_color)
+
+    ring_mask = Image.new("L", (img_size, img_size), 255)
+    mask_draw = ImageDraw.Draw(ring_mask)
+
+    mask_draw.ellipse(
+        [
+            (center_x - planet_radius, center_y - planet_radius),
+            (center_x + planet_radius, center_y + planet_radius),
+        ],
+        fill=0,
+    )
+
+    ring_layer.putalpha(ring_mask)
+
+    image.paste(ring_layer, (0, 0), ring_layer)
+
+
+def draw_ontop_ring(
+    image,
+    center_x,
+    center_y,
+    ring_inner_radius,
+    ring_outer_radius,
+    rng,
+    tilt_factor=0.3,
+    num_points=1000,
+):
+    if not (0.1 < tilt_factor < 0.50):
+        return
+
+    img_size = image.size[0]
+
+    topring_layer = Image.new("RGBA", (img_size, img_size), (0, 0, 0, 0))
+    topring_draw = ImageDraw.Draw(topring_layer)
+
+    for _ in range(num_points):
+        angle = rng.uniform(-30, 210)
+        radius = rng.uniform(ring_inner_radius, ring_outer_radius)
+
+        x = center_x + radius * math.cos(math.radians(angle))
+        y = center_y + radius * math.sin(math.radians(angle)) * tilt_factor
+
+        opacity = rng.randint(0, 255)
+
+        point_color = (100, 100, 100, opacity)
+
+        topring_draw.point((x, y), fill=point_color)
+
+    image.paste(topring_layer, (0, 0), topring_layer)
