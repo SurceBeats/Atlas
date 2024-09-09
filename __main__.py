@@ -11,21 +11,21 @@ from hypercorn.config import Config
 
 from flask import Flask, render_template, request, redirect, url_for, send_file, session
 
-from pymodules.__fixed import VERSION, VERSION_HASH, PORT, RUN
-from pymodules.__cache import get_cached_image_path
-from pymodules.__cache_daemon import start_cache_daemon
-from pymodules.__atlasconfig import config
-from pymodules.__the_observer import observer
-from pymodules.__stargate import (
+from pymodules.__atlas_fixed_vars import VERSION, VERSION_HASH, PORT, RUN
+from pymodules.__atlas_cache import get_cached_image_path
+from pymodules.__atlas_cache_daemon import start_cache_daemon
+from pymodules.__atlas_config import config
+from pymodules.__atlas_observer import observer
+from pymodules.__atlas_stargate import (
     generate_planet_url,
     generate_system_url,
     generate_galaxy_url,
     decode_url,
 )
 
-from pymodules.__constants import PhysicalConstants
-from pymodules.universe import Universe
-from pymodules.image_utils import handle_image_generation
+from pymodules.__universe_constants import PhysicalConstants
+from pymodules.__universe_base import Universe
+from pymodules.__drawer_base import handle_image_generation
 
 
 app = Flask(__name__)

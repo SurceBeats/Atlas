@@ -1,10 +1,10 @@
-# pymodules\__image_utils_planets_forms.py
-
-from PIL import Image, ImageDraw, ImageFilter, ImageColor
+# pymodules\__drawer_cplanet_inside.py
 
 import math
 import random
 import hashlib
+
+from PIL import Image, ImageDraw, ImageFilter, ImageColor
 
 
 def consistent_hash(input_string):
@@ -64,6 +64,7 @@ def generate_noise_texture(
 def generate_clouds(draw, center_x, center_y, radius, color, global_seed, planet_name):
 
     planet_seed = consistent_hash(f"{global_seed}-{planet_name}")
+
     rng = random.Random(planet_seed)
 
     if isinstance(color, str):

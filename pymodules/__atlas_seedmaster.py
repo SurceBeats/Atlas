@@ -1,7 +1,9 @@
-# pymodules/__seedmaster.py
+# pymodules/__atlas_seedmaster.py
 
 import base64
-from pymodules.__atlasconfig import config
+import hashlib
+
+from pymodules.__atlas_config import config
 
 
 def seedmaster(iterations):
@@ -14,3 +16,7 @@ def seedmaster(iterations):
         return config.seed
     else:
         return result.decode("utf-8")
+
+
+def consistent_hash(input_string):
+    return int(hashlib.md5(input_string.encode()).hexdigest(), 16)

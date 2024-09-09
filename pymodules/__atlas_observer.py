@@ -1,7 +1,9 @@
-# pymodules/__the_observer.py
+# pymodules/__atlas_observer.py
 
 import gc
-from pymodules.__stargate import generate_planet_url
+
+from pymodules.__atlas_stargate import generate_planet_url
+
 
 planet_types = [
     "None",

@@ -1,4 +1,4 @@
-# pymodules/constants.py
+# pymodules/__universe_constants.py
 
 
 class PhysicalConstants:

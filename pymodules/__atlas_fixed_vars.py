@@ -1,4 +1,4 @@
-# pymodules/__fixed.py
+# pymodules/__atlas_fixed_vars.py
 
 import hashlib
 

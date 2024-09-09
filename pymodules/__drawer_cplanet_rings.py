@@ -1,3 +1,5 @@
+# pymodules/__drawer_cplanet_rings.py
+
 from PIL import Image, ImageDraw
 
 
@@ -11,8 +13,6 @@ def draw_full_ring(
     rng,
     tilt_factor=0.3,
 ):
-    if not (0.1 < tilt_factor < 0.50):
-        return
 
     img_size = image.size[0]
 
@@ -55,8 +55,6 @@ def draw_ontop_ring(
     rng,
     tilt_factor=0.3,
 ):
-    if not (0.1 < tilt_factor < 0.50):
-        return
 
     img_size = image.size[0]
 

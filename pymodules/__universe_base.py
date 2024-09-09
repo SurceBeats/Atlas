@@ -1,14 +1,15 @@
-# pymodules/universe.py
+# pymodules/__universe_base.py
 
-import hashlib
-import random
 import math
 import time
+import random
+import hashlib
 
-from pymodules.__name_generator import generate_name
-from pymodules.__periodic_table_prob import periodic_table
-from pymodules.__seedmaster import seedmaster
-from pymodules.__atlasconfig import config
+from pymodules.__atlas_seedmaster import seedmaster
+from pymodules.__atlas_config import config
+
+from pymodules.__universe_name_generator import generate_name
+from pymodules.__universe_elements import periodic_table
 
 
 class Universe:
@@ -250,6 +251,7 @@ class Planet:
         self.rotation_period_seconds = self.calculate_rotation_period()
         self.elements = self.generate_elements_for_planet(planet_seed)
         self.life_forms = self.calculate_life_probability()
+        self.planet_rings = self.decide_planet_rings(planet_seed)
 
     def generate_planet_seed(self):
         return int(
@@ -291,6 +293,15 @@ class Planet:
                 "Exotic",
             ]
         )
+
+    def decide_planet_rings(self, seed):
+        random.seed(seed)
+        tilt_factor = math.sin(math.radians(self.axial_tilt))
+
+        if not (0.1 < tilt_factor < 0.50):
+            return False
+
+        return random.randint(1, 100) <= 7
 
     def choose_atmosphere(self):
         if self.planet_type in ["Gas Giant", "Frozen Gas Giant", "Nebulous", "Anomaly"]:

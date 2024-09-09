@@ -1,10 +1,12 @@
-# pymodules/__cache_daemon.py
+# pymodules/__atlas_cache_daemon.py
 
 import os
 import time
+
 from threading import Thread
-from pymodules.__cache import cache_dir
-from pymodules.__atlasconfig import config
+
+from pymodules.__atlas_cache import cache_dir
+from pymodules.__atlas_config import config
 
 
 def clear_cache():

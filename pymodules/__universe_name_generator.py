@@ -1,4 +1,4 @@
-# pymodules/naming.py
+# pymodules/__universe_name_generator.py
 
 import random
 

@@ -1,4 +1,4 @@
-# pymodules/__periodic_table_prob.py
+# pymodules/__universe_elements.py
 
 periodic_table = [
     ("Hydrogen", 0.7),

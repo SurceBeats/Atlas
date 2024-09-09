@@ -1,4 +1,4 @@
-# pymodules/__config_helpers.py
+# pymodules/__atlas_config_helpers.py
 
 import configparser
 

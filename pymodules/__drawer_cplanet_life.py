@@ -1,8 +1,8 @@
-# pymodules/__image_utils_life_forms.py
-
-from PIL import Image, ImageDraw, ImageFilter
+# pymodules/__drawer_cplanet_life.py
 
 import math
+
+from PIL import Image, ImageDraw, ImageFilter
 
 
 def draw_intelligent_life(

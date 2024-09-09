@@ -1,7 +1,7 @@
-# pymodules/__stargate.py
+# pymodules/__atlas_stargate.py
 
-import base64
 import re
+import base64
 
 
 def is_valid_base64(s):

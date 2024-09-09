@@ -1,4 +1,4 @@
-# pymodules/__cache.py
+# pymodules/__atlas_cache.py
 
 import os
 import hashlib

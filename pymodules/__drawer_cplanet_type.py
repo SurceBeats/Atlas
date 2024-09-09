@@ -1,8 +1,10 @@
-# pymodules\__image_utils_planets.py
+# pymodules\__drawer_cplanet_type.py
+
+import math
 
 from PIL import Image, ImageDraw, ImageFilter, ImageColor
 
-from pymodules.__image_utils_planets_forms import (
+from pymodules.__drawer_cplanet_inside import (
     generate_noise_texture,
     generate_clouds,
     generate_cloud_bands,
@@ -18,13 +20,6 @@ from pymodules.__image_utils_planets_forms import (
     draw_heat_wave_effect,
     draw_poly_structures,
 )
-
-import math
-import hashlib
-
-
-def consistent_hash(input_string):
-    return int(hashlib.md5(input_string.encode()).hexdigest(), 16)
 
 
 def get_planet_color_map():

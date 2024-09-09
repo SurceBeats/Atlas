@@ -1,13 +1,14 @@
-# pymodules/__config.py
+# pymodules/__atlas_config.py
 
-import hashlib
-import configparser
 import os
 import time
 import random
-from pymodules.__boot_message import display_boot_message, display_intro_message
-from pymodules.__atlasconfig_helpers import custom_timestamp_to_date
-from pymodules.__fixed import VERSION, VERSION_HASH, PORT
+import hashlib
+import configparser
+
+from pymodules.__atlas_fixed_vars import VERSION, VERSION_HASH, PORT
+from pymodules.__atlas_boot_message import display_boot_message, display_intro_message
+from pymodules.__atlas_config_helpers import custom_timestamp_to_date
 
 
 class Config:
