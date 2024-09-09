@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.15] - 2024-09-09
+
+- Added the possibility for some planets (7% statistically accurate) to have rings.
+- Planets now draw their rings based on the `tilt_factor`, which is calculated through the `axial_tilt`.
+- In the future, we will implement rotation and changes to the `tilt_factor`, so that the position of the rings will vary depending on the moment the planets are observed.
+- Implemented axial tilt drawing for planets, though it will be removed or changed later, as I currently don't like how it looks.
+- Refactored almost the entire drawing codebase using Pillow since it was messy. It’s much more organized now.
 
 ## [0.9.14] - 2024-09-07
 
