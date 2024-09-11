@@ -105,11 +105,9 @@ def generate_solar_system_image(solar_system):
 
             time_elapsed_seconds = current_time - config.cosmic_origin_time
 
-            initial_angle_orbit = planet_rng.uniform(0, 2 * math.pi)
-            initial_angle_rotation = planet_rng.uniform(0, 2 * math.pi)
-
             angle_orbit = (
-                initial_angle_orbit + time_elapsed_seconds * angle_velocity_orbit
+                planet.initial_orbital_angle
+                + time_elapsed_seconds * angle_velocity_orbit
             ) % (2 * math.pi)
 
             planet_x = center_x + semi_major_axis * math.cos(angle_orbit)
@@ -119,7 +117,8 @@ def generate_solar_system_image(solar_system):
             angle_velocity_rotation = 2 * math.pi / rotation_period_seconds
 
             angle_rotation = (
-                initial_angle_rotation + time_elapsed_seconds * angle_velocity_rotation
+                planet.initial_angle_rotation
+                + time_elapsed_seconds * angle_velocity_rotation
             ) % (2 * math.pi)
 
             planet_color = {

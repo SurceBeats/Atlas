@@ -252,6 +252,8 @@ class Planet:
         self.elements = self.generate_elements_for_planet(planet_seed)
         self.life_forms = self.calculate_life_probability()
         self.planet_rings = self.decide_planet_rings(planet_seed)
+        self.initial_angle_rotation = random.uniform(0, 2 * math.pi)
+        self.initial_orbital_angle = random.uniform(0, 2 * math.pi)
 
     def generate_planet_seed(self):
         return int(
@@ -293,15 +295,6 @@ class Planet:
                 "Exotic",
             ]
         )
-
-    def decide_planet_rings(self, seed):
-        random.seed(seed)
-        tilt_factor = math.sin(math.radians(self.axial_tilt))
-
-        if not (0.1 < tilt_factor < 0.50):
-            return False
-
-        return random.randint(1, 100) <= 7
 
     def choose_atmosphere(self):
         if self.planet_type in ["Gas Giant", "Frozen Gas Giant", "Nebulous", "Anomaly"]:
@@ -866,3 +859,34 @@ class Planet:
 
     def calculate_eccentricity_factor(self):
         return random.uniform(0, 0.5)
+
+    def decide_planet_rings(self, seed):
+        random.seed(seed)
+
+        roche_limit = (
+            2.44 * (self.diameter * 1e3 / 2) * (self.density / 3000) ** (1 / 3)
+        )
+        orbital_radius_km = self.orbital_radius_m / 1e6
+
+        if orbital_radius_km > roche_limit:
+            return False
+
+        gravity_factor = self.gravity / 9.81
+        mass_factor = self.mass / self.constants.M_EARTH
+        rotation_factor = min(1.5, 1 / (self.rotation_period_seconds / 86400))
+        temperature_factor = 1 / (
+            1 + math.exp(-0.001 * (self.surface_temperature - 150))
+        )
+        axial_tilt_factor = 1 - (self.axial_tilt / 90)
+
+        ring_probability = (
+            mass_factor
+            * gravity_factor
+            * rotation_factor
+            * axial_tilt_factor
+            * temperature_factor
+        ) * 20
+        ring_probability = min(ring_probability, 7)
+
+        decision = random.uniform(0, 100) <= ring_probability
+        return decision

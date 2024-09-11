@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.9.86] - 2024-09-11
+
+- **(BREAKING)** Both `initial_angle_rotation` and `initial_orbital_angle` are now initialized directly in `__universe_base.py`, affecting all planetary orbits and rotations. This leads to a more accurate simulation of orbital dynamics, but modifies previous orbits. The advantage is that this value is now consistent across the entire simulation.
+- Planets now procedurally generate rings based on a scientifically accurate Roche limit calculation, considering orbital radius, planet density, axial tilt, and rotational speed. The probability distribution has been adjusted to ensure a realistic 7% chance of planets having rings.
+- Introduced the `VISUAL_DEBUG` flag, enabling visual debugging tools like the drawing of axial tilts and directional lines to the sun (with more features planned for the future). This mode is disabled by default and intended solely for development.
+- Orbital and rotational angles are now consistently calculated for each planet, taking into account both its orbital period and rotational period. This improves overall accuracy for planetary dynamics and rotational behavior within solar systems.
+- The `depth_gradient` function has been enhanced with an optimized linear gradient algorithm that automatically aligns the shading gradient with the sun(s) of the planet's solar system. Transparency and opacity adjust dynamically based on the planet's position relative to its sun(s), creating more realistic shading effects. A debug feature under `VISUAL_DEBUG` visualizes a line pointing toward the sun for development validation.
+- Added the `soft_polar_transform`, which applies subtle polar distortion to planetary surfaces, adding depth and realism to textures. This effect is utilized in various planetary features, such as inner depth rings and terrain formations.
+- Significant performance improvements were made to the drawing of planetary rings. These now use static dots with slight variation in size and color, enhancing depth perception without requiring costly dynamic point recalculations.
+- In the planet observer module (`pymodules/__atlas_observer.py`), the "Infinite Search (Rings)" mode was added. This mode continuously searches for planets with rings, reporting statistics every 1000 planets, allowing the validation of Roche limit accuracy in the simulation.
+- Planet rotation is now fully synchronized with both its rotation period and its orbital period, creating more realistic planetary motion. This change ensures that each planet's rotation and orbit are consistent with its physics-based simulation values, leading to more accurate and dynamic rendering of planet orientations.
+- Internal parameters for ring drawing were fine-tuned to improve visual alignment and representation.
+- Optimized the performance of Pillow-based drawing functions, leading to faster rendering of planetary features.
+- Simplified the random generation process for planetary elements and rings, improving clarity and maintainability.
+- Created a `__WIP__` folder for development purposes containing `.wip` files of different versions of methods and modules.
+
 ## [0.9.15] - 2024-09-09
 
 - Added the possibility for some planets (7% statistically accurate) to have rings.

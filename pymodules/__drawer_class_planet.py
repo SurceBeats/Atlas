@@ -2,14 +2,20 @@
 
 import math
 import random
+import time
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 from pymodules.__atlas_config import config
 from pymodules.__atlas_seedmaster import consistent_hash
+from pymodules.__atlas_fixed_vars import VISUAL_DEBUG
 
 from pymodules.__drawer_watermark import generate_watermark
-from pymodules.__drawer_cplanet_depth import generate_rndback, depth_gradient
+from pymodules.__drawer_cplanet_depth import (
+    generate_rndback,
+    depth_gradient,
+    soft_polar_transform,
+)
 from pymodules.__drawer_cplanet_rings import draw_full_ring, draw_ontop_ring
 from pymodules.__drawer_cplanet_type import (
     get_planet_color_map,
@@ -57,11 +63,25 @@ def generate_planet_image(planet):
 
     img_size = 800
     image = Image.new("RGBA", (img_size, img_size), "black")
+
     planet_surface = Image.new("RGBA", (img_size, img_size), (0, 0, 0, 0))
     draw = ImageDraw.Draw(planet_surface)
 
     center_x = img_size // 2
     center_y = img_size // 2
+
+    current_time = time.time()
+    time_elapsed_seconds = current_time - config.cosmic_origin_time
+
+    angle_velocity_rotation = 2 * math.pi / planet.rotation_period_seconds
+    angle_rotation = (
+        planet.initial_angle_rotation + time_elapsed_seconds * angle_velocity_rotation
+    ) % (2 * math.pi)
+
+    angle_velocity_orbit = 2 * math.pi / planet.orbital_period_seconds
+    orbital_angle = (
+        planet.initial_orbital_angle + time_elapsed_seconds * angle_velocity_orbit
+    ) % (2 * math.pi)
 
     tilt_factor = math.sin(math.radians(planet.axial_tilt))
     shape_seed = consistent_hash(
@@ -73,18 +93,17 @@ def generate_planet_image(planet):
 
     planet_color_map = get_planet_color_map()
     base_color = planet_color_map.get(planet.planet_type, "white")
-    rndback = generate_rndback(
-        planet_radius,
-        base_color,
-        seed=shape_seed,
-    )
+
+    rndback = generate_rndback(planet_radius, base_color, seed=shape_seed)
 
     try:
         font = ImageFont.truetype("arial.ttf", 14)
     except IOError:
         font = ImageFont.load_default()
 
-    image.paste(rndback, (center_x - planet_radius, center_y - planet_radius), rndback)
+    planet_surface.paste(
+        rndback, (center_x - planet_radius, center_y - planet_radius), rndback
+    )
 
     draw_functions = {
         "Gas Giant": draw_gas_giant_elements,
@@ -132,9 +151,21 @@ def generate_planet_image(planet):
     else:
         raise ValueError(f"Unknown planet type: {planet_type}")
 
-    image.paste(surface_layer, (0, 0), surface_layer)
+    planet_surface = Image.alpha_composite(planet_surface, surface_layer)
 
-    depth_gradient(image, planet_radius, img_size)
+    planet_surface_rotated = planet_surface.rotate(
+        math.degrees(angle_rotation),
+        resample=Image.BICUBIC,
+        center=(center_x, center_y),
+    )
+
+    image.paste(planet_surface_rotated, (0, 0), planet_surface_rotated)
+
+    print(f"Sun angle in degrees for {planet.name}: {math.degrees(orbital_angle)}")
+
+    image = soft_polar_transform(image, scale_factor=0.85, depth_factor=0.70)
+
+    depth_gradient(image, planet_radius, img_size, orbital_angle)
 
     mask = Image.new("L", (img_size, img_size), 0)
     mask_draw = ImageDraw.Draw(mask)
@@ -164,6 +195,7 @@ def generate_planet_image(planet):
             ring_outer_radius,
             rng,
             tilt_factor=tilt_factor,
+            rotation_angle=angle_rotation,
         )
 
     if planet.atmosphere != "None":
@@ -280,19 +312,6 @@ def generate_planet_image(planet):
 
     image = Image.alpha_composite(image.convert("RGBA"), life_form_layer)
 
-    draw.line(
-        (
-            center_x - planet_radius * math.sin(math.radians(planet.axial_tilt)),
-            center_y - planet_radius * math.cos(math.radians(planet.axial_tilt)),
-            center_x + planet_radius * math.sin(math.radians(planet.axial_tilt)),
-            center_y + planet_radius * math.cos(math.radians(planet.axial_tilt)),
-        ),
-        fill=(0, 0, 0, 10),
-        width=10,
-    )
-
-    image.paste(planet_surface, (0, 0), planet_surface)
-
     if planet.planet_rings:
         draw_ontop_ring(
             image,
@@ -302,6 +321,17 @@ def generate_planet_image(planet):
             ring_outer_radius,
             rng,
             tilt_factor=tilt_factor,
+            rotation_angle=angle_rotation,
+        )
+
+    if VISUAL_DEBUG:
+        draw_main = ImageDraw.Draw(image)
+        line_x1 = center_x + planet_radius * math.cos(angle_rotation)
+        line_y1 = center_y + planet_radius * math.sin(angle_rotation)
+        line_x2 = center_x - planet_radius * math.cos(angle_rotation)
+        line_y2 = center_y - planet_radius * math.sin(angle_rotation)
+        draw_main.line(
+            (line_x1, line_y1, line_x2, line_y2), fill=(138, 138, 138), width=2
         )
 
     text_x = center_x

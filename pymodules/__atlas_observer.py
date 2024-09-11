@@ -71,20 +71,34 @@ def observer(universe):
     desired_planet_type = select_option(planet_types, "Please select a planet type:")
     desired_life_form = select_option(life_forms, "Please select a desired life form:")
 
+    has_rings_option = select_option(
+        ["Yes", "No", "Doesn't matter", "Infinite Search (Rings)"],
+        "Do you want the planet to have rings? (Select 'Doesn't matter' to skip or 'Infinite Search' for endless rings search)",
+    )
+
     if desired_planet_type == "None":
         desired_planet_type = None
     if desired_life_form == "None":
         desired_life_form = None
 
-    if not desired_planet_type and not desired_life_form:
+    search_rings = None
+    if has_rings_option == "Yes":
+        search_rings = True
+    elif has_rings_option == "No":
+        search_rings = False
+    elif has_rings_option == "Infinite Search (Rings)":
+        search_rings = "infinite"
+
+    if not desired_planet_type and not desired_life_form and search_rings is None:
         print(
-            "You must select at least one criterion (either a planet type or a life form) to search."
+            "You must select at least one criterion (planet type, life form, or rings) to search."
         )
         return
 
     total_galaxies_searched = 0
     total_systems_searched = 0
     total_planets_searched = 0
+    planets_with_rings = 0
 
     print("Searching infinitely. Please wait...")
     x = 0
@@ -106,42 +120,62 @@ def observer(universe):
                             if planet:
                                 match = True
 
-                                if (
-                                    desired_planet_type
-                                    and planet.planet_type != desired_planet_type
-                                ):
-                                    match = False
+                                if search_rings == "infinite":
+                                    if planet.planet_rings:
+                                        planets_with_rings += 1
 
-                                if (
-                                    desired_life_form
-                                    and planet.life_forms != desired_life_form
-                                ):
-                                    match = False
-
-                                if match:
-                                    print("Found a match!")
+                                if total_planets_searched % 1000 == 0:
                                     print(
-                                        f"Galaxy: {galaxy.name} (Coords: {x}, {y}, {z})"
+                                        f"Total planets searched: {total_planets_searched}"
                                     )
+                                    print(f"Planets with rings: {planets_with_rings}")
+                                    ring_percentage = (
+                                        planets_with_rings / total_planets_searched
+                                    ) * 100
                                     print(
-                                        f"System #{system_index + 1}: {solar_system.name}"
-                                    )
-                                    print(f"Planet: {planet.name}")
-                                    print(
-                                        f"URL: http://127.0.0.1:5000{generate_planet_url((x, y, z), system_index, planet.name, (system_index - 1) // 50 + 1)}"
-                                    )
-                                    print(
-                                        f"+ Galaxies Mapped: #{total_galaxies_searched} (now {x}, {y}, {z}), Systems Mapped: #{total_systems_searched}, Planets Mapped: #{total_planets_searched}"
+                                        f"Percentage of planets with rings: {ring_percentage:.2f}%"
                                     )
                                     print("-" * 50)
-                                    print("")
-                                    input("Press Enter to continue searching...")
 
-                            if total_planets_searched % 1000 == 0:
-                                print(
-                                    f"+ Galaxies Mapped: #{total_galaxies_searched} (now {x}, {y}, {z}), Systems Mapped: #{total_systems_searched}, Planets Mapped: #{total_planets_searched}"
-                                )
-                                print("-" * 50)
+                                if planet and search_rings != "infinite":
+                                    match = True
+
+                                    if (
+                                        desired_planet_type
+                                        and planet.planet_type != desired_planet_type
+                                    ):
+                                        match = False
+
+                                    if (
+                                        desired_life_form
+                                        and planet.life_forms != desired_life_form
+                                    ):
+                                        match = False
+
+                                    if (
+                                        search_rings is not None
+                                        and planet.planet_rings != search_rings
+                                    ):
+                                        match = False
+
+                                    if match:
+                                        print("Found a match!")
+                                        print(
+                                            f"Galaxy: {galaxy.name} (Coords: {x}, {y}, {z})"
+                                        )
+                                        print(
+                                            f"System #{system_index + 1}: {solar_system.name}"
+                                        )
+                                        print(f"Planet: {planet.name}")
+                                        print(
+                                            f"URL: http://127.0.0.1:5000{generate_planet_url((x, y, z), system_index, planet.name, (system_index - 1) // 50 + 1)}"
+                                        )
+                                        print(
+                                            f" + Galaxies Mapped: #{total_galaxies_searched} (now {x}, {y}, {z}), Systems Mapped: #{total_systems_searched}, Planets Mapped: #{total_planets_searched}"
+                                        )
+                                        print("-" * 50)
+                                        print("")
+                                        input("Press Enter to continue searching...")
 
                             del planet
                             gc.collect()

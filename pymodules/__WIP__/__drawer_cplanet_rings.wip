@@ -1,9 +1,22 @@
-# pymodules/__drawer_cplanet_rings.py
-
 import math
 
 from PIL import Image, ImageDraw
 
+"""
+Este código funciona bien, aunque genera algunos artefactos en la posición
+de los anillos, pero igualmente aunque sería muy fielmente representativo
+en cuanto a la realidad, ya que los puntos que conforman el anillo giran
+en torno al planeta también, calcular el movimiento de cada punto en función
+de cuanto tiempo ha transcurrido y la nueva posición de cada uno hace que sea
+necesario mucha capacidad de cómputo para algo que debería renderizarse rápida
+y fácilmente, no es viable con este approach actualmente, ya veremos en el
+futuro si somos capaces de refactorizar y hacer que funcione de forma más
+eficiente, de momento dejamos como base el __drawe_cplanet_rings.py actual en
+el que los puntos de los anillos son estáticos pero el conjunto del anillo se
+mueve alrededor del planeta, no como aquí, que se mueve el conjunto y cada punto
+se desplaza uniformemente alrededor de la banda de anillos tal y como se
+supone que ocurriría en la realidad, una pena... :(
+"""
 
 def draw_full_ring(
     image,
@@ -105,3 +118,4 @@ def draw_ontop_ring(
     )
 
     image.paste(rotated_topring_layer, (0, 0), rotated_topring_layer)
+

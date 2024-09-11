@@ -166,7 +166,7 @@ def generate_abstract_land(
 def draw_planet_rings(
     draw, planet_radius, center_x, center_y, rng, color=(0, 0, 0, 100)
 ):
-    linebreaker = rng.randint(60, 80)
+    linebreaker = rng.randint(30, 60)
     base_opacity = color[3]
 
     for i in range(linebreaker):

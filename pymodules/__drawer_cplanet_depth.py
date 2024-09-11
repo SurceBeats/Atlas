@@ -1,6 +1,9 @@
 # pymodules/__drawer_cplanet_depth.py
 
+import math
 import random
+
+from pymodules.__atlas_fixed_vars import VISUAL_DEBUG
 
 from PIL import Image, ImageDraw, ImageColor
 
@@ -33,8 +36,8 @@ def generate_rndback(planet_radius, base_color, seed):
     return gradient_img
 
 
-def depth_gradient(planet_img, planet_radius, img_size):
-    gradient_img_size = img_size
+def depth_gradient(planet_img, planet_radius, img_size, sun_angle, opacity=255):
+    gradient_img_size = int(planet_radius * 2.2)
     gradient_img = Image.new(
         "RGBA", (gradient_img_size, gradient_img_size), (0, 0, 0, 0)
     )
@@ -42,31 +45,65 @@ def depth_gradient(planet_img, planet_radius, img_size):
     alpha = Image.new("L", (gradient_img_size, gradient_img_size))
     draw = ImageDraw.Draw(alpha)
 
-    for i in range(planet_radius * 2):
-        opacity = int(255 * (1 - i / (planet_radius * 1)))
-        draw.ellipse((i, i, gradient_img_size - i, gradient_img_size - i), fill=opacity)
+    for i in range(gradient_img_size):
+        if i < 50:
+            decrement = 1 if i % 5 == 1 else 0
+        else:
+            decrement = 2 if 100 <= i < 150 else 1
+
+        opacity = max(0, opacity - decrement)
+        draw.line([(i, 0), (i, gradient_img_size)], fill=opacity)
 
     gradient_img.putalpha(alpha)
 
+    rotated_gradient = gradient_img.rotate(
+        180 - math.degrees(sun_angle), resample=Image.BICUBIC
+    )
+
     offset = (
-        -planet_radius + 60,
-        -planet_radius + 60,
+        (img_size // 2) - (gradient_img_size // 2),
+        (img_size // 2) - (gradient_img_size // 2),
     )
-    planet_img.paste(gradient_img, offset, gradient_img)
+    planet_img.paste(rotated_gradient, offset, rotated_gradient)
 
-    mask = Image.new("L", (img_size, img_size), 255)
-    mask_draw = ImageDraw.Draw(mask)
-
-    mask_draw.ellipse(
-        (
-            img_size // 2 - planet_radius,
-            img_size // 2 - planet_radius,
-            img_size // 2 + planet_radius,
-            img_size // 2 + planet_radius,
-        ),
-        fill=255,
-    )
-
-    planet_img.putalpha(mask)
+    if VISUAL_DEBUG:
+        center_x, center_y = img_size // 2, img_size // 2
+        sun_x = center_x + planet_radius * math.cos(sun_angle)
+        sun_y = center_y + planet_radius * math.sin(sun_angle)
+        draw_debug = ImageDraw.Draw(planet_img)
+        draw_debug.line((center_x, center_y, sun_x, sun_y), fill="yellow", width=3)
 
     return planet_img
+
+
+def soft_polar_transform(image, scale_factor=1.0, depth_factor=0.5):
+    width, height = image.size
+    center_x, center_y = width // 2, height // 2
+    radius = min(center_x, center_y)
+
+    new_image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+
+    for y in range(height):
+        for x in range(width):
+            dx = x - center_x
+            dy = y - center_y
+            distance = math.sqrt(dx * dx + dy * dy)
+
+            if distance < radius:
+                angle = math.atan2(dy, dx)
+
+                depth_adjustment = 1 + depth_factor * ((distance / radius) ** 2)
+
+                polar_x = int(
+                    center_x
+                    + distance * math.cos(angle) * scale_factor * depth_adjustment
+                )
+                polar_y = int(
+                    center_y
+                    + distance * math.sin(angle) * scale_factor * depth_adjustment
+                )
+
+                if 0 <= polar_x < width and 0 <= polar_y < height:
+                    new_image.putpixel((x, y), image.getpixel((polar_x, polar_y)))
+
+    return new_image
