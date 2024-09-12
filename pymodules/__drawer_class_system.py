@@ -77,7 +77,7 @@ def generate_solar_system_image(solar_system):
                 relative_orbit_radius * (max_orbit_radius - min_orbit_radius)
             )
 
-            eccentricity = planet_rng.uniform(0.0, 0.4) * (1 - relative_orbit_radius)
+            eccentricity = planet.eccentricity_factor
 
             semi_major_axis = orbit_radius
             semi_minor_axis = semi_major_axis * math.sqrt(1 - eccentricity**2)

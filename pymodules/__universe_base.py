@@ -254,6 +254,7 @@ class Planet:
         self.planet_rings = self.decide_planet_rings(planet_seed)
         self.initial_angle_rotation = random.uniform(0, 2 * math.pi)
         self.initial_orbital_angle = random.uniform(0, 2 * math.pi)
+        self.correct_temperature_orbital_distance()
 
     def generate_planet_seed(self):
         return int(
@@ -839,7 +840,8 @@ class Planet:
 
         rotation_period_seconds /= max(1, self.tidal_effect)
 
-        eccentricity_factor = random.uniform(0.8, 1.2)
+        eccentricity_factor = self.eccentricity_factor
+
         distance_influence = (1 / (self.orbital_radius**1.5)) * random.uniform(0.9, 1.1)
         rotation_period_seconds *= max(1, eccentricity_factor * distance_influence)
 
@@ -890,3 +892,56 @@ class Planet:
 
         decision = random.uniform(0, 100) <= ring_probability
         return decision
+
+    def correct_temperature_orbital_distance(self):
+        current_time = time.time()
+
+        time_elapsed_seconds = current_time - config.cosmic_origin_time
+
+        orbital_period = self.orbital_period_seconds
+        angle_velocity_orbit = 2 * math.pi / orbital_period
+
+        angle_orbit = (
+            self.initial_orbital_angle + time_elapsed_seconds * angle_velocity_orbit
+        ) % (2 * math.pi)
+
+        semi_major_axis = self.orbital_radius
+        eccentricity = self.eccentricity_factor
+        current_distance = (
+            semi_major_axis
+            * (1 - eccentricity**2)
+            / (1 + eccentricity * math.cos(angle_orbit))
+        )
+
+        if current_distance < 0.1:
+            current_distance = 0.1
+
+        distance_factor = 1 / (current_distance**0.5)
+        self.surface_temperature *= distance_factor
+
+        atmosphere_factors = {
+            "Thick": 1.2,
+            "Thin": 0.9,
+            "None": 0.7,
+            "Breathable": 1.0,
+            "Carbon Dioxide": 1.3,
+            "Methane": 1.1,
+            "Nitrogen": 0.95,
+            "Oxygen-Rich": 1.0,
+            "Sulfur Dioxide": 1.4,
+            "Superheated": 1.6,
+            "Acidic": 1.5,
+            "Hydrogen": 1.2,
+            "Helium": 0.8,
+            "Ammonia": 1.1,
+            "Water Vapor": 1.3,
+            "Exotic Gases": random.uniform(0.8, 1.5),
+            "Ionic": random.uniform(0.8, 1.3),
+            "Plasma": random.uniform(1.0, 1.4),
+            "Frozen": 0.5,
+            "Toxic": 1.4,
+        }
+
+        atmosphere_factor = atmosphere_factors.get(self.atmosphere, 1.0)
+
+        self.surface_temperature *= atmosphere_factor

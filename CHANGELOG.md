@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.9.98sm1] - 2024-09-12
+
+- Fixed an inconsistency in the calculation of the planet's eccentricity. Now, `planet.eccentricity_factor` is used consistently when drawing the system and in the calculation of rotation periods.
+- Removed the redundant, empiric and arbitrary recalculation of eccentricity in `__drawer_class_system.py`, ensuring that the eccentricity initialized during planet creation remains constant throughout the simulation.
+- Improved the calculation of rotation periods by integrating the planet's eccentricity and orbital distance influence more accurately.
+- Planet temperatures now vary based on their **orbital position**, providing a more realistic simulation of temperature changes throughout the planetary year.
+- We're using now the **Inverse Square Law of Radiation**, this law governs how the intensity of radiation diminishes as the distance from the star increases. It ensures that planets farther from their star receive less heat, while those closer receive more.
+- The eccentricity of the planet's orbit is now fully integrated, meaning that planets with more elliptical orbits will experience greater variations in temperature as they move closer or farther away from their star throughout their orbit.
+- The planet's temperature is now dynamically adjusted based on its position in orbit, which is calculated using the time elapsed since the **cosmic origin time** (the time when the universe was initialized, the Bit Bang). This ensures that temperature changes are continuously updated in relation to the planet’s movement around its star.
+- Different types of atmospheres are now taken into account, affecting how much heat a planet retains or loses. Planets with dense atmospheres (e.g., rich in carbon dioxide or water vapor) will experience higher temperatures due to the greenhouse effect, while thin or non-existent atmospheres will result in cooler conditions.
+- We’ve inadvertently created **seasons** on every planet! Yes, actual seasons. So, if your planet is wandering through a highly eccentric orbit, expect some wild temperature fluctuations—hot summers, freezing winters... you name it!
+- This is just the beginning! With these dynamic changes, we’re bringing the universe to life—literally. And things are about to get even crazier. When we integrate **Semantic Kernel** AI into the generation core... Well, let's just say, it’s starting to feel like we’ve got our own little universe brewing. Stay tuned, things are about to get weird!
+
 ## [0.9.92r0] - 2024-09-12
 
 - We've updated the key features on the `README.md` file.
@@ -8,7 +21,7 @@
 
 - We've aligned the rotation behavior of planets and systems to ensure consistent visual representation across both `__drawer_class_planet.py` and `__drawer_class_system.py`.
 - In `__drawer_class_planet.py` the planet surface rotation now uses a **negative rotation angle**. This ensures that the planet rotates **clockwise** (as per the PIL coordinate system).
-- In `__drawer_class_system.py` we continue using a **positive rotation angle** for the planet's axis rotation. By leveraging PIL’s inverted Y-axis, this results in both the planet surface and its axis rotating in the **same visual direction** on the screen. This ensures that the rotation feels coherent between systems and individual planets. Although one uses a negative angle and the other a positive one, both now rotate **in the same direction** due to how the Y-Axis is inverted in the PIL rendering system. 
+- In `__drawer_class_system.py` we continue using a **positive rotation angle** for the planet's axis rotation. By leveraging PIL’s inverted Y-axis, this results in both the planet surface and its axis rotating in the **same visual direction** on the screen. This ensures that the rotation feels coherent between systems and individual planets. Although one uses a negative angle and the other a positive one, both now rotate **in the same direction** due to how the Y-Axis is inverted in the PIL rendering system.
 - We've also inverted the axis of rotation for the rings in `pymodules/__drawer_cplanet_rings.py` to ensure that the rings no longer rotate in the opposite direction to the planet. It would be quite the cosmic faux pas if the rings didn’t follow their planet's lead – space is all about synchronization, right? I'm not sure...
 - Improved Infinite Ring Search in `pymodules/__atlas_observer.py` by enhancing the ring search logic to provide **detailed percentage statistics** by planet type. This now prints out cleaner, more insightful statistics about the occurrence of rings across various types of planets, making it easier to assess their distribution in the simulation.
 - In reference to the above point, we've noticed that although we **did not intentionally decide** that gas giants should have a higher probability of rings, they are indeed the most likely candidates to have them. This fortuitously confirms the **Roche limit** in our simulation, where large planets like gas giants are more likely to form rings due to tidal forces preventing the formation of moons in close proximity.

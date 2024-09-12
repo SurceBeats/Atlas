@@ -10,7 +10,7 @@
 
 - **Procedural Universe Creation**: Generate diverse galaxies with unique star systems, planetary bodies, and cosmic events.
 - **Universe Simulation**: Simulate the creation and evolution of entire universes, complete with expanding galaxies and planetary motion in real time, following real time physics.
-- **No Database or Predefined Data**: _The Atlas_ does not rely on any database or predefined data. There is no storage of generated content. Everything is procedurally generated in real-time based purely on algorithms and a single primordial seed.
+- **No Database or Pre-Saved Data**: _The Atlas_ does not rely on any database or predefined data. There is no storage of generated content (other than the cache). Everything is procedurally generated in real-time based purely on algorithms and a single primordial seed, even the images.
 - **Procedural Nature of Existence**: The universe, galaxies, planets, and all their characteristics depend on the primal seed and how it is interpreted at the moment of generation. Given the procedural nature everything and nothing exists until we choose to observe it.
 - **Customizable Parameters**: Fine-tune every aspect of the generation process, from physical constants to universe seeds, ensuring a personalized experience (editable via `pymodules/__constants.py`).
 - **Synchronized Planet and System Rotation**: Planets and systems rotate coherently on screen, with synchronized yet differentiated rotation angles, ensuring visual consistency.
@@ -20,6 +20,7 @@
 - **Performance Improvements in Image Generation**: Enhanced Pillow-based drawing functions lead to faster rendering and better overall performance.
 - **New Universe Initialization System**: Choose between exploring the default universe or creating your own custom universe using a seed-based initialization system.
 - **Increased Planet Sizes and Detail**: Planet sizes have been increased by 200%, resulting in more detailed and visually consistent planetary images.
+- **Dynamic Seasonal Changes**: Planets experience **seasons**, with temperature variations that depend on the planet's **orbital position** around its star. Temperature recalculations are performed dynamically as the planet moves closer or farther from its star using the **inverse square law of radiation**.
 
 ---
 
