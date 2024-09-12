@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.9.92r0] - 2024-09-12
+
+- We've updated the key features on the `README.md` file.
+
 ## [0.9.92] - 2024-09-12
 
 - We've aligned the rotation behavior of planets and systems to ensure consistent visual representation across both `__drawer_class_planet.py` and `__drawer_class_system.py`.
