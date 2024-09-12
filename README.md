@@ -1,4 +1,9 @@
-<p align="center"><img src="https://github.com/SurceBeats/Atlas/blob/main/public/atlas-logo.jpg" width="400"></p>
+<p align="center"><img style="border-radius: 30px; box-shadow: 0px 5px 5px #7b7b7b;" src="https://github.com/SurceBeats/Atlas/blob/main/public/atlas-logo.jpg" width="400"></p>
+
+<div align="center">
+  <img src="https://img.shields.io/github/last-commit/SurceBeats/Atlas" alt="GitHub last commit"/>
+  <img src="https://img.shields.io/github/stars/SurceBeats/Atlas?style=social" alt="stars badge"/>
+</div>
 
 ## About The Atlas
 
