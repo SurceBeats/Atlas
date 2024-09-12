@@ -154,14 +154,12 @@ def generate_planet_image(planet):
     planet_surface = Image.alpha_composite(planet_surface, surface_layer)
 
     planet_surface_rotated = planet_surface.rotate(
-        math.degrees(angle_rotation),
+        -math.degrees(angle_rotation),
         resample=Image.BICUBIC,
         center=(center_x, center_y),
     )
 
     image.paste(planet_surface_rotated, (0, 0), planet_surface_rotated)
-
-    print(f"Sun angle in degrees for {planet.name}: {math.degrees(orbital_angle)}")
 
     image = soft_polar_transform(image, scale_factor=0.85, depth_factor=0.70)
 
@@ -326,8 +324,8 @@ def generate_planet_image(planet):
 
     if VISUAL_DEBUG:
         draw_main = ImageDraw.Draw(image)
-        line_x1 = center_x + planet_radius * math.cos(angle_rotation)
-        line_y1 = center_y + planet_radius * math.sin(angle_rotation)
+        line_x1 = center_x + planet_radius * math.cos(angle_rotation) / 64
+        line_y1 = center_y + planet_radius * math.sin(angle_rotation) / 64
         line_x2 = center_x - planet_radius * math.cos(angle_rotation)
         line_y2 = center_y - planet_radius * math.sin(angle_rotation)
         draw_main.line(

@@ -55,7 +55,7 @@ def draw_full_ring(
     ring_layer.putalpha(ring_mask)
 
     rotated_ring_layer = ring_layer.rotate(
-        math.degrees(rotation_angle),
+        -math.degrees(rotation_angle),
         resample=Image.BICUBIC,
         center=(center_x, center_y),
     )
@@ -99,7 +99,7 @@ def draw_ontop_ring(
         )
 
     rotated_topring_layer = topring_layer.rotate(
-        math.degrees(rotation_angle),
+        -math.degrees(rotation_angle),
         resample=Image.BICUBIC,
         center=(center_x, center_y),
     )

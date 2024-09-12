@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.9.92] - 2024-09-12
+
+- We've aligned the rotation behavior of planets and systems to ensure consistent visual representation across both `__drawer_class_planet.py` and `__drawer_class_system.py`.
+- In `__drawer_class_planet.py` the planet surface rotation now uses a **negative rotation angle**. This ensures that the planet rotates **clockwise** (as per the PIL coordinate system).
+- In `__drawer_class_system.py` we continue using a **positive rotation angle** for the planet's axis rotation. By leveraging PIL’s inverted Y-axis, this results in both the planet surface and its axis rotating in the **same visual direction** on the screen. This ensures that the rotation feels coherent between systems and individual planets. Although one uses a negative angle and the other a positive one, both now rotate **in the same direction** due to how the Y-Axis is inverted in the PIL rendering system. 
+- We've also inverted the axis of rotation for the rings in `pymodules/__drawer_cplanet_rings.py` to ensure that the rings no longer rotate in the opposite direction to the planet. It would be quite the cosmic faux pas if the rings didn’t follow their planet's lead – space is all about synchronization, right? I'm not sure...
+- Improved Infinite Ring Search in `pymodules/__atlas_observer.py` by enhancing the ring search logic to provide **detailed percentage statistics** by planet type. This now prints out cleaner, more insightful statistics about the occurrence of rings across various types of planets, making it easier to assess their distribution in the simulation.
+- In reference to the above point, we've noticed that although we **did not intentionally decide** that gas giants should have a higher probability of rings, they are indeed the most likely candidates to have them. This fortuitously confirms the **Roche limit** in our simulation, where large planets like gas giants are more likely to form rings due to tidal forces preventing the formation of moons in close proximity.
+- We have updated the logo to better align with the analogy of a simulation within a cosmic-origin-time inside a cube, symbolizing the potential to generate infinite universes.
+- Removed some debugging prints, this seems to be a constant... Too.
+
 ## [0.9.86] - 2024-09-11
 
 - **(BREAKING)** Both `initial_angle_rotation` and `initial_orbital_angle` are now initialized directly in `__universe_base.py`, affecting all planetary orbits and rotations. This leads to a more accurate simulation of orbital dynamics, but modifies previous orbits. The advantage is that this value is now consistent across the entire simulation.

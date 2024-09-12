@@ -178,8 +178,8 @@ def generate_solar_system_image(solar_system):
                 fill=planet_color,
             )
 
-            line_x1 = planet_x + planet_radius * math.cos(angle_rotation) / 8
-            line_y1 = planet_y + planet_radius * math.sin(angle_rotation) / 8
+            line_x1 = planet_x + planet_radius * math.cos(angle_rotation) / 64
+            line_y1 = planet_y + planet_radius * math.sin(angle_rotation) / 64
             line_x2 = planet_x - planet_radius * math.cos(angle_rotation)
             line_y2 = planet_y - planet_radius * math.sin(angle_rotation)
 
