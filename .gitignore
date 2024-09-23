@@ -3,6 +3,7 @@
 
 # Excluir las movidas de caché
 /static/cache/*
+/tmp/*
 
 # Excluir el atlas.ini, se genera en auto
 /atlas.ini
