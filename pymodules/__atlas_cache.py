@@ -3,7 +3,7 @@
 import os
 import hashlib
 
-cache_dir = "static/cache"
+cache_dir = "tmp"
 if not os.path.exists(cache_dir):
     os.makedirs(cache_dir)
 
