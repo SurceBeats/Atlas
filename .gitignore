@@ -2,7 +2,7 @@
 **/__pycache__/
 
 # Excluir las movidas de caché
-/static/cache/
+/static/cache/*
 
 # Excluir el atlas.ini, se genera en auto
 /atlas.ini
