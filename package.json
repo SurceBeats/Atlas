@@ -1,5 +1,0 @@
-{
-  "scripts": {
-    "build": "echo [Settings] > atlas.ini && echo seed = 1.618033988749895 >> atlas.ini && echo cosmic_origin_time = 514080000 >> atlas.ini && echo image_quality = 100 >> atlas.ini && echo enable_cache = True >> atlas.ini && echo cache_cleanup_time = 900 >> atlas.ini"
-  }
-}
