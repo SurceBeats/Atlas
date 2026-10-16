@@ -52,12 +52,13 @@ def register_universe_routes(app, universe, config):
 
                 if rand > 0.15:
                     planets_list = []
-                    for planet in system.planets.values():
-                        planets_list.append({"name": planet.name})
+                    for index, planet in system.planets.items():
+                        planets_list.append({"name": planet.name, "index": index})
 
                     if planets_list:
                         random_planet = random.choice(planets_list)
                         response_data["planet_name"] = random_planet["name"]
+                        response_data["planet_index"] = random_planet["index"]
                         response_data["navigation_data"]["planet"] = random_planet["name"]
 
             return jsonify(response_data)
@@ -75,29 +76,16 @@ def register_universe_routes(app, universe, config):
             y = int(request.form["y"])
             z = int(request.form["z"])
 
-            galaxy = get_universe().get_galaxy(x, y, z)
-            session["galaxy"] = {
-                "seed": galaxy.seed,
-                "name": galaxy.name,
-                "constants": galaxy.constants.__dict__,
-                "galaxy_type": galaxy.galaxy_type,
-                "coordinates": (x, y, z),
-            }
+            from pymodules.__universe_routes_pages import explore_url
 
             system_index = request.form.get("system")
+            planet_index = None
             planet_name = request.form.get("planet")
+            if system_index and planet_name:
+                system = get_universe().get_galaxy(x, y, z).get_solar_system(int(system_index))
+                planet_index = next((i for i, p in system.planets.items() if p.name.lower() == planet_name.lower()), None)
 
-            if system_index:
-                system_idx = int(system_index)
-                session["system"] = system_idx
-
-                if planet_name:
-                    return redirect(url_for("view_planet", planet_name=planet_name))
-                else:
-                    return redirect(url_for("view_system", system_index=system_idx))
-            else:
-                session["system"] = None
-                return redirect(url_for("view_galaxy"))
+            return redirect(explore_url((x, y, z), int(system_index) if system_index else None, planet_index))
 
         except Exception as e:
             return render_template("error.html", message=f"Random jump failed: {str(e)}", run_mode=RUN)

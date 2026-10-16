@@ -25,15 +25,10 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       input: {
         global: resolve(__dirname, "atlas-ui/react/static/css/global.css"),
-        __main__: resolve(__dirname, "atlas-ui/react/static/js/MountPoints/__main__.ts"),
-        __galaxy__: resolve(__dirname, "atlas-ui/react/static/js/MountPoints/__galaxy__.js"),
-        __system__: resolve(__dirname, "atlas-ui/react/static/js/MountPoints/__system__.ts"),
-        __planet__: resolve(__dirname, "atlas-ui/react/static/js/MountPoints/__planet__.js"),
         __onboarding__: resolve(__dirname, "atlas-ui/react/static/js/MountPoints/__onboarding__.ts"),
         __error__: resolve(__dirname, "atlas-ui/react/static/js/MountPoints/__error__.ts"),
-        __faq__: resolve(__dirname, "atlas-ui/react/static/js/MountPoints/__faq__.ts"),
         __multiverse__: resolve(__dirname, "atlas-ui/react/static/js/MountPoints/__multiverse__.ts"),
-      },
+        __explore__: resolve(__dirname, "atlas-ui/react/static/js/MountPoints/__explore__.ts"),      },
       output: {
         chunkFileNames: "atlas_[hash:21].js",
         entryFileNames: "atlas_[hash:21].js",

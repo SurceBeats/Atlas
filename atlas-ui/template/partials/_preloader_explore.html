@@ -1,0 +1,170 @@
+<!-- The explorer's boot screen: stays up until the first galaxy is on screen (the app
+     calls window.atlasPreloader.done()), so it opens straight onto the universe -->
+<style>
+  #atlas-boot {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at 50% 55%, rgba(34, 211, 238, 0.07), transparent 55%), #000;
+    color: #e2e8f0;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    transition: opacity 0.9s ease, filter 0.9s ease;
+    overflow: hidden;
+  }
+  #atlas-boot.leaving {
+    opacity: 0;
+    filter: blur(6px);
+    pointer-events: none;
+  }
+  #atlas-boot .stars,
+  #atlas-boot .stars::after {
+    position: absolute;
+    inset: -50%;
+    background-image: radial-gradient(1px 1px at 20% 30%, #fff8, transparent), radial-gradient(1px 1px at 70% 60%, #fff6, transparent), radial-gradient(1.5px 1.5px at 40% 80%, #bae6fd88, transparent), radial-gradient(1px 1px at 85% 20%, #fff5, transparent), radial-gradient(1px 1px at 10% 70%, #ddd6fe77, transparent), radial-gradient(1px 1px at 55% 15%, #fff5, transparent);
+    background-size: 280px 280px;
+    animation: boot-drift 60s linear infinite;
+    opacity: 0.7;
+  }
+  #atlas-boot .stars::after {
+    content: "";
+    inset: 0;
+    background-size: 430px 430px;
+    animation-duration: 90s;
+    opacity: 0.6;
+  }
+  @keyframes boot-drift {
+    to {
+      transform: translate3d(-140px, -90px, 0);
+    }
+  }
+  #atlas-boot .core {
+    position: relative;
+    text-align: center;
+    width: min(360px, 80vw);
+  }
+  #atlas-boot .ring {
+    width: 74px;
+    height: 74px;
+    margin: 0 auto 28px;
+    border-radius: 50%;
+    border: 1px solid rgba(34, 211, 238, 0.18);
+    border-top-color: rgba(103, 232, 249, 0.9);
+    box-shadow: 0 0 24px rgba(34, 211, 238, 0.25), inset 0 0 18px rgba(34, 211, 238, 0.12);
+    animation: boot-spin 1.6s cubic-bezier(0.6, 0.1, 0.4, 0.9) infinite;
+    position: relative;
+  }
+  #atlas-boot .ring::after {
+    content: "";
+    position: absolute;
+    inset: 30px;
+    border-radius: 50%;
+    background: #a5f3fc;
+    box-shadow: 0 0 14px 4px rgba(34, 211, 238, 0.7);
+    animation: boot-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes boot-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes boot-pulse {
+    50% {
+      transform: scale(0.55);
+      opacity: 0.6;
+    }
+  }
+  #atlas-boot .word {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.55em;
+    padding-left: 0.55em;
+    color: rgba(255, 255, 255, 0.92);
+  }
+  #atlas-boot .word span {
+    color: #67e8f9;
+    text-shadow: 0 0 10px rgba(34, 211, 238, 0.8);
+  }
+  #atlas-boot .bar {
+    height: 1px;
+    margin: 22px 0 12px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+  }
+  #atlas-boot .bar div {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, rgba(34, 211, 238, 0.2), #67e8f9);
+    box-shadow: 0 0 8px rgba(34, 211, 238, 0.9);
+    transition: width 0.4s ease-out;
+  }
+  #atlas-boot .status {
+    font: 11px ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: 0.12em;
+    color: rgba(165, 243, 252, 0.7);
+    min-height: 1.4em;
+  }
+  #atlas-boot .version {
+    position: absolute;
+    bottom: 22px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font: 10px ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: 0.2em;
+    color: rgba(148, 163, 184, 0.45);
+  }
+</style>
+
+<div id="atlas-boot">
+  <div class="stars"></div>
+  <div class="core">
+    <div class="ring"></div>
+    <div class="word">ATLAS<span>3</span></div>
+    <div class="bar"><div id="atlas-boot-bar"></div></div>
+    <div class="status" id="atlas-boot-status">Powering up the ship…</div>
+  </div>
+  <div class="version">v{{ version }}</div>
+</div>
+
+<script>
+  (function () {
+    var boot = document.getElementById("atlas-boot");
+    var bar = document.getElementById("atlas-boot-bar");
+    var status = document.getElementById("atlas-boot-status");
+    var progress = 0;
+    var finished = false;
+    // Creeps towards 90% on its own; the app reports real milestones on top
+    var creep = setInterval(function () {
+      progress += (90 - progress) * 0.04;
+      bar.style.width = progress + "%";
+    }, 120);
+    var shownAt = performance.now();
+    function done() {
+      if (finished) return;
+      finished = true;
+      clearInterval(creep);
+      bar.style.width = "100%";
+      // A warm server draws the galaxy in a blink: still let the screen be seen, no flicker
+      var hold = Math.max(250, 1100 - (performance.now() - shownAt));
+      setTimeout(function () {
+        boot.classList.add("leaving");
+        setTimeout(function () {
+          boot.remove();
+        }, 950);
+      }, hold);
+    }
+    window.atlasPreloader = {
+      step: function (text, value) {
+        if (finished) return;
+        if (text) status.textContent = text;
+        if (value && value * 100 > progress) progress = value * 100;
+      },
+      done: done,
+    };
+    // Never hold the page hostage
+    setTimeout(done, 20000);
+  })();
+</script>

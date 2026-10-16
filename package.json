@@ -1,13 +1,14 @@
 {
   "name": "atlas",
-  "version": "2.10.434",
+  "version": "3.0.0",
   "description": "<p align=\"center\"><img style=\"border-radius: 30px; box-shadow: 0px 5px 5px #7b7b7b;\" src=\"https://github.com/SurceBeats/Atlas/blob/main/public/atlas-logo.jpg\" width=\"400\"></p>",
   "main": "index.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm run test:explore",
+    "test:explore": "node --test atlas-ui/react/static/js/Explore/**/*.test.ts"
   },
   "repository": {
     "type": "git",

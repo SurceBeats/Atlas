@@ -1,5 +1,44 @@
 # Changelog
 
+## [3.0.0] - 2026-10-15
+
+ATLAS3: the whole interface rebuilt as a single, continuous 3D universe in Three.js.
+
+- Replaced the page-by-page 2D interface (index, galaxy, system and planet pages) with one 3D explorer: from the edge of the universe to the orbit of a moon without a single page load. Every old URL (galaxy, system, planet, stargate and navigation forms) redirects to the right place in the explorer.
+- New rendering engine with a floating origin (no jitter from galactic scale down to planet surfaces), an HDR deep sky with tonemapping and eye adaptation, and separate depth ranges for the galaxy, the star system and the planet passes.
+- Galaxies are drawn with a level-of-detail system computed in a Web Worker: from afar a glow, up close billions of individual stars, each one a real, pickable system. Spiral, elliptical and dwarf galaxies with bulges, bars, arms, globular and open clusters, black holes with gravitational lensing, pulsars and quasars.
+- Galaxies now live in one continuous cube: the neighbouring galaxies are visible in the sky, stream in as you move, and can be flown to directly. A universe grid shows the cube cells around the current galaxy (on by default, can be turned off in the settings).
+- The diffuse galactic glow is rendered into a low-resolution buffer, making dense galactic cores around four times cheaper to draw, with less haze around the camera.
+- Star systems with single and multiple stars, planets on real orbits in real time, moons with their own orbits, eclipses (moons pass through the planet's shadow, reddened by its atmosphere) and visitable moons.
+- Time controls for star systems (1×, 1 h/s, 1 d/s, 1 mo/s, 1 yr/s), real time by default, with a button to return to the present.
+- New realistic planet renderer for all 26 planet types, replacing the previous layered effects: GLSL surfaces per family (Earth-like, desert, barren, metal, crystal, diamond, ice, lava, gas, veiled, radioactive, exotic, anomaly), each with several structural variants, so no two planets of a type share a shape.
+- Earth-like worlds with continents, mountain belts, climate zones, vegetation, polar caps from the planet's real temperature, clouds that cast shadows, ocean glint and city lights on the night side.
+- Gas and ice giants with bands that shear at their own speed, Kelvin-Helmholtz waves, storms, Saturn-like polar hexagons, Neptune-like dark spots, soft terminators and limb darkening; realistic rings with gaps, ringlets and shadows both ways.
+- Lava, Magma and Molten Core are now distinct: a cracked crust over glowing rock, a magma ocean with drifting rafts, and a mantle torn open to white-hot chasms.
+- Diamond planets with real refraction, dispersion ("fire") and internal reflections; crystalline worlds with flashing facets and thin-film colours; metallic worlds with bare polished metal and oxide crusts per alloy; radioactive worlds with glowing fissures, luminous sludge and Cherenkov-blue cores.
+- Atmospheres rendered with single scattering (Rayleigh and Mie): glowing limbs and reddened sunsets at the terminator.
+- All planet effects redrawn: satellite constellations and stations, machine swarms with an orbital ring, auroras, radiation belts, volcanic plumes, smoke, toxic seeps, blowing snow and dust, living gas, an ethereal presence, phase ripples, a monolith, exotic shards, polar jets and debris fields.
+- "Have I just found God?" redesigned: a golden corona with rays breaking past the limb, armillary rings engraved with binary code, a lattice of light on the ground, golden motes in orbit and waves of light.
+- Removed the previous effect registry, the planet layer system and all classic planet effects.
+- Hyperjump redesigned: the drive charges, a wormhole opens and bends everything on screen around its mouth, the ship rides a hyperspace tunnel while the new galaxy loads, and a second mouth opens on the destination. Jumps to visible neighbouring galaxies are flown for real.
+- New front door ("Dive into the void"): a living deep-space scene with a nebula, a distant galaxy and stars streaming past, ship instruments, and a dive straight into hyperspace. It now shows the universe's primordial seed, its SHA-256, the exact moment of its Big Bang, its age ticking live and its development towards the evolution limit on a logarithmic timeline.
+- New Atlas Initialization Protocol (onboarding) in the same style, with a seed field, a random seed button and a new, cosmologically accurate creation sequence: inflation, the cooling plasma, recombination and the cosmic microwave background, the dark ages, the first stars and the cosmic web forming under gravity.
+- Ship view: a chase-camera ship that banks with the view and fires its drive while travelling. A hangar (the ship-shaped button in the top bar) chooses between the Saucer and the Interceptor, a delta wing with twin engines, exhaust plumes and "PLD" on its wings in honour of PLD Space.
+- Soundtrack ("Atlas Space Drift") with seamless looping, and quiet synthesised WebAudio sound effects for flights, arrivals, orbits, selections and hyperjumps, which can be turned off in the settings.
+- Photos (P, or the camera button): a PNG of what is on screen at the screen's resolution, without the ship, the HUD, the grid or the orbits, stamped with where it was taken and a QR code with the Stargate link to fly there (on a local copy of the Core Continuum the code points to the public Atlas). On phones it goes through the share sheet, so it can be saved straight to the photos.
+- Stargate panel redesigned, with saved places: save any galaxy, system or planet, rename it, copy its link, remove it, and travel back to it from anywhere. Places saved with previous versions are kept.
+- Multiverse panel inside the explorer, with the crossing between universes played as a jump.
+- F.A.Q. inside the explorer as a searchable archive, with a custom section picker on mobile and the research papers (on Zenodo) as their own section. The bundled PDFs were removed.
+- Ship console with targets, nearby systems, planets and moons, flight HUD (speed, light speed, distance left), graphics quality presets (low to ultra) stored per browser, and view options (ship view, universe grid, flight HUD, sound effects).
+- Full mobile support: collapsible console, hamburger menu, touch controls, drop-down panels that never overflow the screen.
+- Every modal and drop-down panel now animates in and out.
+- Photosensitivity warning brought to ATLAS3: asked once (on the front door or the onboarding), and waiting for an answer instead of a countdown. Reduced flashing removes the white flashes and shock rings from jumps and crossings, slows hyperspace and dims the inflation in the birth of a universe; it can be changed at any time in Graphics & view, and the choice saved by previous versions is kept.
+- The old F.A.Q. page (`/universe-faq`) now opens the F.A.Q. inside the explorer.
+- Random starting location on a first visit, with a jump readout of coordinates, galaxy, system and planet; the ship's location is remembered and kept in the URL.
+- New README with screenshots of ATLAS3.
+- Removed the resource mining, daily challenges, treasure chests and spaceship progression systems from the interface.
+- Supposed to be launched in August, but it's mid October so here it is... Just been polishing because HomeDock OS needed a big update in the way :|
+
 ## [2.10.434] - 2026-03-09
 
 - Minor fixes

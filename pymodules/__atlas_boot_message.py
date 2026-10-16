@@ -4,8 +4,17 @@ import socket
 
 
 def get_local_addresses(port):
-    hostnames = socket.gethostbyname_ex(socket.gethostname())[2]
-    addresses = [f"http://{hostname}:{port}" for hostname in hostnames]
+    hostname = socket.gethostname()
+    ips = []
+    for name in (hostname, f"{hostname}.local"):
+        try:
+            ips = socket.gethostbyname_ex(name)[2]
+            break
+        except socket.gaierror:
+            continue
+    if not ips:
+        ips = ["127.0.0.1"]
+    addresses = [f"http://{ip}:{port}" for ip in ips]
     return addresses
 
 

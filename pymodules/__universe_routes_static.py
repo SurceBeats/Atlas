@@ -1,6 +1,6 @@
 # __universe_routes_static.py
 
-from flask import send_from_directory
+from flask import redirect, send_from_directory
 from pymodules.__atlas_ui_file_delivery import send_static_images, send_static_favicon, send_src_static, send_src_dist
 
 
@@ -26,6 +26,9 @@ def register_static_routes(app):
     def send_static_files(filename):
         return send_from_directory("static", filename)
 
+    # The papers are published on Zenodo; old links to the bundled PDFs land there
+    PAPERS = {"01.pdf": "https://zenodo.org/records/18112886", "02.pdf": "https://zenodo.org/records/18136117"}
+
     @app.route("/papers/<path:filename>")
     def send_papers(filename):
-        return send_from_directory("static/papers", filename)
+        return redirect(PAPERS.get(filename, "https://zenodo.org/records/18112886"))

@@ -31,6 +31,9 @@ const Header: React.FC = () => {
         </a>
 
         <div className="flex items-center space-x-3 sm:space-x-6">
+          <a href="/" className="px-3 py-1.5 rounded-lg border border-cyan-400/40 bg-cyan-500/10 text-cyan-200 text-xs sm:text-sm font-medium hover:bg-cyan-500/20 hover:scale-105 transition-all">
+            Back to your ship
+          </a>
           <a href="/multiverse" className="hover:scale-105 transition-transform">
             <div className="flex items-center space-x-2 text-green-400 relative">
               {isRemoteUniverse ? <MultiverseHeaderConnectedIcon className="w-4 h-4" /> : <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>}

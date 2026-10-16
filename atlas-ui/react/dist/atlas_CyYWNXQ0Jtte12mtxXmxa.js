@@ -1,1 +1,0 @@
-class r{static MAX_DISPLAY_LENGTH=45;static sanitizeForDisplay(i){if(!i)return"";const t=String(i).replace(/[<>"'&]/g,"");return t.length>this.MAX_DISPLAY_LENGTH?t.substring(0,this.MAX_DISPLAY_LENGTH-3)+"...":t}}export{r as S};

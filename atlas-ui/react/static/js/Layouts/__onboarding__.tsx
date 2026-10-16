@@ -1,8 +1,18 @@
 // atlas-ui/react/static/js/Layouts/__onboarding__.tsx
+//
+// The Atlas Initialization Protocol: the very first screen, before any universe exists.
+// The same deep space as the explorer's front door (see Explore/ui/DeepSpace), and one
+// question: the shared universe, or one of your own from a seed. Initializing plays the
+// birth of that universe (see Explore/ui/Creation) while the server creates it, and
+// ends on the front door.
 
-import React, { useState, useEffect } from "react";
-import VersionFooter from "../Components/VersionFooter.tsx";
-import UniverseAnimationCanvas from "../Components/UniverseAnimationCanvas.tsx";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { DeepSpace } from "../Explore/ui/DeepSpace.ts";
+import { Creation, CREATION_EPOCHS, CREATION_PRELUDE, type CreationEpoch } from "../Explore/ui/Creation.ts";
+import { useDecrypt } from "../Explore/ui/kit.tsx";
+import { Genesis } from "../Explore/audio/Genesis.ts";
+import { ComfortNotice, useComfortAsked } from "../Explore/ui/ComfortNotice.tsx";
+import { reducedFlashing } from "../Explore/core/comfort.ts";
 import contentFilter from "../Utils/ContentFilter.jsx";
 
 interface OnboardingLayoutProps {
@@ -10,221 +20,396 @@ interface OnboardingLayoutProps {
   versionHash: string;
 }
 
-interface UniverseOption {
-  value: string;
-  title: string;
-  description: string;
+type Choice = "default" | "custom";
+type Phase = "choosing" | "creating";
+
+const SEED_MAX = 20;
+
+// The universe the server made, for the captions of its birth
+interface BornUniverse {
+  seed: string;
+  origin: number;
 }
 
-type AnimationState = "selection" | "animating" | "processing" | "redirecting";
-type AnimationType = "core" | "multiverse" | "processing" | null;
+const formatOrigin = (origin: number) => new Date(origin * 1000).toISOString().slice(0, 19).replace("T", " ") + " UTC";
+
+// Where each epoch sits on the timeline: a short Euclidean stretch before the transition
+// surface (τ < 0, no time yet), then cosmic time on a logarithmic scale
+const EUCLIDEAN = 0.16;
+const LOG_FROM = -43;
+const LOG_TO = 17;
+const timelineAt = (epoch: CreationEpoch) =>
+  epoch.tau !== undefined ? EUCLIDEAN * epoch.tau : EUCLIDEAN + (1 - EUCLIDEAN) * Math.min(Math.max((Math.log10(epoch.seconds) - LOG_FROM) / (LOG_TO - LOG_FROM), 0), 1);
+const TIMELINE_MARKS = [
+  { label: "τ < 0", at: 0, align: "left" },
+  { label: "Σₜ", at: EUCLIDEAN, align: "center" },
+  { label: "1 s", at: EUCLIDEAN + (1 - EUCLIDEAN) * (43 / 60), align: "center" },
+  { label: "1 yr", at: EUCLIDEAN + (1 - EUCLIDEAN) * (50.5 / 60), align: "center" },
+  { label: "1 Gyr", at: 1, align: "right" },
+];
+const superscript = (n: number) => String(n).replace(/\d/g, (d) => "⁰¹²³⁴⁵⁶⁷⁸⁹"[Number(d)]);
+
+// Before time: entanglement entropy filling the torus towards its limit, read straight
+// from the animation every frame
+function EntropyGauge({ entropy, accent }: { entropy: () => number; accent: string }) {
+  const bar = useRef<HTMLDivElement>(null);
+  const label = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    let frame = 0;
+    const tick = () => {
+      const e = entropy();
+      if (bar.current) bar.current.style.width = `${e * 100}%`;
+      if (label.current) label.current.textContent = `log n ≈ 10${superscript(Math.round(123 * e))}`;
+      frame = requestAnimationFrame(tick);
+    };
+    tick();
+    return () => cancelAnimationFrame(frame);
+  }, [entropy]);
+  return (
+    <div className="mt-3 flex items-center gap-3 font-mono text-[10px] text-gray-500 animate-[fadeIn_0.8s_ease-out]">
+      <span>Sₑₙₜ / Sₘₐₓ</span>
+      <div className="relative w-28 sm:w-40 h-px bg-white/15">
+        <div ref={bar} className={`absolute left-0 top-0 h-px ${accent}`} />
+      </div>
+      <span ref={label} className="tabular-nums" />
+    </div>
+  );
+}
+
+// Captions of the birth, as a documentary would set them: cosmic time, the epoch, the
+// temperature of the universe and its equation, a timeline, and the universe's own facts
+function CreationCaptions({ epoch, born, kind, entropy }: { epoch: number; born: BornUniverse | null; kind: Choice; entropy: () => number }) {
+  const current = epoch >= 0 ? CREATION_EPOCHS[epoch] : CREATION_PRELUDE;
+  const last = epoch === CREATION_EPOCHS.length - 1;
+  const primordial = current.tau !== undefined;
+  const time = useDecrypt(current.time, 320);
+  const name = kind === "default" ? "The Core Continuum" : born ? born.seed : "Your own universe";
+  const accent = kind === "default" ? "text-cyan-200/80" : "text-violet-200/80";
+  return (
+    <>
+      {/* An epigraph over the torus, as a film opens, gone once it begins to collapse */}
+      <div className={`absolute inset-x-6 top-[14%] sm:top-[16%] text-center pointer-events-none transition-opacity duration-1000 ${epoch < 1 ? "opacity-100" : "opacity-0"}`}>
+        <div className="font-serif italic text-lg sm:text-2xl text-white/70 animate-[fadeIn_2.4s_ease-out] text-balance">“Even the void has a memory limit.”</div>
+        <div className="mt-2 font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.35em] text-gray-500 animate-[fadeIn_3.2s_ease-out]">Primordial 4D Torus Hypothesis</div>
+      </div>
+      {/* A faint shade under the captions, so they read over the bright plasma too */}
+      <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+      <div className="absolute left-5 right-5 sm:left-10 sm:right-10 bottom-8 sm:bottom-10 pointer-events-none [text-shadow:0_1px_2px_rgba(0,0,0,0.85),0_0_14px_rgba(0,0,0,0.6)]">
+        <div key={epoch} className="animate-[fadeIn_0.6s_ease-out] min-h-[6.75rem] flex flex-col justify-end">
+          {last ? (
+            <>
+              <div className="text-xl sm:text-2xl font-light text-white tracking-wide">{name}</div>
+              <div className={`mt-1 text-[10px] sm:text-[11px] uppercase tracking-[0.35em] ${accent}`}>Universe created</div>
+              {born && <div className="mt-1 font-mono text-[11px] text-gray-400">Big Bang {formatOrigin(born.origin)}</div>}
+            </>
+          ) : (
+            <>
+              <div className="font-mono text-lg sm:text-2xl font-light text-white/95">{time}</div>
+              <div className={`mt-1 text-[10px] sm:text-[11px] uppercase tracking-[0.35em] ${accent}`}>{current.title}</div>
+              {current.temperature && <div className="mt-1 font-mono text-[11px] text-gray-400">T ≈ {current.temperature}</div>}
+              {current.formula && <div className="mt-1 font-serif italic text-[12px] sm:text-[13px] text-gray-500 truncate">{current.formula}</div>}
+            </>
+          )}
+        </div>
+        {primordial && <EntropyGauge entropy={entropy} accent={kind === "default" ? "bg-cyan-200/70" : "bg-violet-200/70"} />}
+        {/* No time before the transition surface, then cosmic time on a logarithmic scale */}
+        <div className="relative mt-4 h-px">
+          <div className="absolute top-0 h-px border-t border-dashed border-white/15" style={{ left: 0, width: `${EUCLIDEAN * 100}%` }} />
+          <div className="absolute top-0 h-px bg-white/15" style={{ left: `${EUCLIDEAN * 100}%`, right: 0 }} />
+          <div className="absolute left-0 top-0 h-px bg-white/60 transition-[width] duration-700 ease-out" style={{ width: `${timelineAt(current) * 100}%` }} />
+          <div className={`absolute top-0 w-1.5 h-1.5 -mt-[2.5px] -ml-[3px] rounded-full bg-white transition-[left] duration-700 ease-out ${primordial ? "animate-pulse" : ""}`} style={{ left: `${timelineAt(current) * 100}%` }} />
+        </div>
+        <div className="relative h-4 mt-1.5 font-mono text-[9px] text-gray-600">
+          {TIMELINE_MARKS.map((mark) => (
+            <span key={mark.label} className={`absolute top-0 whitespace-nowrap ${mark.align === "center" ? "-translate-x-1/2" : mark.align === "right" ? "-translate-x-full" : ""}`} style={{ left: `${mark.at * 100}%` }}>
+              {mark.label}
+            </span>
+          ))}
+        </div>
+      </div>
+      <div className="absolute top-4 left-4 sm:top-6 sm:left-6 font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.3em] text-cyan-200/40 leading-5 pointer-events-none">
+        <div>Atlas initialization protocol</div>
+        <div>{primordial ? "Primordial state · τ < 0" : last ? "Universe created" : "Universe expanding"}</div>
+      </div>
+    </>
+  );
+}
+
+const OPTIONS: Array<{ value: Choice; title: string; kicker: string; description: string; points: string[] }> = [
+  {
+    value: "default",
+    title: "The Core Continuum",
+    kicker: "Shared universe",
+    description: "The primordial universe, the same for everyone. Explore the cosmos we all traverse as one.",
+    points: ["Stargate links work with anyone", "Visit and be visited across the multiverse"],
+  },
+  {
+    value: "custom",
+    title: "Design the Multiverse",
+    kicker: "Your own universe",
+    description: "A universe of your own, born from a seed and its own moment of creation.",
+    points: ["Choose a seed, or let chance decide", "Entirely shaped by your decision"],
+  },
+];
+
+function validateSeed(seed: string): string {
+  if (seed.length > SEED_MAX) return `${SEED_MAX} characters at most`;
+  const result = contentFilter.filterSeed(seed);
+  return result.isBlocked ? result.reason || "That seed is not allowed" : "";
+}
+
+// A readable random seed: syllables and a number
+function randomSeed() {
+  const syllables = ["ka", "lo", "ri", "ven", "tor", "sa", "mi", "nox", "el", "dra", "qu", "or", "zen", "ta", "lu", "ix"];
+  let seed = "";
+  while (seed.length < 8) seed += syllables[Math.floor(Math.random() * syllables.length)];
+  return `${seed[0].toUpperCase()}${seed.slice(1)}-${Math.floor(Math.random() * 9000 + 1000)}`;
+}
+
+const OptionIcon: React.FC<{ value: Choice }> = ({ value }) => (
+  <svg width={34} height={34} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.3} strokeLinecap="round" className={value === "default" ? "text-cyan-300" : "text-violet-300"}>
+    {value === "default" ? (
+      <>
+        <path d="M12 12c3-4 8-3 8 1s-6 7-10 5" />
+        <path d="M12 12c-3 4-8 3-8-1s6-7 10-5" />
+        <circle cx={12} cy={12} r={1.3} fill="currentColor" />
+      </>
+    ) : (
+      <>
+        <circle cx={12} cy={12} r={2.2} fill="currentColor" />
+        <circle cx={12} cy={12} r={5.5} opacity={0.7} />
+        <circle cx={12} cy={12} r={9} opacity={0.4} strokeDasharray="2 2.6" />
+      </>
+    )}
+  </svg>
+);
 
 const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({ version }) => {
-  const [selectedUniverse, setSelectedUniverse] = useState<string>("");
-  const [animationState, setAnimationState] = useState<AnimationState>("selection");
-  const [animationType, setAnimationType] = useState<AnimationType>(null);
-  const [isInitializing, setIsInitializing] = useState<boolean>(false);
-  const [customSeed, setCustomSeed] = useState<string>("");
-  const [seedError, setSeedError] = useState<string>("");
+  const [choice, setChoice] = useState<Choice | null>(null);
+  const [seed, setSeed] = useState("");
+  const [seedError, setSeedError] = useState("");
+  const [phase, setPhase] = useState<Phase>("choosing");
+  const [failure, setFailure] = useState("");
+  const [epoch, setEpoch] = useState(-1);
+  const [born, setBorn] = useState<BornUniverse | null>(null);
+  const spaceRef = useRef<HTMLDivElement>(null);
+  const deepRef = useRef<DeepSpace | null>(null);
+  const creationRef = useRef<HTMLDivElement>(null);
+  const creation = useRef<Creation | null>(null);
+  const audio = useRef<AudioContext | null>(null);
+  const score = useRef<Genesis | null>(null);
+  const [comfortAsked, markComfortAsked] = useComfortAsked();
 
-  const universeOptions: UniverseOption[] = [
-    {
-      value: "default",
-      title: "The Core Continuum",
-      description: "Venture into the primordial universe where time and space converge for you, exploring the vast cosmos we all traverse as a single entity.",
+  useEffect(() => {
+    if (!spaceRef.current) return;
+    const deep = new DeepSpace(spaceRef.current);
+    deepRef.current = deep;
+    return () => deep.dispose();
+  }, []);
+  useEffect(
+    () => () => {
+      creation.current?.dispose();
+      score.current?.stop();
     },
-    {
-      value: "custom",
-      title: "Design the Multiverse",
-      description: "Generate a personal universe with its own seed and cosmic origin time, a completely unique creation entirely shaped by your decision.",
-    },
-  ];
+    []
+  );
 
-  const handleCardClick = (value: string) => {
-    setSelectedUniverse(value);
-    if (value !== "custom") {
-      setCustomSeed("");
-      setSeedError("");
-    }
+  const ready = !!choice && phase === "choosing" && !(choice === "custom" && seedError);
+  const letterbox = phase === "creating" && epoch < CREATION_EPOCHS.length - 1;
+  const entropy = useCallback(() => creation.current?.entropy ?? 0, []);
+
+  const changeSeed = (value: string) => {
+    if (value.length > SEED_MAX) return;
+    setSeed(value);
+    setSeedError(validateSeed(value));
   };
 
-  const validateSeed = (seed: string): string => {
-    if (seed.length > 20) {
-      return "Maximum 20 characters allowed";
-    }
-    const filterResult = contentFilter.filterSeed(seed);
-    if (filterResult.isBlocked) {
-      return filterResult.reason || "Invalid content";
-    }
-    return "";
-  };
+  const initialize = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!ready || !creationRef.current) return;
+    setPhase("creating");
+    setFailure("");
+    setEpoch(-1);
+    setBorn(null);
 
-  const handleSeedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value.length <= 20) {
-      setCustomSeed(value);
-      const error = validateSeed(value);
-      setSeedError(error);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedUniverse || animationState !== "selection" || isInitializing) return;
-    if (selectedUniverse === "custom" && seedError) return;
-
-    setIsInitializing(true);
-    const formData = new FormData();
-    formData.append("universe_type", selectedUniverse);
-    if (selectedUniverse === "custom" && customSeed.trim()) {
-      formData.append("custom_seed", customSeed.trim());
-    }
-
+    // The click is the gesture sound needs: the score for the birth (see Explore/audio/Genesis)
+    score.current?.stop();
+    score.current = null;
     try {
-      const createResponse = await fetch("/onboarding", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (createResponse.ok) {
-        setAnimationState("animating");
-        setAnimationType(selectedUniverse === "default" ? "core" : "multiverse");
-      } else {
-        console.error("Server responded with error:", createResponse.status);
-        setIsInitializing(false);
+      const AudioCtor: typeof AudioContext | undefined = window.AudioContext ?? (window as any).webkitAudioContext;
+      if (AudioCtor) {
+        audio.current ??= new AudioCtor();
+        audio.current.resume();
+        score.current = new Genesis(audio.current);
+        score.current.start(entropy);
       }
-    } catch (error) {
-      console.error("Error creating universe:", error);
-      setIsInitializing(false);
+    } catch {
+      /* silent birth */
     }
-  };
 
-  const handleAnimationComplete = async () => {
-    window.location.href = "/";
+    // The primordial torus appears at once and holds until the server has made the universe
+    creation.current?.dispose();
+    creation.current = new Creation(creationRef.current, choice === "default" ? "core" : "custom", choice === "custom" ? seed.trim() : "core-continuum", {
+      onCollapse: (untilBang) => score.current?.collapse(untilBang),
+      onBang: () => score.current?.bang(),
+      onEpoch: (index) => {
+        setEpoch(index);
+        score.current?.cue(CREATION_EPOCHS[index].cue);
+      },
+      onDone: () => (window.location.href = "/"),
+    }, reducedFlashing());
+
+    const form = new FormData();
+    form.append("universe_type", choice!);
+    if (choice === "custom" && seed.trim()) form.append("custom_seed", seed.trim());
+    try {
+      const response = await fetch("/onboarding", { method: "POST", body: form });
+      if (!response.ok) throw new Error(`The server answered ${response.status}`);
+      // The universe exists: read its seed and the moment of its Big Bang for the captions
+      try {
+        const config = await (await fetch("/api/universe/config")).json();
+        if (config?.success) setBorn({ seed: String(config.seed_str), origin: Number(config.cosmic_origin_time) });
+      } catch {
+        /* captions without the facts */
+      }
+      creation.current.release();
+    } catch (error) {
+      creation.current?.dispose();
+      creation.current = null;
+      score.current?.stop();
+      score.current = null;
+      setFailure(error instanceof Error ? error.message : "The universe could not be created");
+      setPhase("choosing");
+    }
   };
 
   return (
-    <>
-      {animationType && (
-        <div className="fixed inset-0 bg-black z-50">
-          <UniverseAnimationCanvas animationType={animationType} onAnimationComplete={handleAnimationComplete} />
-        </div>
-      )}
+    <div className="fixed inset-0 bg-black text-gray-200 overflow-hidden select-none">
+      <div ref={spaceRef} className="absolute inset-0 pointer-events-none" />
 
-      <div className={`w-full min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white transition-opacity duration-500 flex flex-col ${animationState !== "selection" ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
-        <div
-          className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }}
-        ></div>
+      {/* Instruments in the corners */}
+      <div className="absolute top-4 left-4 sm:top-6 sm:left-6 font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.3em] text-cyan-200/40 leading-5 pointer-events-none">
+        <div>Atlas initialization protocol</div>
+        <div>Awaiting directive</div>
+      </div>
+      <div className="hidden sm:block absolute bottom-6 right-6 font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.3em] text-cyan-200/30 text-right leading-5 pointer-events-none">
+        <div>v{version}</div>
+        <div>∞ galaxies · ∞ systems</div>
+      </div>
 
-        <div className="relative z-10 flex-1 flex flex-col">
-          <header className="bg-black/20 backdrop-blur-md border-b border-white/10 px-4 sm:px-6 py-6">
-            <div className="w-full flex flex-col items-center space-y-4">
-              <img src="/static/atlas-logo.jpg" alt="Atlas Logo" className="h-16 w-16 sm:h-20 sm:w-20 rounded-full border-2 border-cyan-400 shadow-lg animate-pulse" />
-              <div className="text-center">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">Atlas Initialization Protocol</h1>
-                <p className="text-sm sm:text-base text-gray-300 mt-2">Quantum Navigation System Startup Sequence</p>
-              </div>
+      <form
+        onSubmit={initialize}
+        className={`absolute inset-0 overflow-y-auto overscroll-contain flex flex-col items-center px-4 py-16 sm:py-10 transition-all ease-in ${phase === "creating" ? "opacity-0 scale-95 blur-[2px] pointer-events-none duration-500" : "opacity-100 duration-300"}`}
+      >
+        <div className="my-auto w-full max-w-3xl flex flex-col items-center">
+          <div className="text-center animate-[fadeIn_1.6s_ease-out]">
+            <div className="text-4xl sm:text-5xl font-bold tracking-[0.5em] pl-[0.5em] text-white/95 drop-shadow-[0_0_24px_rgba(0,0,0,0.9)]">
+              ATLAS<span className="text-cyan-300 drop-shadow-[0_0_18px_rgba(34,211,238,0.9)]">3</span>
             </div>
-          </header>
-
-          <div className="w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12 flex-1">
-            <div className="max-w-4xl mx-auto">
-              <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="text-center mb-12">
-                  <p className="text-lg sm:text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto leading-relaxed">Will you journey through a shared universe or forge a new one of your own?</p>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-12">
-                  {universeOptions.map((option) => (
-                    <div
-                      key={option.value}
-                      onClick={() => handleCardClick(option.value)}
-                      className={`
-                        relative group cursor-pointer transition-all duration-500 transform hover:scale-105
-                        ${selectedUniverse === option.value ? "shadow-2xl shadow-cyan-400/25 scale-105" : "hover:shadow-xl hover:shadow-blue-500/20"}
-                      `}
-                    >
-                      <div className="bg-gradient-to-br from-slate-800/80 via-slate-700/80 to-slate-800/80 backdrop-blur-lg rounded-2xl border border-white/10 p-6 sm:p-8 h-full">
-                        <div className="absolute top-4 right-4">
-                          <div
-                            className={`
-                            w-6 h-6 rounded-full border-2 transition-all duration-300
-                            ${selectedUniverse === option.value ? "bg-cyan-400 border-cyan-400 shadow-lg shadow-cyan-400/50" : "border-gray-400 group-hover:border-cyan-400"}
-                          `}
-                          >
-                            {selectedUniverse === option.value && (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <div className="w-2 h-2 bg-white rounded-full animate-ping"></div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="space-y-4">
-                          <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">{option.title}</h2>
-                          <p className="text-gray-300 leading-relaxed text-sm sm:text-base">{option.description}</p>
-
-                          {option.value === "custom" && selectedUniverse === "custom" && (
-                            <div className="mt-4 space-y-2" onClick={(e) => e.stopPropagation()}>
-                              <label className="block text-sm text-gray-400">Custom Seed (optional)</label>
-                              <input type="text" value={customSeed} onChange={handleSeedChange} maxLength={20} placeholder="Leave empty for random" className={`w-full px-4 py-2 bg-slate-900/80 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 transition-all ${seedError ? "border-red-500 focus:ring-red-500/50" : "border-white/20 focus:ring-cyan-400/50 focus:border-cyan-400"}`} />
-                              <div className="flex justify-between text-xs">
-                                <span className={seedError ? "text-red-400" : "text-transparent"}>{seedError || "."}</span>
-                                <span className="text-gray-500">{customSeed.length}/20</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        <div
-                          className={`
-                          absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none
-                          bg-gradient-to-br from-cyan-500/10 via-blue-500/10 to-purple-500/10
-                          ${selectedUniverse === option.value ? "opacity-20" : ""}
-                        `}
-                        ></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="text-center">
-                  <button
-                    type="submit"
-                    disabled={!selectedUniverse || animationState !== "selection" || isInitializing || (selectedUniverse === "custom" && !!seedError)}
-                    className={`
-                      relative overflow-hidden group px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-500 transform
-                      ${selectedUniverse && animationState === "selection" && !isInitializing && !(selectedUniverse === "custom" && seedError) ? "bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 text-white shadow-2xl shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-110 active:scale-95" : "bg-gray-600 text-gray-400 cursor-not-allowed"}
-                    `}
-                  >
-                    {selectedUniverse && animationState === "selection" && !isInitializing && !(selectedUniverse === "custom" && seedError) && <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 opacity-20 group-hover:opacity-40 transition-opacity duration-300"></div>}
-
-                    <span className="relative z-10 flex items-center justify-center space-x-3">
-                      {isInitializing ? (
-                        <>
-                          <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          <span>Initializing...</span>
-                        </>
-                      ) : (
-                        <span>{selectedUniverse ? "Initialize Protocol" : "Select Universe Type"}</span>
-                      )}
-                    </span>
-                  </button>
-                </div>
-              </form>
-            </div>
+            <div className="mt-3 text-[10px] sm:text-[11px] uppercase tracking-[0.3em] sm:tracking-[0.45em] text-cyan-100/60">Initialization protocol</div>
+            <p className="mt-6 text-base sm:text-lg text-gray-300 max-w-2xl mx-auto leading-relaxed text-balance">Will you journey through a shared universe, or forge a new one of your own?</p>
           </div>
 
-          <VersionFooter version={version} />
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 w-full">
+            {OPTIONS.map((option, i) => {
+              const selected = choice === option.value;
+              const accent = option.value === "default" ? "cyan" : "violet";
+              return (
+                <div
+                  key={option.value}
+                  role="radio"
+                  aria-checked={selected}
+                  tabIndex={0}
+                  onClick={() => phase === "choosing" && setChoice(option.value)}
+                  onKeyDown={(e) => (e.key === " " || e.key === "Enter") && phase === "choosing" && (e.preventDefault(), setChoice(option.value))}
+                  style={{ animationDelay: `${0.2 + i * 0.12}s`, animationFillMode: "both" }}
+                  className={`relative text-left rounded-xl border p-5 sm:p-6 backdrop-blur-md cursor-pointer outline-none transition-all duration-300 animate-[fadeIn_0.9s_ease-out] ${
+                    selected
+                      ? accent === "cyan"
+                        ? "bg-cyan-400/[0.08] border-cyan-300/60 shadow-[0_0_40px_rgba(34,211,238,0.18)]"
+                        : "bg-violet-400/[0.08] border-violet-300/60 shadow-[0_0_40px_rgba(167,139,250,0.2)]"
+                      : "bg-slate-950/60 border-white/10 hover:bg-slate-900/70 hover:border-white/25 focus-visible:border-white/30"
+                  }`}
+                >
+                  <span className={`absolute top-4 right-4 w-4 h-4 rounded-full border transition-colors ${selected ? (accent === "cyan" ? "border-cyan-300 bg-cyan-300/90" : "border-violet-300 bg-violet-300/90") : "border-white/30"}`}>
+                    {selected && <span className="absolute inset-[4px] rounded-full bg-slate-950" />}
+                  </span>
+                  <OptionIcon value={option.value} />
+                  <div className={`mt-3 text-[10px] uppercase tracking-[0.3em] ${accent === "cyan" ? "text-cyan-300/80" : "text-violet-300/80"}`}>{option.kicker}</div>
+                  <div className="text-lg sm:text-xl text-white font-light tracking-wide mt-0.5">{option.title}</div>
+                  <p className="text-sm text-gray-400 leading-relaxed mt-2">{option.description}</p>
+                  <ul className="mt-3 space-y-1">
+                    {option.points.map((point) => (
+                      <li key={point} className="flex items-center gap-2 text-xs text-gray-400">
+                        <span className={`w-1 h-1 rounded-full ${accent === "cyan" ? "bg-cyan-300" : "bg-violet-300"}`} />
+                        {point}
+                      </li>
+                    ))}
+                  </ul>
+
+                  {option.value === "custom" && (
+                    <div className={`grid transition-all duration-300 ease-out ${selected ? "grid-rows-[1fr] opacity-100 mt-4" : "grid-rows-[0fr] opacity-0"}`} onClick={(e) => e.stopPropagation()}>
+                      <div className="overflow-hidden">
+                        <label className="block text-[10px] uppercase tracking-[0.25em] text-gray-500 mb-1.5">Seed (optional)</label>
+                        <div className="flex gap-1.5">
+                          <input
+                            value={seed}
+                            onChange={(e) => changeSeed(e.target.value)}
+                            maxLength={SEED_MAX}
+                            placeholder="Empty for a random seed"
+                            disabled={phase !== "choosing"}
+                            className={`min-w-0 flex-1 bg-black/40 border rounded-lg px-3 py-2 text-sm text-white font-mono placeholder-gray-600 outline-none transition-colors select-text ${seedError ? "border-red-400/60" : "border-white/15 focus:border-violet-300/60"}`}
+                          />
+                          <button type="button" title="A random seed" aria-label="A random seed" onClick={() => changeSeed(randomSeed())} className="shrink-0 w-10 flex items-center justify-center rounded-lg border border-white/15 bg-white/5 hover:bg-white/15 text-gray-300">
+                            <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinejoin="round">
+                              <rect x={4} y={4} width={16} height={16} rx={3} />
+                              <circle cx={9} cy={9} r={1} fill="currentColor" />
+                              <circle cx={15} cy={15} r={1} fill="currentColor" />
+                              <circle cx={15} cy={9} r={1} fill="currentColor" />
+                              <circle cx={9} cy={15} r={1} fill="currentColor" />
+                            </svg>
+                          </button>
+                        </div>
+                        <div className="flex justify-between text-[11px] mt-1">
+                          <span className={seedError ? "text-red-300" : "text-gray-600"}>{seedError || "Up to 20 characters, or roll the dice"}</span>
+                          <span className="text-gray-600 font-mono shrink-0 pl-2">
+                            {seed.length}/{SEED_MAX}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="mt-7 flex flex-col items-center gap-3 animate-[fadeIn_1.2s_ease-out]" style={{ animationDelay: "0.5s", animationFillMode: "both" }}>
+            <button
+              type="submit"
+              disabled={!ready}
+              className={`min-w-[15rem] px-6 py-3 rounded-xl font-mono text-sm uppercase tracking-[0.35em] transition-all duration-300 ${
+                ready ? "bg-cyan-400 text-slate-950 shadow-[0_0_30px_rgba(34,211,238,0.5)] hover:bg-cyan-300 active:scale-[0.98]" : phase === "choosing" ? "bg-white/5 text-gray-500 border border-white/10 cursor-not-allowed" : "bg-cyan-400/70 text-slate-950"
+              }`}
+            >
+              {phase === "creating" ? "Creating…" : choice ? "Initialize" : "Choose a universe"}
+            </button>
+            {failure && <div className="text-xs text-red-300">{failure}. Try again.</div>}
+            <div className="text-[10px] uppercase tracking-[0.3em] text-gray-600">Other universes can be visited later through the multiverse</div>
+          </div>
         </div>
+      </form>
+
+      {/* The birth of the universe, over everything, framed like a film until it is done */}
+      <div className={`absolute inset-0 bg-black transition-opacity duration-700 ${phase === "creating" ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+        <div ref={creationRef} className="absolute inset-0" />
+        <div className={`absolute inset-x-0 top-0 h-[6vh] max-h-14 bg-black transition-transform duration-[1400ms] ease-in-out pointer-events-none ${letterbox ? "translate-y-0" : "-translate-y-full"}`} />
+        <div className={`absolute inset-x-0 bottom-0 h-[6vh] max-h-14 bg-black transition-transform duration-[1400ms] ease-in-out pointer-events-none ${letterbox ? "translate-y-0" : "translate-y-full"}`} />
+        {phase === "creating" && <CreationCaptions epoch={epoch} born={born} kind={choice ?? "default"} entropy={entropy} />}
       </div>
-    </>
+
+      {!comfortAsked && <ComfortNotice onChosen={markComfortAsked} />}
+    </div>
   );
 };
 

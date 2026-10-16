@@ -27,6 +27,7 @@ from pymodules.__universe_routes_api import register_universe_routes
 from pymodules.__universe_routes_pages import register_universe_page_routes
 from pymodules.__universe_routes_static import register_static_routes
 from pymodules.__universe_routes_multiverse import register_multiverse_routes
+from pymodules.__universe_routes_explore import register_explore_routes
 from pymodules.__universe_routes_uip import initialize_uip
 from pymodules.__atlas_p2pv2_integration import initialize_p2pv2_system, sync_atlas_universe_data_v2, cleanup_p2pv2_system
 from pymodules.__atlas_p2pv2_anim import animate_initialization, stop_animation
@@ -151,6 +152,7 @@ def RunAtlasProtocol():
 register_universe_routes(app, universe, config)
 register_universe_page_routes(app, universe, config)
 register_multiverse_routes(app)
+register_explore_routes(app, config)
 
 enable_p2p = os.getenv("ENABLE_P2P", "true").lower() == "true"
 if "--no-p2p" not in sys.argv and enable_p2p:

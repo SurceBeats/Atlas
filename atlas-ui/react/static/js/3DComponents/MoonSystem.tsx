@@ -100,7 +100,26 @@ export class MoonSystem {
   private smallMoonIndicators: THREE.Mesh[] = [];
   private moonData: MoonSystemData | null = null;
   private cosmicOriginTime: number;
-  private lastRelaxationSummary: number = 0;
+  private lastRelaxationCheck: number = 0;
+
+  // Moon mesh resolution: distant (a few pixels to a third of the screen) and visited.
+  // The fine one is enough for the smallest craters of reliefModel (~3.5°)
+  static readonly LOW_SEGMENTS = 64;
+  static readonly HIGH_SEGMENTS = 192;
+
+  // Rebuild a moon's surface at the resolution its view needs, keeping its relief
+  public setMoonDetail(name: string, high: boolean): void {
+    const moonData = this.moonData?.moons.find((m) => m.name === name);
+    const mesh = this.scene.getObjectByName(`moon-surface-${name}`) as THREE.Mesh | undefined;
+    if (!moonData || !mesh || !(mesh.geometry instanceof THREE.SphereGeometry)) return;
+    const segments = high ? MoonSystem.HIGH_SEGMENTS : MoonSystem.LOW_SEGMENTS;
+    const old = mesh.geometry;
+    if (old.parameters.widthSegments === segments) return;
+    const geometry = new THREE.SphereGeometry(old.parameters.radius, segments, Math.floor(segments * 0.75), old.parameters.phiStart);
+    this.generateProceduralSurface(geometry, moonData, old.parameters.radius);
+    mesh.geometry = geometry;
+    old.dispose();
+  }
 
   private moonMaterials: Map<string, THREE.MeshStandardMaterial> = new Map();
 
@@ -243,10 +262,9 @@ export class MoonSystem {
     const relativeSize = moonData.visuals.relative_size;
     const moonRadius = this.planetRadius * relativeSize;
 
-    const baseSegments = 64;
-    const resolutionMultiplier = Math.max(1.0, Math.min(2.0, 1.5 / Math.max(relativeSize, 0.01)));
-
-    const horizontalSegments = Math.floor(baseSegments * resolutionMultiplier);
+    // Light mesh while the moon is a small thing in the sky; setMoonDetail swaps in the
+    // fine one (same relief) when the camera visits it
+    const horizontalSegments = MoonSystem.LOW_SEGMENTS;
     const verticalSegments = Math.floor(horizontalSegments * 0.75);
 
     const moonSeed = moonData.procedural?.seed || 0;
@@ -424,85 +442,146 @@ export class MoonSystem {
 
     const positions = geometry.attributes.position.array as Float32Array;
 
-    const noiseScale = 1.5 / Math.max(moonRadius, 0.1);
-
     const relaxationFactor = this.calculateHydrostaticRelaxation(moonData);
+    const reliefAt = this.reliefModel(moonData, noise3D);
 
-    const elevationVariationSeed = (moonSeed * 13 + 4567) % 1000;
-    const elevationFactor = 0.7 + (elevationVariationSeed / 1000) * 0.6;
-
-    let baseDisplacementAmount: number;
-    switch (moonData.properties.type) {
-      case "icy":
-        baseDisplacementAmount = moonRadius * 0.15;
-        break;
-      case "asteroidal":
-        baseDisplacementAmount = moonRadius * 0.18;
-        break;
-      case "captured":
-        baseDisplacementAmount = moonRadius * 0.12;
-        break;
-      default:
-        baseDisplacementAmount = moonRadius * 0.09;
-        break;
-    }
-
-    const physicsAdjustedDisplacement = baseDisplacementAmount * (1.0 - relaxationFactor);
-
-    const displacementAmount = physicsAdjustedDisplacement * elevationFactor;
+    // The relief at full strength (fraction of the radius), per vertex. Relaxation only
+    // ever scales it down (see updateMoonSurfaceRelaxation), so the moon rounds off
+    // without changing shape
+    const amplitude = moonRadius;
+    const displacementAmount = amplitude * (1.0 - relaxationFactor);
+    const directions = new Float32Array(positions.length);
+    const relief = new Float32Array(positions.length / 3);
+    const direction = new THREE.Vector3();
 
     for (let i = 0; i < positions.length; i += 3) {
-      const x = positions[i];
-      const y = positions[i + 1];
-      const z = positions[i + 2];
-
-      const nx = x * noiseScale;
-      const ny = y * noiseScale;
-      const nz = z * noiseScale;
-
-      let displacement = 0;
-
-      switch (moonData.properties.type) {
-        case "icy":
-          displacement += noise3D(nx * 2, ny * 2, nz * 2) * 0.8;
-          displacement += noise3D(nx * 6, ny * 6, nz * 6) * 0.4;
-          displacement += noise3D(nx * 15, ny * 15, nz * 15) * 0.2;
-          break;
-
-        case "asteroidal":
-          displacement += noise3D(nx * 0.8, ny * 0.8, nz * 0.8) * 1.5;
-          displacement += noise3D(nx * 3, ny * 3, nz * 3) * 1.0;
-          displacement += noise3D(nx * 8, ny * 8, nz * 8) * 0.7;
-          displacement += noise3D(nx * 20, ny * 20, nz * 20) * 0.4;
-          displacement += noise3D(nx * 50, ny * 50, nz * 50) * 0.2;
-          break;
-
-        case "captured":
-          displacement += noise3D(nx * 1.2, ny * 1.2, nz * 1.2) * 1.2;
-          displacement += noise3D(nx * 4, ny * 4, nz * 4) * 0.8;
-          displacement += noise3D(nx * 10, ny * 10, nz * 10) * 0.5;
-          displacement += noise3D(nx * 30, ny * 30, nz * 30) * 0.25;
-          break;
-
-        default:
-          displacement += noise3D(nx * 1.5, ny * 1.5, nz * 1.5) * 1.0;
-          displacement += noise3D(nx * 5, ny * 5, nz * 5) * 0.6;
-          displacement += noise3D(nx * 12, ny * 12, nz * 12) * 0.3;
-          displacement += noise3D(nx * 25, ny * 25, nz * 25) * 0.15;
-          break;
-      }
-
-      const vertex = new THREE.Vector3(x, y, z);
-      const normal = vertex.clone().normalize();
-      const displacedVertex = vertex.add(normal.multiplyScalar(displacement * displacementAmount));
-
-      positions[i] = displacedVertex.x;
-      positions[i + 1] = displacedVertex.y;
-      positions[i + 2] = displacedVertex.z;
+      direction.set(positions[i], positions[i + 1], positions[i + 2]).normalize();
+      const height = reliefAt(direction);
+      directions[i] = direction.x;
+      directions[i + 1] = direction.y;
+      directions[i + 2] = direction.z;
+      relief[i / 3] = height;
+      const r = moonRadius + height * displacementAmount;
+      positions[i] = direction.x * r;
+      positions[i + 1] = direction.y * r;
+      positions[i + 2] = direction.z * r;
     }
 
+    geometry.userData.relaxation = { directions, relief, radius: moonRadius, amplitude, factor: relaxationFactor };
     geometry.attributes.position.needsUpdate = true;
     geometry.computeVertexNormals();
+  }
+
+  // Height of the surface (fraction of the radius) in a direction from the centre.
+  // Built like real small bodies rather than from raw noise:
+  //  - a broad shape: near-spherical for icy and rocky moons, lumpy and elongated for
+  //    asteroids and captured bodies
+  //  - impact craters: the generator's own (position, size, depth) plus a population of
+  //    smaller ones from its crater density. Each is a bowl with a raised rim and a
+  //    skirt of ejecta; big ones get a flat floor
+  //  - on icy moons, the generator's cracks as double ridges along great circles
+  //  - a fine, low texture
+  // No high-frequency noise: that is what turned small moons into spikes
+  private reliefModel(moonData: MoonData, noise3D: (x: number, y: number, z: number) => number): (dir: THREE.Vector3) => number {
+    const type = moonData.properties.type;
+    const procedural: any = moonData.procedural ?? {};
+    const surface: any = (moonData as any).surface ?? {};
+    const rng = this.createSeededRandom((procedural.seed || 0) % 1e9 + 4242);
+    const variation = procedural.surface_variation ?? 0.15;
+
+    const lumpiness = type === "asteroidal" ? 0.14 : type === "captured" ? 0.09 : type === "icy" ? 0.025 : 0.035;
+    const lumps = lumpiness * (0.7 + variation * 2);
+    // Irregular bodies are elongated along a seeded axis
+    const stretch = type === "asteroidal" ? 0.18 : type === "captured" ? 0.1 : 0;
+    const axis = new THREE.Vector3(rng() - 0.5, rng() - 0.5, rng() - 0.5).normalize();
+
+    const toVector = (lat: number, lon: number) => {
+      const la = (lat * Math.PI) / 180;
+      const lo = (lon * Math.PI) / 180;
+      return new THREE.Vector3(Math.cos(la) * Math.cos(lo), Math.sin(la), Math.cos(la) * Math.sin(lo));
+    };
+
+    // Smallest crater the mesh can draw cleanly, in radians
+    const minCrater = 0.06;
+    interface Crater {
+      centre: THREE.Vector3;
+      radius: number;
+      depth: number;
+      reach: number; // cos of the angle beyond which it has no effect
+    }
+    const craters: Crater[] = [];
+    const addCrater = (centre: THREE.Vector3, radius: number, depth: number) => {
+      radius = Math.max(minCrater, radius);
+      craters.push({ centre, radius, depth, reach: Math.cos(Math.min(Math.PI, radius * 2.4)) });
+    };
+    for (const crater of surface.craters ?? []) {
+      // The generator's radius (0.01–0.1) is a fraction of the half circumference
+      addCrater(toVector(crater.position.lat, crater.position.lon), crater.radius * Math.PI, crater.depth * 0.55);
+    }
+    const density = procedural.crater_density ?? 0.5;
+    const extra = Math.round(density * (type === "icy" ? 22 : 45));
+    for (let i = 0; i < extra; i++) {
+      // Many small, few large (a rough power law)
+      const size = minCrater * (1 + Math.pow(rng(), 3) * 3.5);
+      addCrater(new THREE.Vector3(rng() * 2 - 1, rng() * 2 - 1, rng() * 2 - 1).normalize(), size, 0.25 + rng() * 0.25);
+    }
+
+    interface Ridge {
+      a: THREE.Vector3;
+      b: THREE.Vector3;
+      normal: THREE.Vector3;
+      width: number;
+      height: number;
+    }
+    const ridges: Ridge[] = [];
+    if (type === "icy") {
+      for (const crack of surface.cracks ?? []) {
+        const a = toVector(crack.start.lat, crack.start.lon);
+        const b = toVector(crack.end.lat, crack.end.lon);
+        const normal = new THREE.Vector3().crossVectors(a, b);
+        if (normal.lengthSq() < 1e-6) continue;
+        ridges.push({ a, b, normal: normal.normalize(), width: 0.018 + crack.width * 2.5, height: 0.006 + crack.brightness * 0.012 });
+      }
+    }
+
+    const tmp = new THREE.Vector3();
+    return (dir: THREE.Vector3) => {
+      // Broad shape: two octaves of smooth noise, plus the elongation
+      let h = (noise3D(dir.x * 1.1, dir.y * 1.1, dir.z * 1.1) * 0.7 + noise3D(dir.x * 2.3 + 7, dir.y * 2.3, dir.z * 2.3) * 0.3) * lumps;
+      if (stretch) {
+        const along = dir.dot(axis);
+        h += stretch * (along * along - 0.33);
+      }
+
+      for (const c of craters) {
+        const cos = dir.dot(c.centre);
+        if (cos < c.reach) continue;
+        const t = Math.acos(Math.min(1, cos)) / c.radius;
+        const depth = c.depth * c.radius;
+        if (t < 1) {
+          // Bowl, floor flattened on the larger craters
+          const bowl = t * t - 1;
+          h += depth * Math.max(bowl, c.radius > 0.15 ? -0.75 : -1);
+        }
+        // Raised rim, then ejecta fading outwards
+        h += depth * 0.32 * Math.exp(-Math.pow((t - 1) / 0.16, 2));
+        if (t > 1) h += depth * 0.08 * Math.exp(-(t - 1) * 3);
+      }
+
+      for (const r of ridges) {
+        const offset = Math.abs(dir.dot(r.normal));
+        if (offset > r.width * 3) continue;
+        // Only between the crack's ends
+        if (tmp.crossVectors(r.a, dir).dot(r.normal) < 0 || tmp.crossVectors(dir, r.b).dot(r.normal) < 0) continue;
+        const d = offset / r.width;
+        // Two ridges with a trough between them, like Europa's double ridges
+        h += r.height * (Math.exp(-Math.pow(d - 0.7, 2) * 6) + Math.exp(-Math.pow(d + 0.7, 2) * 6) - 0.8 * Math.exp(-d * d * 10));
+      }
+
+      // Fine texture: low, and smooth enough for the mesh to follow
+      h += noise3D(dir.x * 7 + 3, dir.y * 7, dir.z * 7) * 0.004 * (0.5 + variation * 3);
+      return h;
+    };
   }
 
   private applyMoonTexture(material: THREE.MeshStandardMaterial, moonData: MoonData): void {
@@ -873,12 +952,8 @@ export class MoonSystem {
       return 0.0;
     }
 
-    const relaxation_timescale_years = relaxation_timescale / (365.25 * 24 * 3600);
-
-    const currentTime = Date.now() / 1000;
-    const cosmic_age_seconds = currentTime - this.cosmicOriginTime;
-
-    const cosmic_age_years = cosmic_age_seconds / (365.25 * 24 * 3600);
+    // The simulated moment, not the wall clock: when time runs faster, so does this
+    const cosmic_age_seconds = Date.now() / 1000 - this.cosmicOriginTime + this.timeOffset;
 
     if (!isFinite(cosmic_age_seconds) || cosmic_age_seconds < 0) {
       return 0.0;
@@ -888,106 +963,34 @@ export class MoonSystem {
 
     const relaxation_factor = 1.0 - Math.exp(-relaxation_progress);
 
-    const tidalPower = moonData.tidal_heating?.tidal_power_watts || 0;
-    const tidalFlux = tidalPower / (4 * Math.PI * radius_m * radius_m);
-
-    if (!this.lastRelaxationSummary) this.lastRelaxationSummary = 0;
-    if (this.lastRelaxationSummary < Date.now() - 5000) {
-      this.lastRelaxationSummary = Date.now();
-    }
-
     return Math.max(0.0, Math.min(1.0, relaxation_factor));
   }
 
+  // Hydrostatic relaxation as time goes by: the relief computed at creation is scaled
+  // by how far gravity has pulled the moon towards a sphere. Same shape throughout,
+  // only gentler, and only rewritten when the change would show
   private updateMoonSurfaceRelaxation(moonGroup: THREE.Group, moonData: MoonData): void {
     const moonMesh = moonGroup.getObjectByName(`moon-surface-${moonData.name}`) as THREE.Mesh;
-    if (!moonMesh || !(moonMesh.geometry instanceof THREE.SphereGeometry)) {
-      return;
+    const state = moonMesh?.geometry.userData.relaxation as { directions: Float32Array; relief: Float32Array; radius: number; amplitude: number; factor: number } | undefined;
+    if (!moonMesh || !state) return;
+
+    const factor = this.calculateHydrostaticRelaxation(moonData);
+    // Below a thousandth of the relief nothing moves on screen
+    if (Math.abs(factor - state.factor) < 1e-3) return;
+    state.factor = factor;
+
+    const geometry = moonMesh.geometry;
+    const positions = geometry.attributes.position.array as Float32Array;
+    const amount = state.amplitude * (1 - factor);
+    for (let i = 0, v = 0; i < positions.length; i += 3, v++) {
+      const r = state.radius + state.relief[v] * amount;
+      positions[i] = state.directions[i] * r;
+      positions[i + 1] = state.directions[i + 1] * r;
+      positions[i + 2] = state.directions[i + 2] * r;
     }
-
-    const currentRelaxationFactor = this.calculateHydrostaticRelaxation(moonData);
-
-    const moonSeed = moonData.procedural?.seed || 0;
-    const originalGeometry = moonMesh.geometry;
-
-    const moonRadius = originalGeometry.parameters.radius;
-
-    const noise3D = createNoise3D(this.createSeededRandom(moonSeed));
-    const positions = originalGeometry.attributes.position.array as Float32Array;
-
-    const noiseScale = 0.5;
-    const elevationVariationSeed = (moonSeed * 13 + 4567) % 1000;
-    const elevationFactor = 0.7 + (elevationVariationSeed / 1000) * 0.6;
-
-    let baseDisplacementAmount: number;
-    switch (moonData.properties.type) {
-      case "icy":
-        baseDisplacementAmount = moonRadius * 0.15;
-        break;
-      case "asteroidal":
-        baseDisplacementAmount = moonRadius * 0.18;
-        break;
-      case "captured":
-        baseDisplacementAmount = moonRadius * 0.12;
-        break;
-      default:
-        baseDisplacementAmount = moonRadius * 0.09;
-        break;
-    }
-
-    const physicsAdjustedDisplacement = baseDisplacementAmount * (1.0 - currentRelaxationFactor);
-    const displacementAmount = physicsAdjustedDisplacement * elevationFactor;
-
-    for (let i = 0; i < positions.length; i += 3) {
-      const x = positions[i];
-      const y = positions[i + 1];
-      const z = positions[i + 2];
-
-      const vertex = new THREE.Vector3(x, y, z);
-      const originalRadius = vertex.length();
-      const normal = vertex.clone().normalize();
-
-      const nx = (x / originalRadius) * noiseScale;
-      const ny = (y / originalRadius) * noiseScale;
-      const nz = (z / originalRadius) * noiseScale;
-
-      let displacement = 0;
-      switch (moonData.properties.type) {
-        case "icy":
-          displacement += noise3D(nx * 2, ny * 2, nz * 2) * 0.8;
-          displacement += noise3D(nx * 6, ny * 6, nz * 6) * 0.4;
-          displacement += noise3D(nx * 15, ny * 15, nz * 15) * 0.2;
-          break;
-        case "asteroidal":
-          displacement += noise3D(nx * 0.8, ny * 0.8, nz * 0.8) * 1.5;
-          displacement += noise3D(nx * 3, ny * 3, nz * 3) * 1.0;
-          displacement += noise3D(nx * 8, ny * 8, nz * 8) * 0.7;
-          displacement += noise3D(nx * 20, ny * 20, nz * 20) * 0.4;
-          displacement += noise3D(nx * 50, ny * 50, nz * 50) * 0.2;
-          break;
-        case "captured":
-          displacement += noise3D(nx * 1.2, ny * 1.2, nz * 1.2) * 1.2;
-          displacement += noise3D(nx * 4, ny * 4, nz * 4) * 0.8;
-          displacement += noise3D(nx * 10, ny * 10, nz * 10) * 0.5;
-          displacement += noise3D(nx * 30, ny * 30, nz * 30) * 0.25;
-          break;
-        default:
-          displacement += noise3D(nx * 1.5, ny * 1.5, nz * 1.5) * 1.0;
-          displacement += noise3D(nx * 5, ny * 5, nz * 5) * 0.6;
-          displacement += noise3D(nx * 12, ny * 12, nz * 12) * 0.3;
-          displacement += noise3D(nx * 25, ny * 25, nz * 25) * 0.15;
-          break;
-      }
-
-      const displacedVertex = normal.clone().multiplyScalar(moonRadius + displacement * displacementAmount);
-
-      positions[i] = displacedVertex.x;
-      positions[i + 1] = displacedVertex.y;
-      positions[i + 2] = displacedVertex.z;
-    }
-
-    originalGeometry.attributes.position.needsUpdate = true;
-    originalGeometry.computeVertexNormals();
+    geometry.attributes.position.needsUpdate = true;
+    geometry.computeVertexNormals();
+    geometry.computeBoundingSphere();
   }
 
   private drawMaria(ctx: CanvasRenderingContext2D, size: number, maria: any, mariaSeed: number = 0): void {
@@ -1116,30 +1119,17 @@ export class MoonSystem {
     const segmentGroup = new THREE.Group();
     segmentGroup.name = `moon-orbit-${moonData.name}`;
 
-    for (let i = 0; i < points.length; i += 3) {
-      const segmentPoints: THREE.Vector3[] = [];
-
-      if (i < points.length) {
-        segmentPoints.push(points[i]);
-        if (i + 1 < points.length) {
-          segmentPoints.push(points[i + 1]);
-        }
-      }
-
-      if (segmentPoints.length >= 2) {
-        const segmentGeometry = new THREE.BufferGeometry().setFromPoints(segmentPoints);
-        const segmentMaterial = new THREE.LineBasicMaterial({
-          color: lineColor,
-          opacity: 0.0,
-          transparent: true,
-          linewidth: 1,
-        });
-
-        const segmentLine = new THREE.Line(segmentGeometry, segmentMaterial);
-        segmentLine.name = `moon-orbit-segment-${moonData.name}-${i}`;
-        segmentGroup.add(segmentLine);
-      }
+    // A dashed orbit: one dash every three points. All dashes in a single LineSegments
+    // (one draw call instead of one per dash)
+    const dashPoints: THREE.Vector3[] = [];
+    for (let i = 0; i + 1 < points.length; i += 3) dashPoints.push(points[i], points[i + 1]);
+    if (dashPoints.length >= 2) {
+      const dashMaterial = new THREE.LineBasicMaterial({ color: lineColor, opacity: 0.0, transparent: true, linewidth: 1 });
+      const dashes = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(dashPoints), dashMaterial);
+      dashes.name = `moon-orbit-segment-${moonData.name}`;
+      segmentGroup.add(dashes);
     }
+    orbitGeometry.dispose();
 
     const orbitLine = segmentGroup;
 
@@ -1222,13 +1212,14 @@ export class MoonSystem {
       return;
     }
 
+    // Relaxation is slow; checking it twice a (real) second is plenty at any time scale
+    const checkRelaxation = performance.now() - this.lastRelaxationCheck > 500;
+    if (checkRelaxation) this.lastRelaxationCheck = performance.now();
+
     this.moonData.moons.forEach((moonData, index) => {
       if (index < this.moonMeshes.length) {
         this.updateMoonPosition(this.moonMeshes[index], moonData, cosmicTimeElapsed, index);
-
-        if (Math.floor(cosmicTimeElapsed) % 30 === 0) {
-          this.updateMoonSurfaceRelaxation(this.moonMeshes[index], moonData);
-        }
+        if (checkRelaxation) this.updateMoonSurfaceRelaxation(this.moonMeshes[index], moonData);
       }
     });
 
@@ -1628,9 +1619,8 @@ export class MoonSystem {
           if (shouldBeVisible) {
             orbitGroup.traverse((child) => {
               if (child instanceof THREE.Line && child.material instanceof THREE.LineBasicMaterial && child.name && child.name.startsWith("moon-orbit-segment-")) {
-                const material = child.material as THREE.LineBasicMaterial;
-                material.opacity = this.orbitalLinesCurrentOpacity;
-                material.needsUpdate = true;
+                // Opacity is a uniform: no need to flag the material for recompilation
+                (child.material as THREE.LineBasicMaterial).opacity = this.orbitalLinesCurrentOpacity;
               }
             });
           }
@@ -1646,7 +1636,6 @@ export class MoonSystem {
       if (indicator.material instanceof THREE.MeshBasicMaterial) {
         indicator.visible = this.orbitalLinesCurrentOpacity > 0.05;
         indicator.material.opacity = indicatorOpacity;
-        indicator.material.needsUpdate = true;
 
         if (indicator.parent) {
           const worldPos = new THREE.Vector3();
