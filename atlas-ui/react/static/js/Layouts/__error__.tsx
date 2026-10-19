@@ -1,11 +1,13 @@
 // atlas-ui/react/static/js/Layouts/__error__.tsx
 import React from "react";
 import VersionFooter from "../Components/VersionFooter.tsx";
+import { t } from "../i18n/i18n.ts";
 
 interface ErrorLayoutProps {
   version: string;
   versionHash: string;
-  message: string;
+  // The server's own message, shown as it is; without one, ours in the pilot's language
+  message: string | null;
 }
 
 const ErrorLayout: React.FC<ErrorLayoutProps> = ({ version, message }) => {
@@ -21,7 +23,7 @@ const ErrorLayout: React.FC<ErrorLayoutProps> = ({ version, message }) => {
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-8 max-w-md w-full">
           <div className="flex justify-center mb-8">
-            <img src="/static/atlas-logo.jpg" alt="Atlas Logo" className="h-20 w-20 sm:h-24 sm:w-24 rounded-full border-2 border-red-400 shadow-lg shadow-red-400/20" />
+            <img src="/static/atlas-logo.jpg" alt={t("Atlas Logo")} className="h-20 w-20 sm:h-24 sm:w-24 rounded-full border-2 border-red-400 shadow-lg shadow-red-400/20" />
           </div>
 
           <div className="flex justify-center mb-6">
@@ -33,8 +35,8 @@ const ErrorLayout: React.FC<ErrorLayoutProps> = ({ version, message }) => {
           </div>
 
           <div className="space-y-4">
-            <h1 className="text-2xl sm:text-3xl font-bold text-red-400">System Error</h1>
-            <p className="text-gray-300 text-lg leading-relaxed">{message}</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-red-400">{t("System Error")}</h1>
+            <p className="text-gray-300 text-lg leading-relaxed">{message ?? t("An unexpected error occurred")}</p>
           </div>
 
           <div className="pt-8">
@@ -42,7 +44,7 @@ const ErrorLayout: React.FC<ErrorLayoutProps> = ({ version, message }) => {
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
-              Return to Home
+              {t("Return to Home")}
             </a>
           </div>
         </div>

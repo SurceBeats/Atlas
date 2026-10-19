@@ -1,0 +1,6 @@
+{
+  "%lld Atlas instances": { "one": "Atlas instance", "other": "%lld Atlas instances" },
+  "%lld characters at most": { "one": "%lld character at most", "other": "%lld characters at most" },
+  "Up to %lld characters, or roll the dice": { "one": "Up to %lld character, or roll the dice", "other": "Up to %lld characters, or roll the dice" },
+  "View all %lld instances": { "one": "View the instance", "other": "View all %lld instances" }
+}

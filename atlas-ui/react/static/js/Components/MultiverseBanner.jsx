@@ -6,6 +6,7 @@ import SeedIcon from "../Icons/SeedIcon.tsx";
 import BitBangIcon from "../Icons/BitBangIcon.tsx";
 import UniverseIcon from "../Icons/UniverseIcon.jsx";
 import MultiverseTransitionCanvas from "./MultiverseTransitionCanvas.tsx";
+import { t } from "../i18n/i18n.ts";
 
 const MultiverseBanner = () => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -76,12 +77,12 @@ const MultiverseBanner = () => {
   }, [isExpanded, isClosing]);
 
   const formatNodeId = (nodeId) => {
-    if (!nodeId) return "Unknown";
+    if (!nodeId) return t("Unknown");
     return nodeId;
   };
 
   const formatCosmicTime = (timestamp) => {
-    if (!timestamp) return "Unknown";
+    if (!timestamp) return t("Unknown");
     const date = new Date(timestamp * 1000);
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}:${String(date.getSeconds()).padStart(2, "0")}`;
   };
@@ -93,7 +94,7 @@ const MultiverseBanner = () => {
   return (
     <>
       <div className="fixed bottom-20 sm:bottom-24 right-4 sm:right-6 z-50">
-        <button onClick={handleToggle} className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-emerald-900 via-slate-900 to-black hover:from-emerald-800 hover:via-slate-800 hover:to-gray-900 text-white rounded-full shadow-2xl border-2 border-emerald-400/40 transition-all duration-300 transform hover:scale-105 backdrop-blur-sm" title="Remote Universe Info">
+        <button onClick={handleToggle} className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-emerald-900 via-slate-900 to-black hover:from-emerald-800 hover:via-slate-800 hover:to-gray-900 text-white rounded-full shadow-2xl border-2 border-emerald-400/40 transition-all duration-300 transform hover:scale-105 backdrop-blur-sm" title={t("Remote Universe Info")}>
           <div className="flex items-center justify-center">
             <svg xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24" className="text-emerald-200">
               <rect width="24" height="24" fill="none" />
@@ -119,9 +120,9 @@ const MultiverseBanner = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-purple-400 rounded-full animate-pulse"></div>
-                <h3 className="text-white font-bold text-lg">🌌 Remote Universe</h3>
+                <h3 className="text-white font-bold text-lg">🌌 {t("Remote Universe")}</h3>
               </div>
-              <button onClick={handleCloseModal} className="text-gray-400 hover:text-white transition-colors duration-200">
+              <button onClick={handleCloseModal} className="text-gray-400 hover:text-white transition-colors duration-200" aria-label={t("Close")}>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -130,12 +131,12 @@ const MultiverseBanner = () => {
           </div>
 
           <div className="p-4 space-y-3 max-h-64 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            <div className="text-purple-200 text-sm">{universeConfig.seed_name || "Unknown Universe"}</div>
+            <div className="text-purple-200 text-sm">{universeConfig.seed_name || t("Unknown Universe")}</div>
 
             <div className="bg-white/5 rounded-lg p-3 border border-purple-500/20">
               <div className="flex items-center gap-2 mb-1">
                 <NodeIdIcon size={14} color="#c084fc" />
-                <span className="text-gray-400 text-xs">Atlas Node ID</span>
+                <span className="text-gray-400 text-xs">{t("Atlas Node ID")}</span>
               </div>
               <div className="text-purple-400 font-mono text-[10px] pl-5 truncate">{formatNodeId(universeConfig.node_id)}</div>
             </div>
@@ -143,30 +144,30 @@ const MultiverseBanner = () => {
             <div className="bg-white/5 rounded-lg p-3 border border-blue-500/20">
               <div className="flex items-center gap-2 mb-1">
                 <SeedIcon size={14} color="#60a5fa" />
-                <span className="text-gray-400 text-xs">Remote Seed</span>
+                <span className="text-gray-400 text-xs">{t("Remote Seed")}</span>
               </div>
-              <div className="text-blue-400 font-mono text-[10px] pl-5 truncate">{universeConfig.seed_str || "Not available"}</div>
+              <div className="text-blue-400 font-mono text-[10px] pl-5 truncate">{universeConfig.seed_str || t("Not available")}</div>
             </div>
 
             <div className="bg-white/5 rounded-lg p-3 border border-cyan-500/20">
               <div className="flex items-center gap-2 mb-1">
                 <BitBangIcon size={14} color="#06b6d4" />
-                <span className="text-gray-400 text-xs">Remote Bit Bang (Cosmic Origin Time)</span>
+                <span className="text-gray-400 text-xs">{t("Remote Bit Bang (Cosmic Origin Time)")}</span>
               </div>
-              <div className="text-cyan-400 font-mono text-[10px] pl-5 truncate">{formatCosmicTime(universeConfig.cosmic_origin_time) || "Not available"}</div>
+              <div className="text-cyan-400 font-mono text-[10px] pl-5 truncate">{formatCosmicTime(universeConfig.cosmic_origin_time) || t("Not available")}</div>
             </div>
 
             <button onClick={handleExitUniverse} className="w-full bg-gray-700/30 hover:bg-gray-600/40 text-gray-300 hover:text-white text-sm py-2 px-3 rounded-lg transition-all duration-200 border border-gray-600/30 hover:border-gray-500/50">
               <div className="flex items-center justify-center space-x-2">
                 <UniverseIcon size={16} color="currentColor" />
-                <span>Return to Your Universe</span>
+                <span>{t("Return to Your Universe")}</span>
               </div>
             </button>
 
             <a href="/multiverse" className="block w-full bg-purple-700/20 hover:bg-purple-600/30 text-purple-300 hover:text-purple-200 text-xs py-1.5 px-2 rounded-md transition-all duration-200 border border-purple-500/20 hover:border-purple-400/30 text-center mt-2">
               <div className="flex items-center justify-center space-x-1">
                 <span>🌌</span>
-                <span>Explore more Universes</span>
+                <span>{t("Explore more Universes")}</span>
               </div>
             </a>
           </div>

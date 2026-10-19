@@ -5,6 +5,7 @@
 
 import React, { useState } from "react";
 import { comfortChosen, setReducedFlashing } from "../core/comfort.ts";
+import { t } from "../../i18n/i18n.ts";
 
 export function useComfortAsked() {
   const [asked, setAsked] = useState(() => comfortChosen());
@@ -25,20 +26,20 @@ export function ComfortNotice({ onChosen }: { onChosen: (reduced: boolean) => vo
             <path d="M12 10v4.5M12 17.2v.3" />
           </svg>
           <div>
-            <div className="text-[10px] uppercase tracking-[0.3em] text-amber-200/80">Before you dive</div>
-            <div id="comfort-title" className="text-lg text-white font-light">Photosensitivity warning</div>
+            <div className="text-[10px] uppercase tracking-[0.3em] text-amber-200/80">{t("BEFORE YOU DIVE")}</div>
+            <div id="comfort-title" className="text-lg text-white font-light">{t("Photosensitivity warning")}</div>
           </div>
         </div>
         <p id="comfort-text" className="mt-3 text-sm text-gray-300 leading-relaxed">
-          The Atlas contains flashes of light and fast-moving patterns: jumps through hyperspace, wormholes, the birth of a universe. If you are sensitive to them, reduce flashing.
+          {t("The Atlas contains flashes of light and fast-moving patterns: jumps through hyperspace, wormholes, the birth of a universe. If you are sensitive to them, reduce flashing.")}
         </p>
-        <p className="mt-2 text-xs text-gray-500">You can change this at any time in Graphics &amp; view.</p>
+        <p className="mt-2 text-xs text-gray-500">{t("You can change this at any time in Graphics & view.")}</p>
         <div className="mt-5 flex flex-col-reverse sm:flex-row gap-2">
           <button onClick={() => choose(true)} className="flex-1 px-4 py-2.5 rounded-lg text-sm border border-amber-200/40 bg-amber-200/10 text-amber-100 hover:bg-amber-200/20 transition-colors">
-            Reduce flashing
+            {t("Reduce flashing")}
           </button>
           <button autoFocus onClick={() => choose(false)} className="flex-1 px-4 py-2.5 rounded-lg text-sm bg-cyan-400 text-slate-950 hover:bg-cyan-300 shadow-[0_0_16px_rgba(34,211,238,0.45)] transition-colors">
-            Continue
+            {t("Continue")}
           </button>
         </div>
       </div>

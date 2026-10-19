@@ -20,7 +20,9 @@ import { SystemLayer, AU_PER_LY, type PlanetBody } from "./system/SystemLayer.ts
 import { PlanetFrame, type MoonInfo } from "./planet/PlanetFrame.ts";
 import { ExoticLayer } from "./galaxy/ExoticLayer.ts";
 import { CELL_SPACING_LY, NeighborLayer, type PlacedNeighbor } from "./galaxy/NeighborLayer.ts";
-import { QUALITY_PROFILES, needsReload, saveQuality, type QualityLevel, type QualityProfile } from "./engine/Quality.ts";
+import { QUALITY_PROFILES, chosenQuality, detectLevel, needsReload, saveQuality, type QualityLevel, type QualityProfile } from "./engine/Quality.ts";
+import { fetchOwners, isCoreContinuum, NO_OWNERS, OwnerBook, propertyLine } from "./core/owners.ts";
+import { L, amount, num, t } from "../i18n/i18n.ts";
 import { hashString } from "./core/hash.ts";
 import { getPlanetBaseColor } from "./planet/planetColors.ts";
 import { ShipView } from "./engine/ShipView.ts";
@@ -76,8 +78,14 @@ export interface ExplorerState {
   timeDrift: number;
   readout: { primary: string; secondary: string };
   quality: QualityLevel;
+  // No level chosen by hand: `quality` is what this device was given
+  qualityAuto: boolean;
   view: ViewOptions;
   fps: number;
+  // Out among the neighbouring galaxies, past the galaxy map
+  universeView: boolean;
+  // Who owns what in this galaxy (empty outside the Core Continuum, or unreachable)
+  owners: OwnerBook;
 }
 
 const BASE_FOV = 60;
@@ -98,20 +106,26 @@ function universeKey(): string {
 const SHIP_STORAGE_KEY = `atlas-ship:${universeKey()}`;
 const RECENT_STORAGE_KEY = `atlas-recent-galaxies:${universeKey()}`;
 
+// (numbers as the browser's region writes them; the units never change)
+const dec = (value: number, decimals: number) => num(value, decimals);
+
 export function formatDistanceLy(ly: number): string {
-  if (ly >= 1000) return `${(ly / 1000).toFixed(ly >= 10000 ? 0 : 1)} kly`;
-  if (ly >= 1) return `${ly.toFixed(ly >= 100 ? 0 : 1)} ly`;
+  if (ly >= 1000) return `${dec(ly / 1000, ly >= 10000 ? 0 : 1)} kly`;
+  if (ly >= 1) return `${dec(ly, ly >= 100 ? 0 : 1)} ly`;
   const au = ly * AU_PER_LY;
-  return au >= 1 ? `${au.toFixed(au >= 100 ? 0 : 1)} AU` : `${Math.round(au * 1.496e8).toLocaleString()} km`;
+  return au >= 1 ? `${dec(au, au >= 100 ? 0 : 1)} AU` : `${amount(Math.round(au * 1.496e8))} km`;
 }
 
 function formatDistanceAu(au: number): string {
-  if (au >= 0.1) return `${au.toFixed(au >= 100 ? 0 : 2)} AU`;
+  if (au >= 0.1) return `${dec(au, au >= 100 ? 0 : 2)} AU`;
   const km = au * 1.496e8;
-  return km >= 1e6 ? `${(km / 1e6).toFixed(1)} M km` : `${Math.round(km).toLocaleString()} km`;
+  return km >= 1e6 ? `${dec(km / 1e6, 1)} M km` : `${amount(Math.round(km))} km`;
 }
 
 const pretty = (name: string) => name.replace(/_/g, " ");
+
+// A touch screen, without a mouse: labels say tap, not click
+const TOUCH = typeof window !== "undefined" && !!window.matchMedia?.("(pointer: coarse)").matches;
 
 export function loadStoredShip(): ShipLocation | null {
   try {
@@ -136,7 +150,7 @@ export function recentGalaxies(): Array<{ coordinates: Coordinates; name: string
 export class Explorer {
   state: ExplorerState = {
     mode: "loading",
-    status: "Powering up the ship…",
+    status: t("Powering up the ship…"),
     error: null,
     coordinates: null,
     galaxy: null,
@@ -158,8 +172,11 @@ export class Explorer {
     timeDrift: 0,
     readout: { primary: "", secondary: "" },
     quality: "medium",
+    qualityAuto: true,
     view: loadViewOptions(),
     fps: 0,
+    universeView: false,
+    owners: NO_OWNERS,
   };
 
   private listeners = new Set<() => void>();
@@ -219,7 +236,7 @@ export class Explorer {
 
   constructor(container: HTMLElement, quality: QualityProfile) {
     this.quality = quality;
-    this.state = { ...this.state, quality: quality.level };
+    this.state = { ...this.state, quality: quality.level, qualityAuto: chosenQuality() === null };
     this.engine = new Engine(container, quality);
     this.shipView = new ShipView(this.engine.renderer, this.state.view.ship);
     this.labels = new LabelLayer(container, this.engine.renderer.domElement);
@@ -284,6 +301,38 @@ export class Explorer {
     }
   }
 
+  // ---- who owns what --------------------------------------------------------------
+
+  private ownersRequests = 0;
+  private galaxyOwnersRequest = 0;
+  private systemOwnersRequest = new Map<number, number>();
+
+  // From the owners registry: a galaxy's places, or one system's afresh. Only the Core
+  // Continuum has owners; unreachable, the names stay generated. Answers can arrive out
+  // of order: only the latest for a system (or the galaxy) counts, and a galaxy's never
+  // undoes a system's asked for after it
+  private loadOwners(coordinates: Coordinates, system: number | null = null) {
+    if (!isCoreContinuum(readUniverseConfig())) return;
+    const token = this.loadToken;
+    const request = ++this.ownersRequests;
+    if (system !== null) this.systemOwnersRequest.set(system, request);
+    else this.galaxyOwnersRequest = request;
+    fetchOwners(coordinates, system).then((places) => {
+      if (!places || token !== this.loadToken || this.state.coordinates?.join(",") !== coordinates.join(",")) return;
+      let book: OwnerBook;
+      if (system !== null) {
+        if (this.systemOwnersRequest.get(system) !== request) return;
+        const current = this.state.owners.galaxy?.join(",") === coordinates.join(",") ? this.state.owners : new OwnerBook(coordinates);
+        book = current.replacing(system, places);
+      } else {
+        if (this.galaxyOwnersRequest !== request) return;
+        book = new OwnerBook(coordinates, places);
+        for (const [refreshed, at] of this.systemOwnersRequest) if (at > request) book = book.replacing(refreshed, this.state.owners.placesIn(refreshed));
+      }
+      this.setState({ owners: book });
+    });
+  }
+
   // ---- arriving in a galaxy -------------------------------------------------------
 
   // Far enough to see the neighbouring galaxies around this one, and a few cells of the
@@ -336,14 +385,16 @@ export class Explorer {
     this.destination = null;
     this.labels.removeWhere(() => true);
     if (this.arrivalTimer) clearTimeout(this.arrivalTimer);
-    this.setState({ mode: "loading", status: keepNeighbors ? null : "Dropping out of hyperspace…", error: null, coordinates, target: null, system: null, orbiting: null, planetDetail: null, moons: [], visitingMoon: null, pois: [], nearby: [], arrival: null, travel: null });
+    this.systemOwnersRequest.clear();
+    this.setState({ mode: "loading", status: keepNeighbors ? null : t("Dropping out of hyperspace…"), error: null, coordinates, target: null, system: null, orbiting: null, planetDetail: null, moons: [], visitingMoon: null, pois: [], nearby: [], arrival: null, travel: null, owners: new OwnerBook(coordinates) });
+    this.loadOwners(coordinates);
 
     try {
       const galaxy = seamless?.info ?? (await fetchGalaxy(coordinates)).galaxy;
       if (token !== this.loadToken) return;
       this.directory = new SystemDirectory(coordinates);
       this.rememberGalaxy(galaxy);
-      this.setState({ galaxy, status: galaxy.num_systems > 0 && !keepNeighbors ? "Charting the galaxy…" : null });
+      this.setState({ galaxy, status: galaxy.num_systems > 0 && !keepNeighbors ? t("Charting the galaxy…") : null });
 
       const shipSystem = galaxy.num_systems > 0 ? (focus.system != null && focus.system < galaxy.num_systems ? focus.system : this.arrivalSystem(galaxy)) : null;
 
@@ -355,16 +406,20 @@ export class Explorer {
           this.engine.deepScene.add(this.exotics.root);
           this.navigator.minDistance = 0.004;
           this.navigator.maxDistance = this.galaxyMaxDistance(radius);
+          // A Singularity Void has nothing to admire from afar: straight in to its torus
+          const torus = pois.find((p) => p.kind === "torus");
+          const view = torus ? (this.exotics.approachDistance(torus) ?? radius * 2.3) : radius * 2.3;
+          const duration = torus ? 5 : 3.2;
           if (keepNeighbors && this.neighbors) {
             // Already looking at it from where the jump left us: just glide in
-            this.navigator.flyTo(new THREE.Vector3(), radius * 2.3, { duration: 3.6, pitch: 0.55, yaw: this.navigator.yaw + 0.4 });
+            this.navigator.flyTo(new THREE.Vector3(), view, { duration: duration + 0.4, pitch: 0.55, yaw: this.navigator.yaw + 0.4 });
           } else {
             this.loadNeighbors(coordinates);
             this.navigator.focus.set(0, 0, 0);
             this.navigator.yaw = 0.5;
             this.navigator.pitch = 0.75;
             this.navigator.setDistance(radius * 7);
-            this.navigator.flyTo(new THREE.Vector3(), radius * 2.3, { duration: 3.2, pitch: 0.55, yaw: 0.9 });
+            this.navigator.flyTo(new THREE.Vector3(), view, { duration, pitch: 0.55, yaw: 0.9 });
           }
 
           if (shipSystem !== null) {
@@ -445,7 +500,7 @@ export class Explorer {
       return;
     }
     // Anywhere else: charge, into hyperspace, and out in front of the new galaxy
-    this.setState({ travel: { label: `Hyperjump to ${coordinates.join(", ")}`, progress: 0 }, arrival: null });
+    this.setState({ travel: { label: t("Hyperjump to %@", coordinates.join(", ")), progress: 0 }, arrival: null });
     this.startJump(1.1);
     setTimeout(() => this.loadGalaxy(coordinates, { system, planet }), 1300);
   }
@@ -477,7 +532,7 @@ export class Explorer {
   private async jumpToNeighbor(neighbor: PlacedNeighbor, system: number | null, planet: number | null = null) {
     const token = ++this.loadToken;
     this.cancelArrival();
-    this.setState({ target: null, arrival: null, travel: { label: `Hyperjump to ${pretty(neighbor.name)}`, progress: 0 } });
+    this.setState({ target: null, arrival: null, travel: { label: t("Hyperjump to %@", pretty(neighbor.name)), progress: 0 } });
     let info: GalaxyInfo;
     try {
       info = (await fetchGalaxy(neighbor.coordinates)).galaxy;
@@ -542,7 +597,7 @@ export class Explorer {
     if (!layer || !star) return;
     const letter = layer.stars.length > 1 ? ` ${String.fromCharCode(65 + index)}` : "";
     this.systemLayer?.setSelectedPlanet(null);
-    this.setState({ target: { kind: "star", index, star: star.info, name: `${pretty(layer.system.name)}${letter}`, temperature: star.look.temperature } });
+    this.setState({ target: { kind: "star", index, star: star.info, name: `${this.state.owners.systemName(layer.system.index, layer.system.name)}${letter}`, temperature: star.look.temperature } });
     sfx.select("star");
   }
 
@@ -583,8 +638,8 @@ export class Explorer {
     this.pendingPlanet = planetIndex;
     this.navigator.follow = null;
     this.navigator.minDistance = (SYSTEM_ARRIVAL_AU * 0.5) / AU_PER_LY;
-    const name = target.summary ? pretty(target.summary.name) : `system #${index.toLocaleString()}`;
-    this.setState({ travel: { label: `Travelling to ${name}`, progress: 0 }, arrival: null });
+    const name = target.summary ? this.state.owners.systemName(index, target.summary.name) : t("system #%@", amount(index));
+    this.setState({ travel: { label: t("Travelling to %@", name), progress: 0 }, arrival: null });
     sfx.depart();
     this.navigator.flyTo(target.position, SYSTEM_ARRIVAL_AU / AU_PER_LY, { pitch: 0.35 });
   }
@@ -604,7 +659,7 @@ export class Explorer {
     this.destination = null;
     this.navigator.follow = null;
     this.galaxy?.setHighlight(null);
-    this.setState({ target: { kind: "poi", poi }, arrival: null, travel: { label: `Heading to ${poi.name}`, progress: 0 } });
+    this.setState({ target: { kind: "poi", poi }, arrival: null, travel: { label: t("Heading to %@", L(poi.name)), progress: 0 } });
     sfx.depart();
     this.navigator.flyTo(new THREE.Vector3(...poi.position), this.exotics?.approachDistance(poi) ?? Math.max(poi.radius * 3.5, 0.5));
   }
@@ -653,7 +708,7 @@ export class Explorer {
     this.planetFrame?.setFocusMoon(null);
     this.setState({ visitingMoon: null });
 
-    this.setState({ target: { kind: "planet", planet: body.data }, orbiting: body.data, travel: { label: `Approaching ${pretty(body.data.name)}`, progress: 0 } });
+    this.setState({ target: { kind: "planet", planet: body.data }, orbiting: body.data, travel: { label: t("Approaching %@", this.state.owners.planetName(body.data, layer.system.index)), progress: 0 } });
     this.dockShip(layer.system.index, planetIndex, pretty(layer.system.name));
     this.navigator.minDistance = body.radius * 1.12;
     this.navigator.follow = null;
@@ -698,7 +753,7 @@ export class Explorer {
     this.navigator.follow = null;
     this.navigator.minDistance = radius * 1.15;
     const track = () => this.moonWorld(name);
-    this.setState({ target: { kind: "moon", moon }, visitingMoon: moon, travel: { label: `Approaching ${pretty(moon.name)}`, progress: 0 } });
+    this.setState({ target: { kind: "moon", moon }, visitingMoon: moon, travel: { label: t("Approaching %@", pretty(moon.name)), progress: 0 } });
     // Arrive on the day side with the light raking in from the side (the star, at the
     // system's centre, ~55° off the line of sight): craters and ridges cast shadows,
     // as in probe photographs, and the terminator stays in view
@@ -778,19 +833,29 @@ export class Explorer {
 
   // What the photo shows, from the deepest place in view outwards, and the gate to it
   private photoPlace(coordinates: Coordinates): PhotoPlace {
-    const galaxy = this.state.galaxy ? pretty(this.state.galaxy.name) : "Galaxy";
+    const owners = this.state.owners;
+    const galaxy = this.state.galaxy ? pretty(this.state.galaxy.name) : t("Galaxy");
     const galaxyLine = `${galaxy} · ${coordinates.join(", ")}`;
     const system = this.state.mode === "system" ? this.state.system : null;
     const planet = system ? this.state.orbiting : null;
     const moon = planet ? this.state.visitingMoon : null;
-    const systemLine = system ? `${pretty(system.name)} · system #${system.index.toLocaleString("en")}` : null;
+    const systemLine = system ? `${owners.systemName(system.index, system.name)} · ${t("system #%@", system.index.toLocaleString("en"))}` : null;
     const remote = !!readUniverseConfig()?.remote;
-    // Gates reach galaxies, systems and planets (a moon's photo opens on its planet)
+    // Gates reach galaxies, systems and planets (a moon's photo opens on its planet). The
+    // link carries the generated name: the registry resolves it
     const url = remote ? null : `${photoOrigin()}${stargatePath(coordinates, system?.index ?? null, planet?.name ?? null)}`;
-    if (moon && planet) return { title: pretty(moon.name), kind: "Moon", lines: [`${pretty(planet.name)} · ${pretty(planet.planet_type)}`, systemLine!, galaxyLine], url };
-    if (planet) return { title: pretty(planet.name), kind: `${pretty(planet.planet_type)} planet`, lines: [systemLine!, galaxyLine], url };
-    if (system) return { title: pretty(system.name), kind: "Star system", lines: [galaxyLine], url };
-    return { title: galaxy, kind: this.state.galaxy ? `${this.state.galaxy.galaxy_type} galaxy` : "Galaxy", lines: [coordinates.join(", ")], url };
+    // Somebody's place says so, under its name
+    if (moon && planet && system) return { title: pretty(moon.name), kind: t("Moon"), lines: [`${owners.planetName(planet, system.index)} · ${L(pretty(planet.planet_type))}`, systemLine!, galaxyLine], url };
+    if (planet && system) {
+      const own = owners.planet(planet.index, system.index);
+      return { title: owners.planetName(planet, system.index), kind: t("%@ planet", L(pretty(planet.planet_type))), lines: [...(own ? [propertyLine(own)] : []), systemLine!, galaxyLine], url };
+    }
+    if (system) {
+      const own = owners.system(system.index);
+      return { title: owners.systemName(system.index, system.name), kind: t("Star system"), lines: [...(own ? [propertyLine(own)] : []), galaxyLine], url };
+    }
+    const type = this.state.galaxy?.galaxy_type;
+    return { title: galaxy, kind: !type ? t("Galaxy") : type === "Singularity Void" ? type : t("%@ galaxy", L(type)), lines: [coordinates.join(", ")], url };
   }
 
   returnToShip() {
@@ -826,8 +891,21 @@ export class Explorer {
       if (this.state.target) {
         this.galaxy?.setHighlight(this.shipPosition);
         this.setState({ target: null });
+      } else if (this.isMapView()) {
+        // From the galaxy map, out to the universe's grid
+        if (!this.isUniverseView()) this.viewUniverse();
       } else this.openMap();
     }
+  }
+
+  // From the galaxy map out to the universe's grid: this galaxy among its neighbours
+  viewUniverse() {
+    if (!this.galaxy || this.state.mode !== "galaxy") return;
+    this.cancelArrival();
+    this.setState({ target: null });
+    this.navigator.follow = null;
+    sfx.depart(0.7);
+    this.navigator.flyTo(new THREE.Vector3(), this.navigator.maxDistance * 0.85, { pitch: 0.5, duration: 3.5 });
   }
 
   setTimeScale(scale: number) {
@@ -842,10 +920,13 @@ export class Explorer {
     this.setState({ timeDrift: 0, cosmicTime: this.systemLayer?.cosmicNow ?? Date.now() / 1000 });
   }
 
-  // Returns true when the change needs a page reload (new WebGL context)
-  setQuality(level: QualityLevel): boolean {
+  // A level, or null for Auto (what this device affords). Returns true when the change
+  // needs a page reload (new WebGL context)
+  setQuality(chosen: QualityLevel | null): boolean {
+    const level = chosen ?? detectLevel();
     const next = QUALITY_PROFILES[level];
-    saveQuality(level);
+    saveQuality(chosen);
+    this.setState({ qualityAuto: chosen === null });
     if (needsReload(this.quality, next)) return true;
     const reachChanged = next.galaxyReach !== this.quality.galaxyReach;
     this.quality = next;
@@ -925,6 +1006,8 @@ export class Explorer {
     // The flight carries on into the system: keep its HUD until the ship stops
     this.setState({ mode: "system", system: data.system, target: null, travel: this.navigator.isFlying ? this.state.travel : null });
     this.dockShip(data.system.index, null, pretty(data.system.name));
+    // Its owners afresh, in case they changed since the galaxy was read
+    this.loadOwners(this.state.coordinates!, data.system.index);
     this.paintPlanets(layer, this.state.coordinates!);
     sfx.arrive();
 
@@ -1108,7 +1191,7 @@ export class Explorer {
 
     const time = performance.now() / 1000;
     if (this.exotics) {
-      this.exotics.update(time, this.cameraWorld, this.engine.pixelRatio);
+      this.exotics.update(time, this.cameraWorld, this.engine.pixelRatio, this.engine.viewportHeight, this.engine.exposure);
       this.engine.setLenses(this.exotics.lenses(this.cameraWorld, this.engine.camera));
     }
     if (this.neighbors) {
@@ -1151,7 +1234,7 @@ export class Explorer {
       this.lastEmit = now;
       const remaining = this.systemLayer ? nav.flightRemaining / AU_PER_LY : nav.flightRemaining;
       const travel = this.state.travel ? (nav.isFlying ? { ...this.state.travel, progress: nav.flightProgress, speed: this.speed, remaining } : null) : null;
-      this.setState({ readout: this.readout(), cosmicTime: this.systemLayer?.cosmicNow ?? Date.now() / 1000, timeDrift: this.systemLayer?.drift ?? 0, travel, mapView: this.isMapView(), fps: this.engine.fps });
+      this.setState({ readout: this.readout(), cosmicTime: this.systemLayer?.cosmicNow ?? Date.now() / 1000, timeDrift: this.systemLayer?.drift ?? 0, travel, mapView: this.isMapView(), universeView: this.isUniverseView(), fps: this.engine.fps });
     }
     if (this.state.mode === "galaxy" && now - this.lastNearbyRefresh > 1000) {
       this.lastNearbyRefresh = now;
@@ -1257,6 +1340,11 @@ export class Explorer {
     return this.state.mode === "galaxy" && !!this.galaxy && this.navigator.distance > this.galaxy.radius * 0.5;
   }
 
+  // Out among the neighbouring galaxies: the grid of the universe around this one
+  private isUniverseView() {
+    return this.state.mode === "galaxy" && !!this.galaxy && this.navigator.distance > Math.max(this.galaxy.radius * 6, this.navigator.maxDistance * 0.45);
+  }
+
   // Up to two planets in full detail: the one we orbit (or are heading to) and the one
   // we just left, until it has shrunk to a speck
   private updatePlanetFrame(dt: number) {
@@ -1324,7 +1412,7 @@ export class Explorer {
       const nearby: NearbySystem[] = [];
       summaries.forEach((summary, i) => {
         if (!summary) return;
-        nearby.push({ index: summary.index, name: pretty(summary.name), starType: summary.stars.map((s) => s.Type).join(" + "), planets: summary.num_planets, distance: formatDistanceLy(stars[i].distance) });
+        nearby.push({ index: summary.index, name: this.state.owners.systemName(summary.index, summary.name), starType: summary.stars.map((s) => L(s.Type)).join(" + "), planets: summary.num_planets, distance: formatDistanceLy(stars[i].distance) });
       });
       this.setState({ nearby });
     });
@@ -1368,7 +1456,7 @@ export class Explorer {
       if (this.shipPosition) {
         const screen = this.projectWorld(this.shipPosition);
         if (screen) {
-          labels.upsert("ship", "ship", "You are here", this.state.shipSystemName ?? "", () => this.returnToShip());
+          labels.upsert("ship", "ship", t("You are here"), this.shipSystemTitle() ?? "", () => this.returnToShip());
           labels.place("ship", screen.x, screen.y);
         }
       }
@@ -1378,7 +1466,7 @@ export class Explorer {
         for (const n of this.neighbors.nearest(this.navigator.focus, mapView ? 16 : 8)) {
           const screen = this.projectWorld(n.position);
           if (!screen) continue;
-          labels.upsert(`galaxy:${n.coordinates.join(",")}`, "galaxy", pretty(n.name), `${n.coordinates.join(", ")}\n${n.galaxy_type} · click to hyperjump`, () => this.hyperjump(n.coordinates));
+          labels.upsert(`galaxy:${n.coordinates.join(",")}`, "galaxy", pretty(n.name), `${n.coordinates.join(", ")}\n${L(n.galaxy_type)} · ${TOUCH ? t("tap to hyperjump") : t("click to hyperjump")}`, () => this.hyperjump(n.coordinates));
           labels.place(`galaxy:${n.coordinates.join(",")}`, screen.x, screen.y, 0.85);
         }
       }
@@ -1388,7 +1476,7 @@ export class Explorer {
       for (const poi of this.state.pois) {
         const position = new THREE.Vector3(...poi.position);
         const distance = position.distanceTo(this.cameraWorld);
-        const showRange = poi.id === "smbh" ? (this.galaxy.info.num_systems === 0 ? Infinity : 400) : poi.kind === "core" || poi.kind === "quasar" ? Infinity : poi.kind === "globular" || poi.kind === "open" ? Math.max(poi.radius * 120, 2500) : 2500;
+        const showRange = poi.id === "smbh" ? (this.galaxy.info.num_systems === 0 ? Infinity : 400) : poi.kind === "core" || poi.kind === "quasar" || poi.kind === "torus" ? Infinity : poi.kind === "globular" || poi.kind === "open" ? Math.max(poi.radius * 120, 2500) : 2500;
         if (distance > showRange || distance < poi.radius * 0.8) continue;
         const screen = this.projectWorld(position);
         if (screen) candidates.push({ poi, distance, showRange, screen });
@@ -1396,14 +1484,15 @@ export class Explorer {
       candidates.sort((a, b) => a.distance - b.distance);
       const targetPoi = this.state.target?.kind === "poi" ? this.state.target.poi.id : null;
       candidates
-        .filter((c, i) => i < (mapView ? 3 : 8) || c.poi.kind === "core" || c.poi.kind === "quasar" || c.poi.id === targetPoi)
+        .filter((c, i) => i < (mapView ? 3 : 8) || c.poi.kind === "core" || c.poi.kind === "quasar" || c.poi.kind === "torus" || c.poi.id === targetPoi)
         .forEach(({ poi, distance, showRange, screen }) => {
           const id = `poi:${poi.id}`;
-          const kind = poi.kind === "globular" || poi.kind === "open" ? "cluster" : poi.kind === "blackhole" || poi.kind === "pulsar" ? "exotic" : "poi";
+          const kind = poi.kind === "globular" || poi.kind === "open" ? "cluster" : poi.kind === "blackhole" || poi.kind === "pulsar" || poi.kind === "torus" ? "exotic" : "poi";
           labels.upsert(
             id,
             kind,
-            poi.name,
+            // (generated names stay as they are; the torus's is a text of its own)
+            L(poi.name),
             formatDistanceLy(distance),
             () => this.setState({ target: { kind: "poi", poi } }),
             () => this.flyToPoi(poi)
@@ -1431,17 +1520,18 @@ export class Explorer {
         labels.upsert(
           `star:${star.index}`,
           "star",
-          pretty(summary.name),
+          this.state.owners.systemName(star.index, summary.name),
           formatDistanceLy(star.position.distanceTo(this.cameraWorld)),
           () => this.selectSystem(star.index, star.position),
-          () => this.travelToSystem(star.index)
+          () => this.travelToSystem(star.index),
+          this.state.owners.system(star.index)?.seal
         );
         labels.place(`star:${star.index}`, screen.x, screen.y, 0.85);
       }
 
       if (this.hover && this.hover.index !== targetSystem) {
         const summary = this.directory.peek(this.hover.index);
-        labels.upsert("hover", "hover", summary ? pretty(summary.name) : `System #${this.hover.index.toLocaleString()}`, summary ? `${summary.stars.map((s) => s.Type).join(" + ")} · ${summary.num_planets} planets` : "scanning…");
+        labels.upsert("hover", "hover", summary ? this.state.owners.systemName(this.hover.index, summary.name) : t("System #%@", amount(this.hover.index)), summary ? `${summary.stars.map((s) => L(s.Type)).join(" + ")} · ${t("%lld planets", summary.num_planets)}` : t("scanning…"), undefined, undefined, this.state.owners.system(this.hover.index)?.seal);
         labels.place("hover", this.hover.screen.x, this.hover.screen.y);
       }
 
@@ -1449,7 +1539,7 @@ export class Explorer {
       if (target?.kind === "system" && target.position) {
         const screen = this.projectWorld(target.position);
         if (screen) {
-          labels.upsert("target", "selected", target.summary ? pretty(target.summary.name) : `System #${target.index.toLocaleString()}`, formatDistanceLy(target.position.distanceTo(this.cameraWorld)));
+          labels.upsert("target", "selected", target.summary ? this.state.owners.systemName(target.index, target.summary.name) : t("System #%@", amount(target.index)), formatDistanceLy(target.position.distanceTo(this.cameraWorld)), undefined, undefined, this.state.owners.system(target.index)?.seal);
           labels.place("target", screen.x, screen.y);
         }
       }
@@ -1465,16 +1555,19 @@ export class Explorer {
         const screen = this.engine.project(rel, { x: 0, y: 0 });
         if (!screen) continue;
         const id = `planet:${p.data.index}`;
+        // An owned planet is labelled with its owner's name for it, and whose it is
+        const own = this.state.owners.planet(p.data.index, layer.system.index);
         labels.upsert(
           id,
           "planet",
-          pretty(p.data.name),
-          p.data.planet_type,
+          this.state.owners.planetName(p.data, layer.system.index),
+          own?.owner ? `${L(p.data.planet_type)} · ${t("Property of %@", own.owner)}` : L(p.data.planet_type),
           () => {
             layer.setSelectedPlanet(p.data.index);
             this.setState({ target: { kind: "planet", planet: p.data } });
           },
-          () => this.focusPlanet(p.data.index)
+          () => this.focusPlanet(p.data.index),
+          own?.seal
         );
         const targeted = this.state.target?.kind === "planet" && this.state.target.planet.index === p.data.index;
         if (layer.presence < 0.05) continue;
@@ -1491,14 +1584,14 @@ export class Explorer {
           const visiting = this.state.visitingMoon?.name === moon.name;
           // The visited moon fills the view: no label on top of it
           if (visiting && !this.navigator.isFlying) continue;
-          labels.upsert(id, "moon", pretty(moon.name), `${moon.type} moon`, () => this.selectMoon(moon.name), () => this.focusMoon(moon.name));
+          labels.upsert(id, "moon", pretty(moon.name), t("%@ moon", L(moon.type)), () => this.selectMoon(moon.name), () => this.focusMoon(moon.name));
           const targeted = this.state.target?.kind === "moon" && this.state.target.moon.name === moon.name;
           labels.place(id, rect.left + ((p.x + 1) / 2) * rect.width, rect.top + ((1 - p.y) / 2) * rect.height, targeted ? 1 : 0.8);
         }
       }
       const starScreen = this.engine.project(this.cameraLocal.clone().negate(), { x: 0, y: 0 });
       if (starScreen && this.navigator.distance > 0.5 && orbiting === undefined) {
-        labels.upsert("sysstar:0", "star", pretty(layer.system.name), layer.system.stars.map((s) => s.Type).join(" + "), () => this.selectStar(0), () => this.focusStar(0));
+        labels.upsert("sysstar:0", "star", this.state.owners.systemName(layer.system.index, layer.system.name), layer.system.stars.map((s) => L(s.Type)).join(" + "), () => this.selectStar(0), () => this.focusStar(0), this.state.owners.system(layer.system.index)?.seal);
         labels.place("sysstar:0", starScreen.x, starScreen.y, 0.9);
       }
     }
@@ -1515,19 +1608,28 @@ export class Explorer {
         const radiusAU = this.planetFrame.moonRadiusAU(visiting.name);
         const altitude = ((this.cameraLocal.distanceTo(moonAt) - radiusAU) / radiusAU) * visiting.radiusKm;
         const sunlight = this.planetFrame.moonSunlight(visiting.name);
-        const shadow = sunlight < 0.02 ? `eclipsed by ${pretty(this.state.orbiting?.name ?? "the planet")} · ` : sunlight < 0.98 ? "partial eclipse · " : "";
-        return { primary: `Visiting ${pretty(visiting.name)}`, secondary: `${shadow}altitude ${Math.max(0, Math.round(altitude)).toLocaleString()} km` };
+        const system = this.systemLayer.system.index;
+        const height = t("altitude %@ km", amount(Math.max(0, Math.round(altitude))));
+        const shadow = sunlight < 0.02 ? (this.state.orbiting ? t("eclipsed by %@", this.state.owners.planetName(this.state.orbiting, system)) : t("eclipsed by the planet")) : sunlight < 0.98 ? t("partial eclipse") : null;
+        return { primary: t("Visiting %@", pretty(visiting.name)), secondary: shadow ? `${shadow} · ${height}` : height };
       }
       if (this.state.orbiting) {
         const body = this.systemLayer.planet(this.state.orbiting.index);
         const altitude = body ? (this.cameraLocal.distanceTo(body.position) - body.radius) * (this.state.orbiting.diameter / 2 / body.radius) : 0;
-        return { primary: `Orbiting ${pretty(this.state.orbiting.name)}`, secondary: `altitude ${Math.max(0, Math.round(altitude)).toLocaleString()} km` };
+        return { primary: t("Orbiting %@", this.state.owners.planetName(this.state.orbiting, this.systemLayer.system.index)), secondary: t("altitude %@ km", amount(Math.max(0, Math.round(altitude)))) };
       }
-      return { primary: `${formatDistanceAu(this.cameraLocal.length())} from ${pretty(this.systemLayer.system.name)}`, secondary: `${this.systemLayer.system.planets.length} planets in this system` };
+      const layer = this.systemLayer;
+      return { primary: t("%@ from %@", formatDistanceAu(this.cameraLocal.length()), this.state.owners.systemName(layer.system.index, layer.system.name)), secondary: t("%lld planets in this system", layer.system.planets.length) };
     }
     const fromCore = this.cameraWorld.length();
     const fromShip = this.shipPosition ? this.shipPosition.distanceTo(this.cameraWorld) : null;
-    return { primary: `${formatDistanceLy(fromCore)} from the galactic core`, secondary: fromShip !== null && fromShip > 0.05 ? `${formatDistanceLy(fromShip)} from your ship` : `focus ${formatDistanceLy(nav.distance)}` };
+    return { primary: t("%@ from the galactic core", formatDistanceLy(fromCore)), secondary: fromShip !== null && fromShip > 0.05 ? t("%@ from your ship", formatDistanceLy(fromShip)) : t("focus %@", formatDistanceLy(nav.distance)) };
+  }
+
+  // The ship's system, as it is called now (its owner's name for it, if it has one)
+  shipSystemTitle(): string | null {
+    const ship = this.state.ship;
+    return (ship && this.state.owners.system(ship.system)?.name) ?? this.state.shipSystemName;
   }
 
   dispose() {

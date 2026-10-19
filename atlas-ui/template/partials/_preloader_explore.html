@@ -134,6 +134,22 @@
     var boot = document.getElementById("atlas-boot");
     var bar = document.getElementById("atlas-boot-bar");
     var status = document.getElementById("atlas-boot-status");
+    // Its first words in the pilot's language, before the app (i18n/i18n.ts) takes over
+    var powering = { de: "Schiff fährt hoch …", es: "Encendiendo la nave…", fr: "Démarrage du vaisseau…", it: "Accensione della nave…", ja: "機体を起動中…", ko: "우주선 시동 거는 중…", pt: "Ligando a nave…", ru: "Запускаем корабль…", uk: "Запускаємо корабель…", "zh-Hans": "正在启动飞船…" };
+    try {
+      var tags = [localStorage.getItem("atlas-language") || ""].concat(navigator.languages || [navigator.language]);
+      for (var i = 0; i < tags.length; i++) {
+        var tag = (tags[i] || "").toLowerCase();
+        var code = tag === "zh-hans" || /^zh(-cn|-sg|-hans)?(-|$)/.test(tag) ? (/-(hant|tw|hk|mo)/.test(tag) ? "" : "zh-Hans") : tag.split("-")[0];
+        if (code === "en") break;
+        if (powering[code]) {
+          status.textContent = powering[code];
+          break;
+        }
+      }
+    } catch (e) {
+      /* English, then */
+    }
     var progress = 0;
     var finished = false;
     // Creeps towards 90% on its own; the app reports real milestones on top

@@ -14,6 +14,7 @@ import { Genesis } from "../Explore/audio/Genesis.ts";
 import { ComfortNotice, useComfortAsked } from "../Explore/ui/ComfortNotice.tsx";
 import { reducedFlashing } from "../Explore/core/comfort.ts";
 import contentFilter from "../Utils/ContentFilter.jsx";
+import { t } from "../i18n/i18n.ts";
 
 interface OnboardingLayoutProps {
   version: string;
@@ -82,15 +83,15 @@ function CreationCaptions({ epoch, born, kind, entropy }: { epoch: number; born:
   const current = epoch >= 0 ? CREATION_EPOCHS[epoch] : CREATION_PRELUDE;
   const last = epoch === CREATION_EPOCHS.length - 1;
   const primordial = current.tau !== undefined;
-  const time = useDecrypt(current.time, 320);
-  const name = kind === "default" ? "The Core Continuum" : born ? born.seed : "Your own universe";
+  const time = useDecrypt(t(current.time), 320);
+  const name = kind === "default" ? "The Core Continuum" : born ? born.seed : t("Your own universe");
   const accent = kind === "default" ? "text-cyan-200/80" : "text-violet-200/80";
   return (
     <>
       {/* An epigraph over the torus, as a film opens, gone once it begins to collapse */}
       <div className={`absolute inset-x-6 top-[14%] sm:top-[16%] text-center pointer-events-none transition-opacity duration-1000 ${epoch < 1 ? "opacity-100" : "opacity-0"}`}>
-        <div className="font-serif italic text-lg sm:text-2xl text-white/70 animate-[fadeIn_2.4s_ease-out] text-balance">“Even the void has a memory limit.”</div>
-        <div className="mt-2 font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.35em] text-gray-500 animate-[fadeIn_3.2s_ease-out]">Primordial 4D Torus Hypothesis</div>
+        <div className="font-serif italic text-lg sm:text-2xl text-white/70 animate-[fadeIn_2.4s_ease-out] text-balance">{t("“Even the void has a memory limit.”")}</div>
+        <div className="mt-2 font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.35em] text-gray-500 animate-[fadeIn_3.2s_ease-out]">{t("PRIMORDIAL 4D TORUS HYPOTHESIS")}</div>
       </div>
       {/* A faint shade under the captions, so they read over the bright plasma too */}
       <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
@@ -99,13 +100,13 @@ function CreationCaptions({ epoch, born, kind, entropy }: { epoch: number; born:
           {last ? (
             <>
               <div className="text-xl sm:text-2xl font-light text-white tracking-wide">{name}</div>
-              <div className={`mt-1 text-[10px] sm:text-[11px] uppercase tracking-[0.35em] ${accent}`}>Universe created</div>
-              {born && <div className="mt-1 font-mono text-[11px] text-gray-400">Big Bang {formatOrigin(born.origin)}</div>}
+              <div className={`mt-1 text-[10px] sm:text-[11px] uppercase tracking-[0.35em] ${accent}`}>{t("Universe created")}</div>
+              {born && <div className="mt-1 font-mono text-[11px] text-gray-400">{t("Big Bang %@", formatOrigin(born.origin))}</div>}
             </>
           ) : (
             <>
               <div className="font-mono text-lg sm:text-2xl font-light text-white/95">{time}</div>
-              <div className={`mt-1 text-[10px] sm:text-[11px] uppercase tracking-[0.35em] ${accent}`}>{current.title}</div>
+              <div className={`mt-1 text-[10px] sm:text-[11px] uppercase tracking-[0.35em] ${accent}`}>{t(current.title)}</div>
               {current.temperature && <div className="mt-1 font-mono text-[11px] text-gray-400">T ≈ {current.temperature}</div>}
               {current.formula && <div className="mt-1 font-serif italic text-[12px] sm:text-[13px] text-gray-500 truncate">{current.formula}</div>}
             </>
@@ -122,19 +123,20 @@ function CreationCaptions({ epoch, born, kind, entropy }: { epoch: number; born:
         <div className="relative h-4 mt-1.5 font-mono text-[9px] text-gray-600">
           {TIMELINE_MARKS.map((mark) => (
             <span key={mark.label} className={`absolute top-0 whitespace-nowrap ${mark.align === "center" ? "-translate-x-1/2" : mark.align === "right" ? "-translate-x-full" : ""}`} style={{ left: `${mark.at * 100}%` }}>
-              {mark.label}
+              {t(mark.label)}
             </span>
           ))}
         </div>
       </div>
       <div className="absolute top-4 left-4 sm:top-6 sm:left-6 font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.3em] text-cyan-200/40 leading-5 pointer-events-none">
-        <div>Atlas initialization protocol</div>
-        <div>{primordial ? "Primordial state · τ < 0" : last ? "Universe created" : "Universe expanding"}</div>
+        <div>{t("ATLAS INITIALIZATION PROTOCOL")}</div>
+        <div>{primordial ? t("PRIMORDIAL STATE · τ < 0") : last ? t("UNIVERSE CREATED") : t("UNIVERSE EXPANDING")}</div>
       </div>
     </>
   );
 }
 
+// In English, translated when shown (the Core Continuum keeps its name)
 const OPTIONS: Array<{ value: Choice; title: string; kicker: string; description: string; points: string[] }> = [
   {
     value: "default",
@@ -153,9 +155,9 @@ const OPTIONS: Array<{ value: Choice; title: string; kicker: string; description
 ];
 
 function validateSeed(seed: string): string {
-  if (seed.length > SEED_MAX) return `${SEED_MAX} characters at most`;
+  if (seed.length > SEED_MAX) return t("%lld characters at most", SEED_MAX);
   const result = contentFilter.filterSeed(seed);
-  return result.isBlocked ? result.reason || "That seed is not allowed" : "";
+  return result.isBlocked ? (result.reason ? t(result.reason) : t("That seed is not allowed")) : "";
 }
 
 // A readable random seed: syllables and a number
@@ -264,7 +266,7 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({ version }) => {
     if (choice === "custom" && seed.trim()) form.append("custom_seed", seed.trim());
     try {
       const response = await fetch("/onboarding", { method: "POST", body: form });
-      if (!response.ok) throw new Error(`The server answered ${response.status}`);
+      if (!response.ok) throw new Error(t("The server answered %@", String(response.status)));
       // The universe exists: read its seed and the moment of its Big Bang for the captions
       try {
         const config = await (await fetch("/api/universe/config")).json();
@@ -278,7 +280,7 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({ version }) => {
       creation.current = null;
       score.current?.stop();
       score.current = null;
-      setFailure(error instanceof Error ? error.message : "The universe could not be created");
+      setFailure(error instanceof Error ? error.message : t("The universe could not be created"));
       setPhase("choosing");
     }
   };
@@ -289,12 +291,12 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({ version }) => {
 
       {/* Instruments in the corners */}
       <div className="absolute top-4 left-4 sm:top-6 sm:left-6 font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.3em] text-cyan-200/40 leading-5 pointer-events-none">
-        <div>Atlas initialization protocol</div>
-        <div>Awaiting directive</div>
+        <div>{t("ATLAS INITIALIZATION PROTOCOL")}</div>
+        <div>{t("Awaiting directive")}</div>
       </div>
       <div className="hidden sm:block absolute bottom-6 right-6 font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.3em] text-cyan-200/30 text-right leading-5 pointer-events-none">
         <div>v{version}</div>
-        <div>∞ galaxies · ∞ systems</div>
+        <div>{t("∞ GALAXIES · ∞ SYSTEMS")}</div>
       </div>
 
       <form
@@ -306,8 +308,8 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({ version }) => {
             <div className="text-4xl sm:text-5xl font-bold tracking-[0.5em] pl-[0.5em] text-white/95 drop-shadow-[0_0_24px_rgba(0,0,0,0.9)]">
               ATLAS<span className="text-cyan-300 drop-shadow-[0_0_18px_rgba(34,211,238,0.9)]">3</span>
             </div>
-            <div className="mt-3 text-[10px] sm:text-[11px] uppercase tracking-[0.3em] sm:tracking-[0.45em] text-cyan-100/60">Initialization protocol</div>
-            <p className="mt-6 text-base sm:text-lg text-gray-300 max-w-2xl mx-auto leading-relaxed text-balance">Will you journey through a shared universe, or forge a new one of your own?</p>
+            <div className="mt-3 text-[10px] sm:text-[11px] uppercase tracking-[0.3em] sm:tracking-[0.45em] text-cyan-100/60">{t("Initialization protocol")}</div>
+            <p className="mt-6 text-base sm:text-lg text-gray-300 max-w-2xl mx-auto leading-relaxed text-balance">{t("Will you journey through a shared universe, or forge a new one of your own?")}</p>
           </div>
 
           <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 w-full">
@@ -335,14 +337,14 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({ version }) => {
                     {selected && <span className="absolute inset-[4px] rounded-full bg-slate-950" />}
                   </span>
                   <OptionIcon value={option.value} />
-                  <div className={`mt-3 text-[10px] uppercase tracking-[0.3em] ${accent === "cyan" ? "text-cyan-300/80" : "text-violet-300/80"}`}>{option.kicker}</div>
-                  <div className="text-lg sm:text-xl text-white font-light tracking-wide mt-0.5">{option.title}</div>
-                  <p className="text-sm text-gray-400 leading-relaxed mt-2">{option.description}</p>
+                  <div className={`mt-3 text-[10px] uppercase tracking-[0.3em] ${accent === "cyan" ? "text-cyan-300/80" : "text-violet-300/80"}`}>{t(option.kicker)}</div>
+                  <div className="text-lg sm:text-xl text-white font-light tracking-wide mt-0.5">{option.value === "default" ? option.title : t(option.title)}</div>
+                  <p className="text-sm text-gray-400 leading-relaxed mt-2">{t(option.description)}</p>
                   <ul className="mt-3 space-y-1">
                     {option.points.map((point) => (
                       <li key={point} className="flex items-center gap-2 text-xs text-gray-400">
                         <span className={`w-1 h-1 rounded-full ${accent === "cyan" ? "bg-cyan-300" : "bg-violet-300"}`} />
-                        {point}
+                        {t(point)}
                       </li>
                     ))}
                   </ul>
@@ -350,17 +352,17 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({ version }) => {
                   {option.value === "custom" && (
                     <div className={`grid transition-all duration-300 ease-out ${selected ? "grid-rows-[1fr] opacity-100 mt-4" : "grid-rows-[0fr] opacity-0"}`} onClick={(e) => e.stopPropagation()}>
                       <div className="overflow-hidden">
-                        <label className="block text-[10px] uppercase tracking-[0.25em] text-gray-500 mb-1.5">Seed (optional)</label>
+                        <label className="block text-[10px] uppercase tracking-[0.25em] text-gray-500 mb-1.5">{t("Seed (optional)")}</label>
                         <div className="flex gap-1.5">
                           <input
                             value={seed}
                             onChange={(e) => changeSeed(e.target.value)}
                             maxLength={SEED_MAX}
-                            placeholder="Empty for a random seed"
+                            placeholder={t("Empty for a random seed")}
                             disabled={phase !== "choosing"}
                             className={`min-w-0 flex-1 bg-black/40 border rounded-lg px-3 py-2 text-sm text-white font-mono placeholder-gray-600 outline-none transition-colors select-text ${seedError ? "border-red-400/60" : "border-white/15 focus:border-violet-300/60"}`}
                           />
-                          <button type="button" title="A random seed" aria-label="A random seed" onClick={() => changeSeed(randomSeed())} className="shrink-0 w-10 flex items-center justify-center rounded-lg border border-white/15 bg-white/5 hover:bg-white/15 text-gray-300">
+                          <button type="button" title={t("A random seed")} aria-label={t("A random seed")} onClick={() => changeSeed(randomSeed())} className="shrink-0 w-10 flex items-center justify-center rounded-lg border border-white/15 bg-white/5 hover:bg-white/15 text-gray-300">
                             <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinejoin="round">
                               <rect x={4} y={4} width={16} height={16} rx={3} />
                               <circle cx={9} cy={9} r={1} fill="currentColor" />
@@ -371,7 +373,7 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({ version }) => {
                           </button>
                         </div>
                         <div className="flex justify-between text-[11px] mt-1">
-                          <span className={seedError ? "text-red-300" : "text-gray-600"}>{seedError || "Up to 20 characters, or roll the dice"}</span>
+                          <span className={seedError ? "text-red-300" : "text-gray-600"}>{seedError || t("Up to %lld characters, or roll the dice", SEED_MAX)}</span>
                           <span className="text-gray-600 font-mono shrink-0 pl-2">
                             {seed.length}/{SEED_MAX}
                           </span>
@@ -392,10 +394,10 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({ version }) => {
                 ready ? "bg-cyan-400 text-slate-950 shadow-[0_0_30px_rgba(34,211,238,0.5)] hover:bg-cyan-300 active:scale-[0.98]" : phase === "choosing" ? "bg-white/5 text-gray-500 border border-white/10 cursor-not-allowed" : "bg-cyan-400/70 text-slate-950"
               }`}
             >
-              {phase === "creating" ? "Creating…" : choice ? "Initialize" : "Choose a universe"}
+              {phase === "creating" ? t("Creating…") : choice ? t("Initialize") : t("Choose a universe")}
             </button>
-            {failure && <div className="text-xs text-red-300">{failure}. Try again.</div>}
-            <div className="text-[10px] uppercase tracking-[0.3em] text-gray-600">Other universes can be visited later through the multiverse</div>
+            {failure && <div className="text-xs text-red-300">{t("%@. Try again.", failure)}</div>}
+            <div className="text-[10px] uppercase tracking-[0.3em] text-gray-600">{t("Other universes can be visited later through the multiverse")}</div>
           </div>
         </div>
       </form>

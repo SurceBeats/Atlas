@@ -14,6 +14,7 @@ import AntimatterIcon from "../Icons/AntimatterIcon.tsx";
 import DeuteriumIcon from "../Icons/DeuteriumIcon.tsx";
 import Element115Icon from "../Icons/Element115Icon.tsx";
 import { UniverseDetection } from "../Utils/UniverseDetection.tsx";
+import { amount, num, t } from "../i18n/i18n.ts";
 
 interface SpaceshipPanelProps {
   currentLocation?: {
@@ -129,7 +130,7 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
       await DataExportImport.downloadExport();
     } catch (error) {
       console.error("Export failed:", error);
-      setImportError("Export failed. Please try again.");
+      setImportError(t("Export failed. Please try again."));
       setTimeout(() => setImportError(null), 3000);
     }
   };
@@ -139,7 +140,7 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
     if (!file) return;
 
     if (!file.name.endsWith(".atl")) {
-      setImportError("Please select a valid .atl file");
+      setImportError(t("Please select a valid .atl file"));
       setTimeout(() => setImportError(null), 3000);
       return;
     }
@@ -149,7 +150,7 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
       setImportSuccess(true);
       setTimeout(() => setImportSuccess(false), 3000);
     } catch (error) {
-      setImportError(error instanceof Error ? error.message : "Import failed");
+      setImportError(error instanceof Error ? error.message : t("Import failed"));
       setTimeout(() => setImportError(null), 3000);
     }
 
@@ -197,7 +198,7 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
     const k = 1024;
     const sizes = ["B", "KB", "MB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    return amount(bytes / Math.pow(k, i), 2) + " " + sizes[i];
   };
 
   const formatLocationName = (name: string) => {
@@ -222,7 +223,7 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
   return (
     <>
       <div ref={panelRef} className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-50">
-        <button onClick={handleToggle} className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 hover:from-blue-500 hover:via-purple-500 hover:to-blue-700 text-white rounded-full shadow-2xl border-2 border-blue-400/30 transition-all duration-300 transform hover:scale-105 backdrop-blur-sm" title="Spaceship Control Panel">
+        <button onClick={handleToggle} className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 hover:from-blue-500 hover:via-purple-500 hover:to-blue-700 text-white rounded-full shadow-2xl border-2 border-blue-400/30 transition-all duration-300 transform hover:scale-105 backdrop-blur-sm" title={t("Spaceship Control Panel")}>
           <div className="flex items-center justify-center">
             <svg className="flex items-center justify-center" xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24">
               <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}>
@@ -246,9 +247,9 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                  <h3 className="text-white font-bold text-lg">🚀 Spaceship Control</h3>
+                  <h3 className="text-white font-bold text-lg">🚀 {t("Spaceship Control")}</h3>
                 </div>
-                <button onClick={handleClose} className="text-gray-400 hover:text-white transition-colors duration-200">
+                <button onClick={handleClose} className="text-gray-400 hover:text-white transition-colors duration-200" aria-label={t("Close")}>
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -257,13 +258,13 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
 
               <div className="flex mt-3 space-x-1 overflow-x-auto">
                 <button onClick={() => setActiveTab("stats")} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200 whitespace-nowrap ${activeTab === "stats" ? "bg-blue-500/30 text-blue-300 border border-blue-500/50" : "text-gray-400 hover:text-white hover:bg-white/10"}`}>
-                  📊 Stats
+                  📊 {t("Stats")}
                 </button>
                 <button onClick={() => setActiveTab("ship")} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200 whitespace-nowrap ${activeTab === "ship" ? "bg-green-500/30 text-green-300 border border-green-500/50" : "text-gray-400 hover:text-white hover:bg-white/10"}`}>
-                  🚀 Ship
+                  🚀 {t("Ship")}
                 </button>
                 <button onClick={() => setActiveTab("saved")} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200 whitespace-nowrap ${activeTab === "saved" ? "bg-purple-500/30 text-purple-300 border border-purple-500/50" : "text-gray-400 hover:text-white hover:bg-white/10"}`}>
-                  📍 Saved ({locationStats?.total || 0})
+                  📍 {t("Saved (%lld)", locationStats?.total || 0)}
                 </button>
               </div>
             </div>
@@ -272,15 +273,15 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
               {activeTab === "stats" && (
                 <div className="space-y-2">
                   <div>
-                    <h4 className="text-white font-semibold mb-2 text-xs">🌟 Daily Challenges</h4>
+                    <h4 className="text-white font-semibold mb-2 text-xs">🌟 {t("Daily Challenges")}</h4>
 
                     <div className="bg-white/5 rounded p-2 border border-indigo-500/20">
                       {dailyChallenges && (
                         <>
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-[10px] text-gray-400">Today's Progress</span>
+                            <span className="text-[10px] text-gray-400">{t("Today's Progress")}</span>
                             <span className="text-[9px] text-indigo-400">
-                              Day {dailyChallenges.dayNumber} • x{DailyChallengesManager.getDayInfo().multiplier}
+                              {t("Day %lld", dailyChallenges.dayNumber)} • x{DailyChallengesManager.getDayInfo().multiplier}
                             </span>
                           </div>
 
@@ -300,7 +301,7 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
 
                               return (
                                 <div key={challenge.type} className="relative">
-                                  <div className="text-[10px] text-gray-400 mb-0.5">{labels[challenge.type]}</div>
+                                  <div className="text-[10px] text-gray-400 mb-0.5">{t(labels[challenge.type])}</div>
                                   <ProgressBar value={challenge.current} max={challenge.target} label={`${challenge.current}/${challenge.target}`} color={colors[challenge.type]} showPercentage={true} />
                                   {challenge.completed && (
                                     <div className="absolute -right-2 top-1.5">
@@ -316,13 +317,13 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
 
                           <div className="grid grid-cols-2 gap-1 text-[10px]">
                             <div className="bg-black/30 rounded p-1.5 border border-indigo-500/30">
-                              <div className="text-gray-400 text-[9px]">Completed</div>
+                              <div className="text-gray-400 text-[9px]">{t("Completed")}</div>
                               <div className="text-indigo-400 font-bold">
                                 {dailyChallenges.challenges.filter((c) => c.completed).length}/{dailyChallenges.challenges.length}
                               </div>
                             </div>
                             <div className="bg-black/30 rounded p-1.5 border border-green-500/30">
-                              <div className="text-gray-400 text-[9px]">Atlas Size</div>
+                              <div className="text-gray-400 text-[9px]">{t("Atlas Size")}</div>
                               <div className="text-green-400 font-bold">{stats ? formatBytes(stats.size) : "0 B"}</div>
                             </div>
                           </div>
@@ -332,13 +333,13 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
                   </div>
 
                   <div>
-                    <h4 className="text-white font-semibold mb-2 text-xs">📍 Saved Locations</h4>
+                    <h4 className="text-white font-semibold mb-2 text-xs">📍 {t("Saved Locations")}</h4>
 
                     <div className="bg-white/5 rounded p-2 border border-purple-500/20">
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-[10px] text-gray-400">Storage Usage</span>
+                        <span className="text-[10px] text-gray-400">{t("Storage Usage")}</span>
                         <span className="text-[9px] text-purple-400">
-                          {locationStats?.total || 0}/{locationStats?.maxAllowed || 50} slots
+                          {t("%lld/%lld slots", locationStats?.total || 0, locationStats?.maxAllowed || 50)}
                         </span>
                       </div>
 
@@ -348,35 +349,35 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
 
                       <div className="grid grid-cols-3 gap-1 text-[10px]">
                         <div className="bg-black/30 rounded p-1 text-center border border-indigo-500/30">
-                          <div className="text-gray-400 text-[9px]">Galaxies</div>
+                          <div className="text-gray-400 text-[9px]">{t("Galaxies")}</div>
                           <div className="text-indigo-400 font-bold">{locationStats?.galaxies || 0}</div>
                         </div>
                         <div className="bg-black/30 rounded p-1 text-center border border-blue-500/30">
-                          <div className="text-gray-400 text-[9px]">Systems</div>
+                          <div className="text-gray-400 text-[9px]">{t("Systems")}</div>
                           <div className="text-blue-400 font-bold">{locationStats?.systems || 0}</div>
                         </div>
                         <div className="bg-black/30 rounded p-1 text-center border border-purple-500/30">
-                          <div className="text-gray-400 text-[9px]">Planets</div>
+                          <div className="text-gray-400 text-[9px]">{t("Planets")}</div>
                           <div className="text-purple-400 font-bold">{locationStats?.planets || 0}</div>
                         </div>
                       </div>
 
-                      <div className="text-[8px] text-gray-500 mt-2">Complete daily tasks to save more locations</div>
+                      <div className="text-[8px] text-gray-500 mt-2">{t("Complete daily tasks to save more locations")}</div>
                     </div>
                   </div>
 
                   <div>
-                    <h4 className="text-white font-semibold mb-2 text-xs">💾 Data Management</h4>
+                    <h4 className="text-white font-semibold mb-2 text-xs">💾 {t("Data Management")}</h4>
 
                     <div className="space-y-2">
                       <div className="bg-white/5 rounded p-2 border border-blue-500/20">
                         <div className="flex justify-between items-center mb-1">
-                          <span className="text-[10px] text-gray-400">Export/Import Atlas Data</span>
+                          <span className="text-[10px] text-gray-400">{t("Export/Import Atlas Data")}</span>
                           <span className="text-[9px] text-blue-400">
                             {(() => {
                               const summary = DataExportImport.getDataSummary();
                               const count = [summary.hasSpaceship, summary.hasArchive, summary.hasDailyChallenges, summary.hasLocations].filter(Boolean).length;
-                              return `${count}/4 keys`;
+                              return t("%lld/4 keys", count);
                             })()}
                           </span>
                         </div>
@@ -389,14 +390,14 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
                                 <path strokeLinejoin="round" d="M12 14V4m0 0l3 3m-3-3L9 7"></path>
                               </g>
                             </svg>
-                            <span>Export</span>
+                            <span>{t("Export")}</span>
                           </button>
                           <button onClick={() => fileInputRef.current?.click()} className="flex-1 bg-green-500/20 hover:bg-green-500/30 text-green-300 text-[10px] px-2 py-1.5 rounded border border-green-500/50 transition-colors duration-200 flex items-center justify-center gap-1">
                             <svg xmlns="http://www.w3.org/2000/svg" width={14} height={14} viewBox="0 0 24 24">
                               <path fill="currentColor" d="M14.47 10.47a.75.75 0 1 1 1.06 1.06l-3 3a.75.75 0 0 1-1.06 0l-3-3a.75.75 0 1 1 1.06-1.06l1.72 1.72V4a.75.75 0 0 1 1.5 0v8.19z"></path>
                               <path fill="currentColor" d="M20.75 12a.75.75 0 0 0-1.5 0a7.25 7.25 0 1 1-14.5 0a.75.75 0 0 0-1.5 0a8.75 8.75 0 1 0 17.5 0"></path>
                             </svg>
-                            <span>Import</span>
+                            <span>{t("Import")}</span>
                           </button>
                         </div>
 
@@ -404,9 +405,9 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
 
                         {importError && <div className="mt-2 text-[9px] text-red-400 bg-red-500/10 p-1 rounded">{importError}</div>}
 
-                        {importSuccess && <div className="mt-2 text-[9px] text-green-400 bg-green-500/10 p-1 rounded">Data imported successfully! Reloading...</div>}
+                        {importSuccess && <div className="mt-2 text-[9px] text-green-400 bg-green-500/10 p-1 rounded">{t("Data imported successfully! Reloading...")}</div>}
 
-                        <div className="text-[8px] text-gray-500 mt-2">Saves all localStorage keys to .atl file</div>
+                        <div className="text-[8px] text-gray-500 mt-2">{t("Saves all localStorage keys to .atl file")}</div>
                       </div>
                     </div>
                   </div>
@@ -417,8 +418,8 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
                 <div className="space-y-2">
                   <div>
                     <h4 className="text-white font-semibold mb-2 text-xs flex items-center gap-1">
-                      ⚡ Resources
-                      <div className="text-[10px] text-gray-400">Lv.{spaceshipUpgrade.level}</div>
+                      ⚡ {t("Resources")}
+                      <div className="text-[10px] text-gray-400">{t("Lv.%lld", spaceshipUpgrade.level)}</div>
                     </h4>
 
                     <div className="space-y-1 mb-2">
@@ -426,10 +427,10 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
                         <div className="flex justify-between text-[10px] mb-0.5">
                           <span className="text-purple-300 flex items-center gap-1">
                             <AntimatterIcon size={12} color="currentColor" />
-                            Antimatter
+                            {t("Antimatter")}
                           </span>
                           <span className="text-white font-mono">
-                            {spaceshipResources.antimatter}/{spaceshipUpgrade.storage}
+                            {amount(spaceshipResources.antimatter)}/{amount(spaceshipUpgrade.storage)}
                           </span>
                         </div>
                         <ProgressBar value={spaceshipResources.antimatter} max={spaceshipUpgrade.storage} label="" color="purple" showPercentage={false} />
@@ -439,10 +440,10 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
                         <div className="flex justify-between text-[10px] mb-0.5">
                           <span className="text-cyan-300 flex items-center gap-1">
                             <Element115Icon size={12} color="currentColor" />
-                            Element 115
+                            {t("Element 115")}
                           </span>
                           <span className="text-white font-mono">
-                            {spaceshipResources.element115}/{spaceshipUpgrade.storage}
+                            {amount(spaceshipResources.element115)}/{amount(spaceshipUpgrade.storage)}
                           </span>
                         </div>
                         <ProgressBar value={spaceshipResources.element115} max={spaceshipUpgrade.storage} label="" color="cyan" showPercentage={false} />
@@ -452,10 +453,10 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
                         <div className="flex justify-between text-[10px] mb-0.5">
                           <span className="text-orange-300 flex items-center gap-1">
                             <DeuteriumIcon size={12} color="currentColor" />
-                            Deuterium
+                            {t("Deuterium")}
                           </span>
                           <span className="text-white font-mono">
-                            {spaceshipResources.deuterium}/{spaceshipUpgrade.storage}
+                            {amount(spaceshipResources.deuterium)}/{amount(spaceshipUpgrade.storage)}
                           </span>
                         </div>
                         <ProgressBar value={spaceshipResources.deuterium} max={spaceshipUpgrade.storage} label="" color="orange" showPercentage={false} />
@@ -464,40 +465,41 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
                   </div>
 
                   <div>
-                    <h4 className="text-white font-semibold mb-2 text-xs">🔧 Ship Upgrade</h4>
+                    <h4 className="text-white font-semibold mb-2 text-xs">🔧 {t("Ship Upgrade")}</h4>
 
                     <div className="grid grid-cols-3 gap-1 text-[10px] mb-2">
                       <div className="bg-white/5 rounded p-1 border border-blue-500/20">
-                        <div className="text-gray-400 text-[9px]">Efficiency</div>
-                        <div className="text-blue-400 font-bold">{spaceshipUpgrade.efficiency.toFixed(1)}x</div>
+                        <div className="text-gray-400 text-[9px]">{t("Efficiency")}</div>
+                        <div className="text-blue-400 font-bold">{num(spaceshipUpgrade.efficiency, 1)}x</div>
                       </div>
                       <div className="bg-white/5 rounded p-1 border border-yellow-500/20">
-                        <div className="text-gray-400 text-[9px]">Storage</div>
-                        <div className="text-yellow-400 font-bold">{spaceshipUpgrade.storage}</div>
+                        <div className="text-gray-400 text-[9px]">{t("Storage")}</div>
+                        <div className="text-yellow-400 font-bold">{amount(spaceshipUpgrade.storage)}</div>
                       </div>
                       <div className="bg-white/5 rounded p-1 border border-indigo-500/20">
-                        <div className="text-gray-400 text-[9px]">Multiplier</div>
-                        <div className="text-indigo-400 font-bold">{spaceshipUpgrade.multiplier.toFixed(1)}x</div>
+                        <div className="text-gray-400 text-[9px]">{t("Multiplier")}</div>
+                        <div className="text-indigo-400 font-bold">{num(spaceshipUpgrade.multiplier, 1)}x</div>
                       </div>
                     </div>
 
                     {spaceshipUpgrade.level < 100 && !SpaceshipResourceManager.canAffordUpgrade() && (
                       <div className="bg-red-500/10 border border-red-500/30 rounded p-1.5 mb-2">
-                        <div className="text-[10px] text-red-300 font-semibold mb-0.5">Missing resources:</div>
+                        <div className="text-[10px] text-red-300 font-semibold mb-0.5">{t("Missing resources:")}</div>
                         <div className="text-[9px] text-red-200 space-y-0.5">
+                          {/* The icon ahead of the sentence, so each language orders its words freely */}
                           {upgradeCost.antimatter > spaceshipResources.antimatter && (
                             <div className="flex items-center gap-1">
-                              • Need {upgradeCost.antimatter - spaceshipResources.antimatter} more <AntimatterIcon size={10} color="currentColor" /> Antimatter
+                              • <AntimatterIcon size={10} color="currentColor" /> {t("Need %lld more %@", upgradeCost.antimatter - spaceshipResources.antimatter, t("Antimatter"))}
                             </div>
                           )}
                           {upgradeCost.element115 > spaceshipResources.element115 && (
                             <div className="flex items-center gap-1">
-                              • Need {upgradeCost.element115 - spaceshipResources.element115} more <Element115Icon size={10} color="currentColor" /> Element 115
+                              • <Element115Icon size={10} color="currentColor" /> {t("Need %lld more %@", upgradeCost.element115 - spaceshipResources.element115, t("Element 115"))}
                             </div>
                           )}
                           {upgradeCost.deuterium > spaceshipResources.deuterium && (
                             <div className="flex items-center gap-1">
-                              • Need {upgradeCost.deuterium - spaceshipResources.deuterium} more <DeuteriumIcon size={10} color="currentColor" /> Deuterium
+                              • <DeuteriumIcon size={10} color="currentColor" /> {t("Need %lld more %@", upgradeCost.deuterium - spaceshipResources.deuterium, t("Deuterium"))}
                             </div>
                           )}
                         </div>
@@ -522,22 +524,22 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
                       className={`w-full px-2 py-1.5 rounded text-[10px] font-medium transition-all duration-200 ${SpaceshipResourceManager.canAffordUpgrade() ? "bg-gradient-to-r from-green-600/30 to-blue-600/30 hover:from-green-600/40 hover:to-blue-600/40 text-green-300 border border-green-500/50 hover:border-green-400/70 cursor-pointer" : "bg-gray-700/30 text-gray-500 border border-gray-600/30 cursor-not-allowed"}`}
                     >
                       {spaceshipUpgrade.level >= 100 ? (
-                        <div className="text-yellow-400">🌟 MAX LEVEL - Ultimate Spaceship!</div>
+                        <div className="text-yellow-400">🌟 {t("MAX LEVEL - Ultimate Spaceship!")}</div>
                       ) : (
                         <div>
-                          <div className="font-bold">Upgrade to Level {spaceshipUpgrade.level + 1}</div>
+                          <div className="font-bold">{t("Upgrade to Level %lld", spaceshipUpgrade.level + 1)}</div>
                           <div className="opacity-80 flex gap-2 justify-center mt-0.5">
                             <span className="text-purple-300 flex items-center gap-0.5">
                               <AntimatterIcon size={10} color="currentColor" />
-                              {upgradeCost.antimatter}AM
+                              {amount(upgradeCost.antimatter)}AM
                             </span>
                             <span className="text-cyan-300 flex items-center gap-0.5">
                               <Element115Icon size={10} color="currentColor" />
-                              {upgradeCost.element115}E115
+                              {amount(upgradeCost.element115)}E115
                             </span>
                             <span className="text-orange-300 flex items-center gap-0.5">
                               <DeuteriumIcon size={10} color="currentColor" />
-                              {upgradeCost.deuterium}D
+                              {amount(upgradeCost.deuterium)}D
                             </span>
                           </div>
                         </div>
@@ -554,39 +556,39 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
                       <svg xmlns="http://www.w3.org/2000/svg" width={16} height={16} viewBox="0 0 24 24">
                         <path fill="currentColor" fillRule="evenodd" d="M3.5 8V6.5l4-3l3 1.5l4-3l6 4.5V8zm-.476 8.124L1.184 9.5h21.632l-1.84 6.624a4.5 4.5 0 0 0-7.364 4.376h-3.224q.111-.483.112-1a4.5 4.5 0 0 0-7.476-3.376M6 22.5a3 3 0 1 0 0-6a3 3 0 0 0 0 6m12 0a3 3 0 1 0 0-6a3 3 0 0 0 0 6" clipRule="evenodd"></path>
                       </svg>
-                      Mining Operations
+                      {t("Mining Operations")}
                     </h4>
 
                     {passiveGeneration.sources.planets === 0 && passiveGeneration.sources.systems === 0 ? (
-                      <div className="text-[10px] text-gray-400">💡 Save planets and systems to enable mining operations</div>
+                      <div className="text-[10px] text-gray-400">💡 {t("Save planets and systems to enable mining operations")}</div>
                     ) : (
                       <div>
                         <div className="flex items-center justify-between text-[10px] mb-1">
-                          <span className="text-purple-300">Generating/hour:</span>
+                          <span className="text-purple-300">{t("Generating/hour:")}</span>
                           <div className="flex gap-2">
                             <span className="text-purple-300 flex items-center gap-0.5">
-                              <AntimatterIcon size={8} color="currentColor" />+{Math.round(baseGeneration.antimatter * 60)} AM
+                              <AntimatterIcon size={8} color="currentColor" />+{amount(Math.round(baseGeneration.antimatter * 60))} AM
                             </span>
                             <span className="text-cyan-300 flex items-center gap-0.5">
-                              <Element115Icon size={8} color="currentColor" />+{Math.round(baseGeneration.element115 * 60)} E115
+                              <Element115Icon size={8} color="currentColor" />+{amount(Math.round(baseGeneration.element115 * 60))} E115
                             </span>
                             <span className="text-orange-300 flex items-center gap-0.5">
-                              <DeuteriumIcon size={8} color="currentColor" />+{Math.round(baseGeneration.deuterium * 60)} D
+                              <DeuteriumIcon size={8} color="currentColor" />+{amount(Math.round(baseGeneration.deuterium * 60))} D
                             </span>
                           </div>
                         </div>
 
                         <div className="flex items-center justify-between text-[10px] mb-2">
-                          <span className="text-gray-400">Ready to collect:</span>
+                          <span className="text-gray-400">{t("Ready to collect:")}</span>
                           <div className="flex gap-2">
                             <span className="text-purple-300 flex items-center gap-0.5">
-                              <AntimatterIcon size={8} color="currentColor" />+{Math.round(passiveGeneration.antimatter)} AM
+                              <AntimatterIcon size={8} color="currentColor" />+{amount(Math.round(passiveGeneration.antimatter))} AM
                             </span>
                             <span className="text-cyan-300 flex items-center gap-0.5">
-                              <Element115Icon size={8} color="currentColor" />+{Math.round(passiveGeneration.element115)} E115
+                              <Element115Icon size={8} color="currentColor" />+{amount(Math.round(passiveGeneration.element115))} E115
                             </span>
                             <span className="text-orange-300 flex items-center gap-0.5">
-                              <DeuteriumIcon size={8} color="currentColor" />+{Math.round(passiveGeneration.deuterium)} D
+                              <DeuteriumIcon size={8} color="currentColor" />+{amount(Math.round(passiveGeneration.deuterium))} D
                             </span>
                           </div>
                         </div>
@@ -598,7 +600,7 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
                           disabled={passiveGeneration.antimatter + passiveGeneration.element115 + passiveGeneration.deuterium === 0}
                           className={`w-full px-2 py-1.5 rounded text-[10px] font-medium transition-all duration-200 ${passiveGeneration.antimatter + passiveGeneration.element115 + passiveGeneration.deuterium > 0 ? "bg-gradient-to-r from-purple-600/30 to-blue-600/30 hover:from-purple-600/40 hover:to-blue-600/40 text-purple-300 border border-purple-500/50 hover:border-purple-400/70 cursor-pointer" : "bg-gray-700/30 text-gray-500 border border-gray-600/30 cursor-not-allowed"}`}
                         >
-                          🚀 Collect From {passiveGeneration.sources.planets}🪐 {passiveGeneration.sources.systems}⭐
+                          🚀 {t("Collect From %@", `${amount(passiveGeneration.sources.planets)}🪐 ${amount(passiveGeneration.sources.systems)}⭐`)}
                         </button>
                       </div>
                     )}
@@ -607,8 +609,8 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
                   <div className="space-y-1">
                     {savedLocations.length === 0 ? (
                       <div className="text-center py-4">
-                        <div className="text-gray-400 text-xs mb-1">No saved locations</div>
-                        <div className="text-gray-500 text-[10px]">Use the 📍 button to save locations</div>
+                        <div className="text-gray-400 text-xs mb-1">{t("No saved locations")}</div>
+                        <div className="text-gray-500 text-[10px]">{t("Use the 📍 button to save locations")}</div>
                       </div>
                     ) : (
                       savedLocations.map((location) => {
@@ -654,7 +656,7 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
                         const progressPercent = Math.max(0, Math.min(100, (progress / maxCooldown) * 100));
 
                         const formatTimeRemaining = (hours: number) => {
-                          if (hours <= 0) return "Ready";
+                          if (hours <= 0) return t("Ready");
                           const totalMinutes = Math.floor(hours * 60);
                           const h = Math.floor(totalMinutes / 60);
                           const m = totalMinutes % 60;
@@ -669,7 +671,7 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
                         const fullUrl = `${window.location.origin}${cleanUrl}`;
 
                         return isRemoteUniverse ? (
-                          <div key={location.id} className="block bg-red-500/10 rounded p-1.5 border border-red-500/30 opacity-60 cursor-not-allowed" title="Cannot travel to saved locations from remote universes - return to local universe first">
+                          <div key={location.id} className="block bg-red-500/10 rounded p-1.5 border border-red-500/30 opacity-60 cursor-not-allowed" title={t("Cannot travel to saved locations from remote universes - return to local universe first")}>
                             <div className="flex items-center justify-between mb-1">
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center space-x-1">
@@ -679,7 +681,7 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
                                     {location.type === "planet" && "🪐"}
                                   </div>
                                   <div className="text-red-300 text-[10px] font-medium truncate">{formatLocationName(location.name)}</div>
-                                  <div className="text-red-400 text-[8px] shrink-0">REMOTE</div>
+                                  <div className="text-red-400 text-[8px] shrink-0">{t("REMOTE")}</div>
                                 </div>
                               </div>
                               <button
@@ -700,11 +702,11 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
                               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L5.636 5.636" />
                               </svg>
-                              Navigation disabled in remote universe
+                              {t("Navigation disabled in remote universe")}
                             </div>
                           </div>
                         ) : (
-                          <a key={location.id} href={fullUrl} className="block bg-white/5 hover:bg-white/10 rounded p-1.5 border border-white/10 hover:border-white/20 transition-all duration-200 hover:text-blue-300" title={`Navigate to ${formatLocationName(location.name)}`}>
+                          <a key={location.id} href={fullUrl} className="block bg-white/5 hover:bg-white/10 rounded p-1.5 border border-white/10 hover:border-white/20 transition-all duration-200 hover:text-blue-300" title={t("Navigate to %@", formatLocationName(location.name))}>
                             <div className="flex items-center justify-between mb-1">
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center space-x-1">
@@ -718,9 +720,9 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
                                     {(() => {
                                       try {
                                         const date = new Date(location.timestamp);
-                                        return isNaN(date.getTime()) ? "N/A" : date.toLocaleDateString();
+                                        return isNaN(date.getTime()) ? t("N/A") : date.toLocaleDateString();
                                       } catch (e) {
-                                        return "N/A";
+                                        return t("N/A");
                                       }
                                     })()}
                                   </div>
@@ -745,7 +747,7 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
                             {!canCollect && timeRemaining > 0 && (
                               <div className="mt-1">
                                 <div className="flex items-center justify-between mb-0.5">
-                                  <span className="text-[8px] text-gray-400">Manual mining cooldown</span>
+                                  <span className="text-[8px] text-gray-400">{t("Manual mining cooldown")}</span>
                                   <span className="text-[8px] text-orange-400">{formatTimeRemaining(timeRemaining)}</span>
                                 </div>
                                 <div className="w-full bg-gray-800/50 rounded-full h-1 overflow-hidden">
@@ -757,7 +759,7 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
                             {canCollect && locationId && (
                               <div className="mt-1">
                                 <div className="flex items-center justify-between">
-                                  <span className="text-[8px] text-green-400">✓ Ready to mine</span>
+                                  <span className="text-[8px] text-green-400">✓ {t("Ready to mine")}</span>
                                 </div>
                               </div>
                             )}
@@ -781,9 +783,9 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
                     <svg xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24">
                       <path fill="currentColor" fillRule="evenodd" d="M3.5 8V6.5l4-3l3 1.5l4-3l6 4.5V8zm-.476 8.124L1.184 9.5h21.632l-1.84 6.624a4.5 4.5 0 0 0-7.364 4.376h-3.224q.111-.483.112-1a4.5 4.5 0 0 0-7.476-3.376M6 22.5a3 3 0 1 0 0-6a3 3 0 0 0 0 6m12 0a3 3 0 1 0 0-6a3 3 0 0 0 0 6" clipRule="evenodd"></path>
                     </svg>
-                    Mass Collection
+                    {t("Mass Collection")}
                   </h3>
-                  <button onClick={closeCollectionPopup} className="text-gray-400 hover:text-white transition-colors duration-200">
+                  <button onClick={closeCollectionPopup} className="text-gray-400 hover:text-white transition-colors duration-200" aria-label={t("Close")}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -792,39 +794,39 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
               </div>
 
               <div className="p-4">
-                <div className="text-sm text-gray-300 mb-4">Collect resources from all your saved mining locations at once.</div>
+                <div className="text-sm text-gray-300 mb-4">{t("Collect resources from all your saved mining locations at once.")}</div>
 
                 <div className="bg-white/5 rounded-lg p-3 mb-4">
-                  <div className="text-xs text-gray-400 mb-2">Available to collect:</div>
+                  <div className="text-xs text-gray-400 mb-2">{t("Available to collect:")}</div>
                   <div className="grid grid-cols-3 gap-2 text-xs">
                     <div className="text-center">
                       <div className={`font-bold flex items-center justify-center gap-1 ${passiveGeneration.antimatter > 0 ? "text-purple-300" : "text-gray-500"}`}>
-                        <AntimatterIcon size={12} color="currentColor" />+{Math.round(passiveGeneration.antimatter)}
+                        <AntimatterIcon size={12} color="currentColor" />+{amount(Math.round(passiveGeneration.antimatter))}
                       </div>
-                      <div className="text-gray-500">Antimatter</div>
+                      <div className="text-gray-500">{t("Antimatter")}</div>
                     </div>
                     <div className="text-center">
                       <div className={`font-bold flex items-center justify-center gap-1 ${passiveGeneration.element115 > 0 ? "text-cyan-300" : "text-gray-500"}`}>
-                        <Element115Icon size={12} color="currentColor" />+{Math.round(passiveGeneration.element115)}
+                        <Element115Icon size={12} color="currentColor" />+{amount(Math.round(passiveGeneration.element115))}
                       </div>
-                      <div className="text-gray-500">Element 115</div>
+                      <div className="text-gray-500">{t("Element 115")}</div>
                     </div>
                     <div className="text-center">
                       <div className={`font-bold flex items-center justify-center gap-1 ${passiveGeneration.deuterium > 0 ? "text-orange-300" : "text-gray-500"}`}>
-                        <DeuteriumIcon size={12} color="currentColor" />+{Math.round(passiveGeneration.deuterium)}
+                        <DeuteriumIcon size={12} color="currentColor" />+{amount(Math.round(passiveGeneration.deuterium))}
                       </div>
-                      <div className="text-gray-500">Deuterium</div>
+                      <div className="text-gray-500">{t("Deuterium")}</div>
                     </div>
                   </div>
                 </div>
 
                 <div className="text-xs text-gray-500 mb-4">
-                  🌟 Sources: {passiveGeneration.sources.planets} Planets, {passiveGeneration.sources.systems} Systems
+                  🌟 {t("Sources: %@", t("%@ and %@", t("%lld planets", passiveGeneration.sources.planets), t("%lld star systems", passiveGeneration.sources.systems)))}
                 </div>
 
                 <div className="flex gap-3">
                   <button onClick={closeCollectionPopup} className="flex-1 px-4 py-2 rounded-lg text-sm font-medium bg-gray-700/50 text-gray-300 hover:bg-gray-700/70 border border-gray-600/50 transition-all duration-200">
-                    Cancel
+                    {t("Cancel")}
                   </button>
                   <button
                     onClick={() => {
@@ -851,7 +853,7 @@ const SpaceshipPanel: React.FC<SpaceshipPanelProps> = ({ currentLocation }) => {
                     }}
                     className="flex-1 px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-purple-600/30 to-blue-600/30 hover:from-purple-600/40 hover:to-blue-600/40 text-purple-300 border border-purple-500/50 hover:border-purple-400/70 transition-all duration-200"
                   >
-                    🚀 Collect All
+                    🚀 {t("Collect All")}
                   </button>
                 </div>
               </div>

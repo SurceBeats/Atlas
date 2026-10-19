@@ -5,10 +5,25 @@
 // the tonemap pass), pulsars sweeping their beams, and the relativistic jets of a
 // quasar core. Sizes are exaggerated, as everything else in the explorer, so they can
 // be found and visited; every object also carries a small beacon visible from afar.
+//
+// A Singularity Void has none of them: it is the universe before its Bit Bang, and at
+// its heart is the primordial torus (core/torus), as the creation shows it before time,
+// inside a lattice of cubes like the universe grid's. It is in superposition: the same
+// torus, in step, in every cell around it.
 
 import * as THREE from "three";
 import type { PointOfInterest } from "./GalaxyModel.ts";
 import { hashString, SeededRng } from "../core/hash.ts";
+import { primordial, RING, rng, TUBE, torusGeometry, torusMaterial } from "../core/torus.ts";
+
+// The primordial torus in the explorer: light years per unit of the creation's torus, and
+// the side of each cube of its lattice (3 × 3 × 3 cells, it at the centre of the middle one)
+const TORUS_SCALE = 2;
+const TORUS_CELL = 16;
+// The tension it holds before time, as the creation has it (it never saturates here)
+const TORUS_TENSION = 0.6;
+// The copies in the cells around it are fainter: what could be, not what is
+const ECHO_ALPHA = 0.22;
 
 const DISK_VERTEX = /* glsl */ `
   varying vec2 vLocal;
@@ -110,7 +125,7 @@ interface Exotic {
   object: THREE.Group;
   horizon: number; // ly, 0 for objects that do not lens
   approach: number; // ly, good distance to look at it from
-  update: (time: number, toCamera: THREE.Vector3) => void;
+  update: (time: number, toCamera: THREE.Vector3, view: { pixels: number; exposure: number }) => void;
 }
 
 function beacon(color: THREE.Color, size: number, intensity: number) {
@@ -185,13 +200,14 @@ export class ExoticLayer {
       if (poi.kind === "blackhole") this.items.push(this.blackHole(poi, rng, galaxyType, quasar));
       else if (poi.kind === "pulsar") this.items.push(this.pulsar(poi, rng));
       else if (poi.kind === "quasar") this.items.push(this.quasar(poi, galaxyRadius));
+      else if (poi.kind === "torus") this.items.push(this.torus(poi));
     }
     for (const item of this.items) this.root.add(item.object);
   }
 
   private blackHole(poi: PointOfInterest, rng: SeededRng, galaxyType: string, quasar: boolean): Exotic {
     const central = poi.id === "smbh";
-    const horizon = central ? (galaxyType === "Void" ? 0.4 : 0.02) : 0.0006;
+    const horizon = central ? 0.02 : 0.0006;
     const group = new THREE.Group();
     const accretion = disk(horizon * 2.6, horizon * 14, central ? (quasar ? 4 : 2) : 1.3);
     accretion.rotation.copy(randomTilt(rng));
@@ -278,11 +294,107 @@ export class ExoticLayer {
     };
   }
 
+  // The primordial torus, before time, and its copies in the 26 cells around it: one
+  // material for all the copies, so they move as one
+  private torus(poi: PointOfInterest): Exotic {
+    const group = new THREE.Group();
+    const small = Math.min(window.innerWidth, window.innerHeight) < 700;
+    const violet = new THREE.Color(0.58, 0.46, 1.0);
+    const rnd = rng(hashString(poi.id + poi.name) || 1);
+    const torusGroup = new THREE.Group();
+    torusGroup.scale.setScalar(TORUS_SCALE);
+    // Tilted a little, so the ring reads as a ring from the arrival's point of view
+    torusGroup.rotation.set(0.35, 0, 0.18);
+    const main = torusMaterial(violet);
+    const echo = torusMaterial(violet.clone());
+    // Drawn over the deep sky like every other exotic
+    main.depthTest = echo.depthTest = false;
+    const center = new THREE.Points(torusGeometry(primordial(small ? 14000 : 24000, rnd)), main);
+    center.frustumCulled = false;
+    torusGroup.add(center);
+    const echoGeometry = torusGeometry(primordial(small ? 2500 : 5000, rnd));
+    const step = TORUS_CELL / TORUS_SCALE;
+    for (let x = -1; x <= 1; x++)
+      for (let y = -1; y <= 1; y++)
+        for (let z = -1; z <= 1; z++) {
+          if (x === 0 && y === 0 && z === 0) continue;
+          const copy = new THREE.Points(echoGeometry, echo);
+          copy.position.set(x * step, y * step, z * step);
+          copy.frustumCulled = false;
+          torusGroup.add(copy);
+        }
+    group.add(torusGroup);
+
+    // The cubes: the lattice of the 3 × 3 × 3 cells, and the torus's own cell brighter
+    const half = TORUS_CELL * 1.5;
+    const ticks = [-1.5, -0.5, 0.5, 1.5].map((t) => t * TORUS_CELL);
+    const points: number[] = [];
+    for (let axis = 0; axis < 3; axis++) {
+      const [u, v] = [(axis + 1) % 3, (axis + 2) % 3];
+      for (const a of ticks)
+        for (const b of ticks) {
+          const p0 = [0, 0, 0];
+          const p1 = [0, 0, 0];
+          p0[axis] = -half;
+          p1[axis] = half;
+          p0[u] = p1[u] = a;
+          p0[v] = p1[v] = b;
+          points.push(...p0, ...p1);
+        }
+    }
+    const lineMaterial = (color: number) => new THREE.LineBasicMaterial({ color, transparent: true, blending: THREE.AdditiveBlending, depthTest: false, depthWrite: false, toneMapped: false });
+    const latticeGeometry = new THREE.BufferGeometry();
+    latticeGeometry.setAttribute("position", new THREE.Float32BufferAttribute(points, 3));
+    const lattice = new THREE.LineSegments(latticeGeometry, lineMaterial(0x4a7fd0));
+    const cell = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(TORUS_CELL, TORUS_CELL, TORUS_CELL)), lineMaterial(0x7fd8ff));
+    for (const lines of [lattice, cell]) {
+      lines.frustumCulled = false;
+      group.add(lines);
+    }
+
+    const mark = beacon(new THREE.Color(0.75, 0.65, 1.0), 5, 1.4);
+    group.add(mark);
+
+    let flow = 0;
+    let last: number | null = null;
+    // Big enough to see it among its copies, close enough to see its loops turn
+    const extent = (RING + TUBE) * TORUS_SCALE;
+    return {
+      poi,
+      object: group,
+      horizon: 0,
+      approach: Math.max(extent * 9, TORUS_CELL * 3.4),
+      update: (time, _toCamera, view) => {
+        const dt = last === null ? 0 : Math.min(0.1, Math.max(0, time - last));
+        last = time;
+        // Before time the loops run at the creation's pace for this tension
+        flow += dt * (0.55 + 2.4 * TORUS_TENSION * TORUS_TENSION);
+        // The same on-screen brightness whatever the eye has adapted to, as the grid does
+        const level = 1 / Math.max(view.exposure, 1e-3);
+        for (const [material, alpha] of [
+          [main, 1],
+          [echo, ECHO_ALPHA],
+        ] as const) {
+          const u = material.uniforms;
+          u.uFlow.value = flow;
+          u.uTime.value = time;
+          u.uTension.value = TORUS_TENSION;
+          u.uAlpha.value = Math.min(4, alpha * level);
+          u.uPixels.value = view.pixels * TORUS_SCALE;
+        }
+        (lattice.material as THREE.LineBasicMaterial).opacity = Math.min(1, 0.22 * level);
+        (cell.material as THREE.LineBasicMaterial).opacity = Math.min(1, 0.45 * level);
+      },
+    };
+  }
+
   approachDistance(poi: PointOfInterest): number | null {
     return this.items.find((i) => i.poi.id === poi.id)?.approach ?? null;
   }
 
-  update(time: number, cameraWorld: THREE.Vector3, pixelRatio: number) {
+  // `viewportHeight` in CSS pixels; `exposure`: the deep sky exposure (eye adaptation)
+  update(time: number, cameraWorld: THREE.Vector3, pixelRatio: number, viewportHeight = 900, exposure = 1) {
+    const view = { pixels: viewportHeight * pixelRatio, exposure };
     for (const item of this.items) {
       const [x, y, z] = item.poi.position;
       item.object.position.set(x - cameraWorld.x, y - cameraWorld.y, z - cameraWorld.z);
@@ -293,7 +405,7 @@ export class ExoticLayer {
       if (detailed) structure.forEach((child) => (child.visible = true));
       this.toCamera.copy(item.object.position).negate().normalize();
       item.object.updateMatrixWorld();
-      item.update(time, this.toCamera);
+      item.update(time, this.toCamera, view);
       if (!detailed) structure.forEach((child) => (child.visible = false));
       item.object.traverse((o) => {
         const material = (o as THREE.Points).material as THREE.ShaderMaterial | undefined;

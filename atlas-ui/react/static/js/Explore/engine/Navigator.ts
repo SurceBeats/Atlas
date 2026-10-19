@@ -210,6 +210,14 @@ export class Navigator {
     };
     on(dom, "pointerup", release);
     on(dom, "pointercancel", release);
+    // The canvas lost the pointer without an up (the browser took the gesture over, the
+    // page changed under the finger…): forget it, or a later single finger would pinch
+    // against a ghost
+    on(dom, "lostpointercapture", (e) => this.forgetPointer(e.pointerId));
+    on(window as any, "blur", () => this.forgetPointer(null));
+    const onHidden = () => document.hidden && this.forgetPointer(null);
+    document.addEventListener("visibilitychange", onHidden);
+    this.disposers.push(() => document.removeEventListener("visibilitychange", onHidden));
     on(
       dom,
       "wheel",
@@ -258,10 +266,21 @@ export class Navigator {
     });
   }
 
+  // A pointer that will send nothing more (null: all of them), without it counting as a click
+  private forgetPointer(id: number | null) {
+    if (id === null) this.pointers.clear();
+    else this.pointers.delete(id);
+    if (this.pointers.size < 2) this.lastPinch = 0;
+    if (this.pointers.size === 0) this.downAt = null;
+  }
+
   private beginPointer(e: PointerEvent) {
     const dom = this.dom;
     if (!dom) return;
     this.lastInputAt = performance.now();
+    // The first finger of a touch is the only one on the screen: anything still tracked
+    // from an earlier gesture is a ghost whose up never arrived
+    if (e.pointerType === "touch" && e.isPrimary) this.forgetPointer(null);
     try {
       dom.setPointerCapture(e.pointerId);
     } catch {

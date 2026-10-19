@@ -5,48 +5,71 @@
 // place, and the research papers as the last section.
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { FAQ_PAPERS, FAQ_SECTIONS, FAQ_STATS } from "./faqData.ts";
+import { FAQ_ENGLISH, loadFaq, type FaqData } from "./faqData.ts";
 import { Modal, Panel } from "./kit.tsx";
+import { currentLanguage, t } from "../../i18n/i18n.ts";
 
 const PAPERS_ID = "research-papers";
-const PAPERS_TITLE = "Research papers";
 const THANKS_ID = "thank-you";
-const THANKS_TITLE = "Thank you";
+
+type IndexEntry = { id: string; title: string; count: number | null };
+
+// The title on a phone: the language's own short word for it when it is short (FAQ,
+// よくある質問, 常见问题…), "F.A.Q." when it is not ("Preguntas frecuentes" leaves the
+// search no room)
+const SHORT_TITLE = () => {
+  const own = t("F.A.Q.");
+  return own.length <= 10 ? own : "F.A.Q.";
+};
 
 // Every entry of the archive's index: the F.A.Q. sections, the papers, and the thanks
-const INDEX = [
-  ...FAQ_SECTIONS.map((s) => ({ id: s.id, title: s.title, count: s.questions.length as number | null })),
-  { id: PAPERS_ID, title: PAPERS_TITLE, count: FAQ_PAPERS.length as number | null },
-  { id: THANKS_ID, title: THANKS_TITLE, count: null as number | null },
+const indexOf = (faq: FaqData): IndexEntry[] => [
+  ...faq.sections.map((s) => ({ id: s.id, title: s.title, count: s.questions.length })),
+  { id: PAPERS_ID, title: t("Research papers"), count: faq.papers.length },
+  { id: THANKS_ID, title: t("Thank you"), count: null },
 ];
+
+// English at once; any other language as soon as its archive has loaded
+function useFaq(): FaqData | null {
+  const [faq, setFaq] = useState<FaqData | null>(() => (currentLanguage() === "en" ? FAQ_ENGLISH : null));
+  useEffect(() => {
+    if (faq) return;
+    let alive = true;
+    loadFaq().then((data) => alive && setFaq(data));
+    return () => {
+      alive = false;
+    };
+  }, []);
+  return faq;
+}
 
 function Thanks() {
   return (
     <div className="mb-5 max-w-2xl">
-      <div className="text-[11px] uppercase tracking-[0.25em] text-gray-500 mb-3">{THANKS_TITLE}</div>
+      <div className="text-[11px] uppercase tracking-[0.25em] text-gray-500 mb-3">{t("Thank you")}</div>
       <p className="text-sm text-gray-300 leading-relaxed">
-        The Atlas is the work of a great many hours: nights and weekends spent on noise functions, orbits and shaders, on rewriting what was already working because it could be better, and on chasing a universe that would feel real. None of it would exist without the people around it.
+        {t("The Atlas is the work of a great many hours: nights and weekends spent on noise functions, orbits and shaders, on rewriting what was already working because it could be better, and on chasing a universe that would feel real. None of it would exist without the people around it.")}
       </p>
       <div className="mt-5 space-y-3">
         <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
-          <div className="text-sm text-white">To my family</div>
-          <p className="text-sm text-gray-400 leading-relaxed mt-1">For being where it all began, and a living legacy. Thank you for making me who I am today.</p>
+          <div className="text-sm text-white">{t("To my family")}</div>
+          <p className="text-sm text-gray-400 leading-relaxed mt-1">{t("For being where it all began, and a living legacy. Thank you for making me who I am today.")}</p>
         </div>
         <div className="rounded-lg border border-rose-300/20 bg-rose-300/[0.04] p-4">
-          <div className="text-sm text-white">To my wife, María</div>
-          <p className="text-sm text-gray-400 leading-relaxed mt-1">For believing in this from the very first star, even when the sheer complexity of it scared her, or when she worried that taking it too far might get me into trouble. And for every hour this universe borrowed from ours.</p>
+          <div className="text-sm text-white">{t("To my wife, %@", "María")}</div>
+          <p className="text-sm text-gray-400 leading-relaxed mt-1">{t("For believing in this from the very first star, even when the sheer complexity of it scared her, or when she worried that taking it too far might get me into trouble. And for every hour this universe borrowed from ours.")}</p>
         </div>
         <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
-          <div className="text-sm text-white">To my brother, Néstor</div>
-          <p className="text-sm text-gray-400 leading-relaxed mt-1">For the ideas, the tests and the honest opinions along the way, and for ignoring me whenever he is not busy being the CTO of HomeDock OS.</p>
+          <div className="text-sm text-white">{t("To my brother, %@", "Néstor")}</div>
+          <p className="text-sm text-gray-400 leading-relaxed mt-1">{t("For the ideas, the tests and the honest opinions along the way, and for ignoring me whenever he is not busy being the CTO of HomeDock OS.")}</p>
         </div>
         <div className="rounded-lg border border-cyan-300/15 bg-cyan-300/[0.03] p-4">
-          <div className="text-sm text-white">To SpaceX and PLD Space</div>
-          <p className="text-sm text-gray-400 leading-relaxed mt-1">For the inspiration: for reminding us, launch after launch, that space is not just something to imagine. Space is love, and we all share the same feeling when we look up. The ships of The Atlas carry their names because they earned it.</p>
+          <div className="text-sm text-white">{t("To SpaceX and PLD Space")}</div>
+          <p className="text-sm text-gray-400 leading-relaxed mt-1">{t("For the inspiration: for reminding us, launch after launch, that space is not just something to imagine. Space is love, and we all share the same feeling when we look up. The ships of The Atlas carry their names because they earned it.")}</p>
         </div>
         <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
-          <div className="text-sm text-white">And to you</div>
-          <p className="text-sm text-gray-400 leading-relaxed mt-1">To everyone who shares this work, or simply takes a moment to look at it. A universe is only worth making if someone comes to explore it. Thank you for being here.</p>
+          <div className="text-sm text-white">{t("And to you")}</div>
+          <p className="text-sm text-gray-400 leading-relaxed mt-1">{t("To everyone who shares this work, or simply takes a moment to look at it. A universe is only worth making if someone comes to explore it. Thank you for being here.")}</p>
         </div>
       </div>
       <p className="mt-5 text-xs text-gray-500">
@@ -60,7 +83,7 @@ function Thanks() {
 }
 
 // The section picker for small screens: a button that unfolds the index under it
-function SectionPicker({ value, onChange }: { value: string; onChange: (id: string) => void }) {
+function SectionPicker({ index, value, onChange }: { index: IndexEntry[]; value: string; onChange: (id: string) => void }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -71,12 +94,12 @@ function SectionPicker({ value, onChange }: { value: string; onChange: (id: stri
     document.addEventListener("pointerdown", close, true);
     return () => document.removeEventListener("pointerdown", close, true);
   }, [open]);
-  const current = INDEX.find((entry) => entry.id === value) ?? INDEX[0];
+  const current = index.find((entry) => entry.id === value) ?? index[0];
   return (
     <div ref={rootRef} className="md:hidden relative mb-3">
       <button onClick={() => setOpen(!open)} aria-expanded={open} className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg border text-left transition-colors ${open ? "border-cyan-400/50 bg-cyan-400/10" : "border-white/10 bg-white/5"}`}>
         <span className="min-w-0">
-          <span className="block text-[10px] uppercase tracking-[0.25em] text-gray-500">Section</span>
+          <span className="block text-[10px] uppercase tracking-[0.25em] text-gray-500">{t("Section")}</span>
           <span className="block text-sm text-gray-100 truncate">{current.title}</span>
         </span>
         <svg width={16} height={16} viewBox="0 0 24 24" className={`shrink-0 text-gray-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
@@ -88,7 +111,7 @@ function SectionPicker({ value, onChange }: { value: string; onChange: (id: stri
         style={{ opacity: open ? 1 : 0, transform: open ? "none" : "translateY(-6px) scale(0.98)", transformOrigin: "top", pointerEvents: open ? "auto" : "none", transition: "opacity 160ms ease, transform 220ms cubic-bezier(0.16, 1, 0.3, 1)" }}
       >
         <div className="max-h-[50dvh] overflow-y-auto overscroll-contain py-1">
-          {INDEX.map((entry) => {
+          {index.map((entry) => {
             const active = entry.id === value;
             return (
               <button
@@ -110,13 +133,13 @@ function SectionPicker({ value, onChange }: { value: string; onChange: (id: stri
   );
 }
 
-function Papers() {
+function Papers({ papers }: { papers: FaqData["papers"] }) {
   return (
     <div className="mb-5">
-      <div className="text-[11px] uppercase tracking-[0.25em] text-gray-500 mb-2">{PAPERS_TITLE}</div>
-      <p className="text-sm text-gray-400 mb-3">The ideas behind The Atlas, written up as papers. Open access, on Zenodo.</p>
+      <div className="text-[11px] uppercase tracking-[0.25em] text-gray-500 mb-2">{t("Research papers")}</div>
+      <p className="text-sm text-gray-400 mb-3">{t("The ideas behind The Atlas, written up as papers. Open access, on Zenodo.")}</p>
       <div className="grid sm:grid-cols-2 gap-2">
-        {FAQ_PAPERS.map((paper) => (
+        {papers.map((paper) => (
           <a key={paper.href} href={paper.href} target="_blank" rel="noopener noreferrer" className="group flex items-start gap-3 rounded-lg border border-white/10 bg-white/[0.03] hover:bg-white/[0.07] hover:border-cyan-400/30 p-3 transition-colors">
             <svg width={26} height={26} viewBox="0 0 24 24" className="shrink-0 text-cyan-300/80 mt-0.5" fill="none" stroke="currentColor" strokeWidth={1.4} strokeLinejoin="round">
               <path d="M6 3h8l4 4v14H6z" />
@@ -124,8 +147,8 @@ function Papers() {
             </svg>
             <span className="min-w-0">
               <span className="block text-sm text-gray-100 group-hover:text-white">{paper.title}</span>
-              <span className="block text-[11px] text-gray-500 mt-0.5">Zenodo · open access</span>
-              <span className="block text-[11px] text-cyan-300/80 mt-1.5 group-hover:text-cyan-200">Read the paper →</span>
+              <span className="block text-[11px] text-gray-500 mt-0.5">{t("Zenodo · open access")}</span>
+              <span className="block text-[11px] text-cyan-300/80 mt-1.5 group-hover:text-cyan-200">{t("Read the paper →")}</span>
             </span>
           </a>
         ))}
@@ -148,16 +171,19 @@ function highlight(text: string, query: string): React.ReactNode {
 }
 
 export function FaqPanel({ onClose }: { onClose: () => void }) {
-  const [sectionId, setSectionId] = useState(FAQ_SECTIONS[0].id);
-  const [open, setOpen] = useState<string | null>(`${FAQ_SECTIONS[0].id}:0`);
+  const faq = useFaq();
+  const sections = faq?.sections ?? [];
+  const index = useMemo(() => (faq ? indexOf(faq) : []), [faq]);
+  const [sectionId, setSectionId] = useState(FAQ_ENGLISH.sections[0].id);
+  const [open, setOpen] = useState<string | null>(`${FAQ_ENGLISH.sections[0].id}:0`);
   const [query, setQuery] = useState("");
   const q = query.trim().toLowerCase();
 
   // Searching looks through every section at once
   const visible = useMemo(() => {
-    if (!q) return FAQ_SECTIONS.filter((s) => s.id === sectionId);
-    return FAQ_SECTIONS.map((s) => ({ ...s, questions: s.questions.filter((item) => item.question.toLowerCase().includes(q) || item.answer.toLowerCase().includes(q)) })).filter((s) => s.questions.length > 0);
-  }, [q, sectionId]);
+    if (!q) return sections.filter((s) => s.id === sectionId);
+    return sections.map((s) => ({ ...s, questions: s.questions.filter((item) => item.question.toLowerCase().includes(q) || item.answer.toLowerCase().includes(q)) })).filter((s) => s.questions.length > 0);
+  }, [q, sectionId, sections]);
   const matches = visible.reduce((n, s) => n + s.questions.length, 0);
 
   const choose = (id: string) => {
@@ -170,23 +196,28 @@ export function FaqPanel({ onClose }: { onClose: () => void }) {
     <Modal onClose={onClose}>
       <Panel className="w-[min(960px,calc(100vw-2rem))] h-[min(680px,calc(100vh-2rem))] flex flex-col overflow-hidden select-text">
         <div className="flex items-center justify-between gap-4 px-5 py-3 border-b border-white/10">
-          <div className="shrink-0">
-            <div className="hidden sm:block text-[10px] uppercase tracking-[0.3em] text-cyan-300/80">Universe archive</div>
-            <div className="text-lg text-white font-light tracking-wide whitespace-nowrap">The Atlas F.A.Q.</div>
+          {/* The search always keeps its room: on a phone the title is the short one, and on
+              any screen a long translation gives way (truncated) before the field does */}
+          <div className="min-w-0 shrink">
+            <div className="hidden sm:block text-[10px] uppercase tracking-[0.3em] text-cyan-300/80 truncate">{t("Universe archive")}</div>
+            <div className="text-lg text-white font-light tracking-wide whitespace-nowrap truncate">
+              <span className="sm:hidden">{SHORT_TITLE()}</span>
+              <span className="hidden sm:inline">{t("The Atlas F.A.Q.")}</span>
+            </div>
           </div>
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search…"
-            className="flex-1 min-w-0 max-w-xs bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-gray-100 placeholder-gray-500 outline-none focus:border-cyan-400/50"
+            placeholder={t("Search…")}
+            className="flex-1 min-w-[7rem] max-w-xs bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-gray-100 placeholder-gray-500 outline-none focus:border-cyan-400/50"
           />
-          <button onClick={onClose} className="text-gray-400 hover:text-white text-lg leading-none px-1" title="Close">
+          <button onClick={onClose} className="text-gray-400 hover:text-white text-lg leading-none px-1" title={t("Close")}>
             ✕
           </button>
         </div>
 
         <div className="hidden sm:grid grid-cols-6 border-b border-white/10">
-          {FAQ_STATS.map((stat) => (
+          {(faq?.stats ?? []).map((stat) => (
             <div key={stat.label} className="px-3 py-2 text-center border-r border-white/5 last:border-r-0" title={stat.description}>
               <div className="text-base text-cyan-200 font-mono">{stat.value}</div>
               <div className="text-[10px] uppercase tracking-wider text-gray-500">{stat.label}</div>
@@ -196,7 +227,7 @@ export function FaqPanel({ onClose }: { onClose: () => void }) {
 
         <div className="flex flex-1 min-h-0">
           <nav className="hidden md:block w-60 shrink-0 border-r border-white/10 overflow-y-auto py-2">
-            {INDEX.map((entry) => {
+            {index.map((entry) => {
               const active = !q && entry.id === sectionId;
               return (
                 <button
@@ -212,9 +243,9 @@ export function FaqPanel({ onClose }: { onClose: () => void }) {
           </nav>
 
           <div className="flex-1 overflow-y-auto px-5 py-4">
-            <SectionPicker value={sectionId} onChange={choose} />
-            {q && <div className="text-xs text-gray-500 mb-3">{matches === 0 ? "Nothing in the archive matches that." : `${matches} answer${matches === 1 ? "" : "s"} found`}</div>}
-            {!q && sectionId === PAPERS_ID && <Papers />}
+            {faq && <SectionPicker index={index} value={sectionId} onChange={choose} />}
+            {q && <div className="text-xs text-gray-500 mb-3">{matches === 0 ? t("Nothing in the archive matches that.") : t("%lld answers found", matches)}</div>}
+            {!q && faq && sectionId === PAPERS_ID && <Papers papers={faq.papers} />}
             {!q && sectionId === THANKS_ID && <Thanks />}
             {visible.map((section) => (
               <div key={section.id} className="mb-5">

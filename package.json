@@ -1,6 +1,6 @@
 {
   "name": "atlas",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "<p align=\"center\"><img style=\"border-radius: 30px; box-shadow: 0px 5px 5px #7b7b7b;\" src=\"https://github.com/SurceBeats/Atlas/blob/main/public/atlas-logo.jpg\" width=\"400\"></p>",
   "main": "index.js",
   "scripts": {

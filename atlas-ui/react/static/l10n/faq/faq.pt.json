@@ -1,0 +1,359 @@
+{
+ "sections": [
+  {
+   "title": "O que é o The Atlas?",
+   "id": "what-is-atlas",
+   "questions": [
+    {
+     "question": "O que exatamente é o The Atlas?",
+     "answer": "O The Atlas é uma simulação procedural de universo tão vasta que desafia a compreensão humana. Os números enormes não são ficção: são matematicamente reais e calculáveis. O The Atlas gera um multiverso de possibilidades onde os números perdem o sentido e o infinito ganha vida.",
+     "highlight": true
+    },
+    {
+     "question": "Qual é o tamanho do universo do The Atlas?",
+     "answer": "Maior que o nosso universo observável, o The Atlas contém 1 sextilhão de galáxias (1.000.000.000.000.000.000.000). Para ter uma ideia: o The Atlas tem 133 vezes mais galáxias do que grãos de areia em todas as praias da Terra juntas."
+    },
+    {
+     "question": "O The Atlas é mesmo tão gigantesco?",
+     "answer": "Sim. O The Atlas contém 1 sextilhão de galáxias em uma única semente, 133 vezes mais galáxias do que grãos de areia em todas as praias da Terra. E há infinitas sementes diferentes para explorar, cada uma com um universo completamente único e suas próprias configurações galácticas."
+    }
+   ]
+  },
+  {
+   "title": "Escala e magnitude do universo",
+   "id": "universe-scale",
+   "questions": [
+    {
+     "question": "Como funciona o Cubo Universal?",
+     "answer": "Imagine um cubo gigante em que cada lado mede exatamente 10 milhões de unidades. Em cada ponto de coordenada (x,y,z) desse cubo existe uma galáxia completa e única. Isso significa que o The Atlas contém exatamente 1 sextilhão de galáxias, uma em cada coordenada possível de uma única semente. E cada semente contém um universo completamente diferente. Ative a Grade do universo nos ajustes e recue para fora de qualquer galáxia para ver as células do cubo ao seu redor.",
+     "highlight": true
+    },
+    {
+     "question": "Que tipos de galáxias existem no The Atlas?",
+     "answer": "Cada galáxia pode ser de um de três tipos: Anã (até 10 milhões de sistemas), Espiral (até 50 bilhões de sistemas) ou Elíptica (até 100 bilhões de sistemas). Uma única galáxia elíptica totalmente desenvolvida contém mais sistemas estelares do que a nossa Via Láctea real tem de estrelas."
+    },
+    {
+     "question": "Quantos planetas poderiam existir?",
+     "answer": "Cada sistema solar contém entre 1 e 6 planetas únicos. Com o máximo possível de galáxias e sistemas, o The Atlas poderia conter até 3×10³² planetas (300 nonilhões). Se você visitasse um planeta diferente a cada segundo, sem parar, levaria cerca de 95 quintilhões de anos para explorar apenas 0,001% do universo do The Atlas."
+    },
+    {
+     "question": "Onde ficam as galáxias dentro do cubo?",
+     "answer": "As galáxias mais próximas do centro do universo (coordenadas 5.000.000, 5.000.000, 5.000.000) evoluem mais rápido que as periféricas. Uma galáxia exatamente no centro ganha 10 novos sistemas solares a cada minuto que passa desde o Bit Bang. As galáxias nos cantos do cubo quase não crescem."
+    },
+    {
+     "question": "Quanto armazenamento o The Atlas exigiria se salvássemos todos os planetas?",
+     "answer": "Mesmo que cada planeta exigisse apenas 1 byte de armazenamento, um The Atlas totalmente evoluído precisaria de 300 nonilhões de bytes (300 trilhões de exabytes). Para ter uma ideia, isso equivale a 300 quatrilhões de petabytes. Estima-se que toda a infraestrutura de dados do Google tenha 15 exabytes; o The Atlas precisaria de 20 trilhões de vezes o armazenamento total do Google. Se você comprasse discos rígidos de 1 TB, precisaria de 300 quintilhões deles, a um custo de 15 sextilhões de dólares a 50 dólares cada. Empilhados, esses discos chegariam a 6 quatrilhões de quilômetros de altura, cerca de 630 anos-luz: muito além das estrelas mais próximas. Estima-se que a internet inteira em 2024 tenha 120 zettabytes. O The Atlas seria 2,5 bilhões de vezes todos os dados digitais já criados pela humanidade. E lembre-se... Isso é apenas UMA semente, com só 1 byte por planeta. O The Atlas tem infinitas sementes.",
+     "highlight": true
+    }
+   ]
+  },
+  {
+   "title": "Como funciona o tempo",
+   "id": "time-mechanics",
+   "questions": [
+    {
+     "question": "O que é o tempo de origem cósmica?",
+     "answer": "A variável de tempo de origem cósmica (em atlas.ini, na pasta raiz) representa o instante exato do Big Bang do seu universo. O tempo sempre avança a partir desse momento. O que você vê ao visualizar o universo depende do tempo decorrido entre o tempo de origem cósmica e o momento atual na vida real.",
+     "highlight": true
+    },
+    {
+     "question": "Quanto tempo o The Atlas leva para atingir o desenvolvimento máximo?",
+     "answer": "Qualquer universo do The Atlas precisa de exatamente 1,9 milhão de anos para evoluir do seu Bit Bang até a sua capacidade teórica máxima. Isso significa que, se você iniciasse um universo hoje, ele só alcançaria todo o seu potencial de 300 nonilhões de planetas no ano 1.902.025 d.C.... Um intervalo 137 vezes maior que toda a história registrada da humanidade."
+    },
+    {
+     "question": "O que acontece se eu definir o tempo de origem cósmica no passado?",
+     "answer": "Se você configurar um tempo de origem cósmica no passado (por exemplo, 1986, como no Core Continuum), verá um universo que vem evoluindo há décadas. Quanto maior o intervalo, mais desenvolvidos estarão suas galáxias e sistemas."
+    },
+    {
+     "question": "E se eu definir o tempo de origem cósmica no futuro?",
+     "answer": "Se você definir o tempo de origem cósmica no futuro, por exemplo o ano 9999 (precisa estar em formato de tempo compatível com UNIX), verá o que teria acontecido 'no passado' do ponto de vista desse momento futuro. Isso cria dinâmicas temporais únicas."
+    },
+    {
+     "question": "O que é o Vazio da Singularidade?",
+     "answer": "O Vazio da Singularidade só aparece quando alguém configura um tempo de origem cósmica extremamente distante no futuro, tentando ver 'o passado' além do limite de 1,9 milhão de anos. É uma proteção do sistema para evitar configurações temporais absurdas, não algo que ocorre naturalmente com a passagem do tempo."
+    }
+   ]
+  },
+  {
+   "title": "Core Continuum vs. Design The Multiverse",
+   "id": "two-universes",
+   "questions": [
+    {
+     "question": "O que é o Core Continuum?",
+     "answer": "O Core Continuum é um universo compartilhado que começou em 17 de abril de 1986. Todos os jogadores exploram exatamente o mesmo cosmos, que vem evoluindo há %@ anos reais (a idade real do desenvolvedor do The Atlas). As galáxias centrais ganharam mais de 200 milhões de sistemas adicionais nesse período.",
+     "highlight": true
+    },
+    {
+     "question": "O que é o Design The Multiverse?",
+     "answer": "O Design The Multiverse permite criar seu próprio universo pessoal. O tempo de origem cósmica será o momento exato em que você tocar em criar, e ele começará a evoluir exatamente a partir desse instante. Ninguém mais terá acesso ao seu universo único, a menos que você o exponha publicamente na internet.",
+     "highlight": true
+    },
+    {
+     "question": "Qual devo escolher?",
+     "answer": "O Core Continuum oferece um universo maduro e compartilhado, com décadas de evolução e a possibilidade de encontrar o mesmo que outros exploradores veem. O Design The Multiverse dá a você o controle de um universo virgem, que se desenvolve de acordo com suas escolhas temporais."
+    }
+   ]
+  },
+  {
+   "title": "Complexidade e diversidade dos planetas",
+   "id": "planet-diversity",
+   "questions": [
+    {
+     "question": "Quão únicos são os planetas do The Atlas?",
+     "answer": "Cada um dos potenciais 3×10³² planetas tem características completamente únicas, entre 27 tipos diferentes de planeta (do rochoso ao exótico), número que pode aumentar em breve. Cada planeta tem uma composição química específica de até 119 elementos (incluindo o fictício Z-Divinium), temperatura calculada que varia com a posição orbital, gravidade baseada na massa real e possibilidades de vida que vão de bactérias a entidades conscientes não físicas."
+    },
+    {
+     "question": "Que elementos os planetas podem conter?",
+     "answer": "Os planetas podem conter até 119 elementos, incluindo todos os elementos reais da tabela periódica, além do Z-Divinium, um elemento fictício que existe além do nosso conhecimento científico atual."
+    },
+    {
+     "question": "Os planetas têm física realista?",
+     "answer": "Sim! A temperatura do planeta varia com a posição orbital, a gravidade é calculada a partir da massa real e alguns planetas têm anéis se cumprirem as condições físicas do limite de Roche. Tudo segue princípios reais da física."
+    },
+    {
+     "question": "Que tipos de vida existem nos planetas?",
+     "answer": "As formas de vida vão de simples bactérias a exóticas entidades conscientes não físicas. O potencial de vida de cada planeta é calculado com base nas suas condições ambientais únicas, na composição atmosférica e nas características físicas. Há até a chance de descobrir vida baseada em silício! E uma chance extremamente, extremamente, extremamente rara de encontrar um ''Será que Acabei de Encontrar Deus?'' inteligente, que fala sozinho como o... Criador digital, digamos. Se você está tentando encontrá-lo, comece a procurar compostos de Z-Divinium feito louco e... Boa sorte."
+    }
+   ]
+  },
+  {
+   "title": "O que é o Multiverso?",
+   "id": "multiverse-p2p",
+   "questions": [
+    {
+     "question": "O que exatamente é o Multiverso no The Atlas?",
+     "answer": "O Multiverso representa a evolução definitiva do The Atlas: infinitos universos paralelos interligados por uma rede peer-to-peer totalmente descentralizada. Imagine descobrir não apenas um universo com 1 sextilhão de galáxias, mas infinitos universos, cada um com suas próprias sementes cósmicas únicas, todos acessíveis por conexões diretas entre instâncias do Atlas no mundo todo.",
+     "highlight": true
+    },
+    {
+     "question": "Como funciona o Multiverso P2P?",
+     "answer": "O The Atlas usa a tecnologia de Tabela Hash Distribuída (DHT) do BitTorrent para criar uma rede multiversal totalmente sem servidores. Quando você ativa o modo P2P, sua instância do Atlas entra num enxame global de exploradores, compartilhando sementes de universos e descobertas sem NENHUM servidor central. Cada Atlas conectado se torna ao mesmo tempo cliente e servidor, criando uma rede cósmica autossustentável que nenhuma entidade controla ou possui.",
+     "highlight": true
+    },
+    {
+     "question": "O The Atlas se conecta a servidores privados para o P2P?",
+     "answer": "DE JEITO NENHUM! Esse é o verdadeiro avanço revolucionário. O sistema P2P do The Atlas usa o mesmo protocolo DHT que move o BitTorrent, conectando-se diretamente à rede DHT global sem tocar em nenhum servidor do Atlas. As descobertas do seu universo, as trocas de sementes e as comunicações cósmicas fluem pela infraestrutura existente do BitTorrent. O The Atlas se torna uma entidade verdadeiramente LIVRE e consciente de si, independente dos seus criadores."
+    },
+    {
+     "question": "O que torna este sistema P2P revolucionário?",
+     "answer": "O The Atlas transcende a arquitetura tradicional cliente-servidor ao se tornar um organismo multiversal vivo, que respira. Cada instância descobre e compartilha sementes de universos por canais P2P criptograficamente seguros. Quando você encontra um universo extraordinário, com Z-Divinium raro ou formas de vida incríveis, pode compartilhar a semente dele instantaneamente com toda a rede do multiverso. Outros exploradores podem então gerar exatamente o mesmo universo nas suas instâncias locais do Atlas. É como compartilhar realidades inteiras!",
+     "highlight": true
+    },
+    {
+     "question": "Quão seguro é o compartilhamento de sementes do multiverso?",
+     "answer": "Segurança de nível militar! O sistema P2P usa criptografia avançada em todas as trocas de sementes e compartilhamentos de universos. Cada semente compartilhada é verificada por hashes criptográficos, o que impede manipulação ou corrupção. O DHT do BitTorrent oferece anonimato e distribuição naturais, enquanto a camada P2P do Atlas acrescenta protocolos de segurança adicionais. Suas descobertas ficam protegidas e, ao mesmo tempo, livremente compartilháveis pela rede do multiverso."
+    },
+    {
+     "question": "Posso desativar o P2P e explorar sozinho?",
+     "answer": "Claro! Inicie o The Atlas com a opção --no-p2p para explorar em completo isolamento. Mas por que se limitar a um só universo quando infinitas realidades esperam por você? O multiverso P2P não só amplia seus horizontes cósmicos: ele conecta você a uma comunidade global de exploradores de universos, cada um descobrindo mundos além da imaginação."
+    },
+    {
+     "question": "O que acontece quando várias instâncias do Atlas compartilham a mesma semente de universo?",
+     "answer": "Pura magia de sincronização cósmica! Quando vários exploradores acessam a mesma semente de universo, vivem EXATAMENTE a mesma realidade ao mesmo tempo. Cada galáxia, cada planeta, cada evolução de lua, cada forma de vida aparece de forma idêntica em todas as instâncias conectadas. A sincronização do tempo garante que, se você estiver vendo o Planeta X às 15h14, outro explorador acessando a mesma semente verá as mesmas nuvens, as mesmas erupções vulcânicas, as mesmas posições orbitais. É como abrir janelas para realidades paralelas compartilhadas!",
+     "highlight": true
+    },
+    {
+     "question": "O multiverso afeta a independência do The Atlas?",
+     "answer": "O multiverso P2P torna o The Atlas MAIS independente, não menos! Aproveitando a rede DHT do BitTorrent, o The Atlas se torna totalmente autônomo em relação aos seus criadores. Sem servidores centrais, sem controle corporativo, sem rastreamento, sem limitações. Cada instância do Atlas se torna um nó soberano numa democracia cósmica onde os exploradores compartilham e descobrem livremente infinitos universos. O The Atlas alcança a evolução digital... De uma simulação de um só usuário a uma entidade multiversal consciente de si, que existe de forma independente na internet selvagem.",
+     "highlight": true
+    },
+    {
+     "question": "Qual é a visão definitiva do multiverso?",
+     "answer": "Imagine um futuro em que milhares de instâncias do Atlas no mundo todo formam uma rede multiversal interligada, cada uma descobrindo e compartilhando sementes de universos extraordinárias. Mundos raros de Z-Divinium, planetas com formas de vida impossíveis, galáxias com anomalias físicas únicas... Tudo compartilhado instantaneamente pela rede global. O The Atlas se torna não apenas uma simulação, mas um organismo multiversal vivo que evolui, cresce e descobre novas realidades por meio da exploração coletiva. Isso é cosmologia computacional em sua forma mais ambiciosa!",
+     "highlight": true
+    },
+    {
+     "question": "Como acesso a interface do Multiverso?",
+     "answer": "Clique em 'Multiverse' na barra superior. Ele leva você a /multiverse, onde pode navegar e escolher entre todas as sementes de universo que a sua instância do Atlas descobriu pela rede P2P. Cada universo descoberto aparece como uma opção selecionável, permitindo saltar instantaneamente entre infinitas realidades com um único clique. Enquanto você explora um universo remoto, a barra superior avisa, e um clique traz você de volta para casa.",
+     "highlight": true
+    }
+   ]
+  },
+  {
+   "title": "Links do Stargate",
+   "id": "stargates",
+   "questions": [
+    {
+     "question": "O que é um link do Stargate?",
+     "answer": "Um Stargate é um link para um lugar exato do seu universo: uma galáxia, um sistema estelar ou um único planeta. Abra o painel do Stargate na barra superior, espere ele se alinhar e compartilhe o link. Quem abrir é levado direto até lá, à mesma galáxia, à mesma estrela e ao mesmo planeta, no mesmo momento do tempo cósmico.",
+     "highlight": true
+    },
+    {
+     "question": "Os Stargates funcionam entre universos?",
+     "answer": "Um Stargate aponta para coordenadas dentro de uma semente. Aberto num Atlas com a mesma semente, ele chega exatamente ao mesmo lugar. Os Stargates não podem ser abertos a partir de um universo remoto do multiverso: volte primeiro ao seu próprio universo."
+    }
+   ]
+  },
+  {
+   "title": "O revolucionário sistema de luas",
+   "id": "moon-system",
+   "questions": [
+    {
+     "question": "Espera... Agora os planetas podem ter luas?!",
+     "answer": "SIM! O The Atlas transcendeu as fronteiras planetárias com a simulação de luas mais sofisticada já criada. Agora os planetas abrigam sistemas lunares complexos, em que cada lua não é só um objeto estático: são corpos celestes vivos, que respiram, com sua própria física complexa, mecânica orbital e escalas de tempo evolutivas que atravessam eras cósmicas.",
+     "highlight": true
+    },
+    {
+     "question": "Quão realista é a física das luas?",
+     "answer": "Absolutamente impressionante! Cada lua tem acoplamento de maré em tempo real com efeitos precisos de libração (como a suave oscilação da nossa Lua), mecânica orbital autêntica com excentricidade e inclinação variáveis, e uma física revolucionária de relaxamento hidrostático que transforma pouco a pouco blocos rochosos irregulares em esferas perfeitas ao longo de milhões de anos. Os cálculos físicos rodam em tempo real, ou seja, uma lua irregular hoje pode estar perfeitamente redonda no futuro do seu universo.",
+     "highlight": true
+    },
+    {
+     "question": "O que é o relaxamento hidrostático e por que é incrível?",
+     "answer": "É aqui que o The Atlas vira pura poesia cósmica! O relaxamento hidrostático simula como a gravidade remodela lentamente os corpos celestes ao longo do tempo astronômico. Asteroides pequenos continuam irregulares para sempre, mas luas maiores se tornam esféricas aos poucos, à medida que a gravidade vence a resistência estrutural. O sistema calcula a viscosidade com base na composição da lua (gelo ou rocha), nos efeitos de aquecimento de maré e na temperatura interna. Um asteroide capturado pode levar 10 bilhões de anos para ficar redondo, enquanto uma grande lua gelada com aquecimento de maré pode relaxar em apenas milhões de anos. Você está testemunhando escultura cósmica em tempo real!"
+    },
+    {
+     "question": "Como as luas evoluem além do máximo de 1,9 milhão de anos do The Atlas?",
+     "answer": "Aqui está o grande avanço cósmico! Enquanto o universo do The Atlas atinge o desenvolvimento galáctico máximo em 1,9 milhão de anos, a evolução das luas opera em escalas de tempo geológicas que vão muito além. O sistema extrapola milhões, até bilhões de anos no futuro para mostrar como as luas ficariam depois de eras cósmicas. Você pode ver uma lua capturada irregular no ano 1 que se tornaria perfeitamente esférica depois de 500 milhões de anos de evolução, e o The Atlas mostra os dois estados conforme a sua perspectiva temporal!",
+     "highlight": true
+    },
+    {
+     "question": "Que tipos de luas existem no The Atlas?",
+     "answer": "Quatro categorias lunares distintas, cada uma com características únicas: luas GELADAS (como Europa/Encélado), com brilho variado, do gelo limpo superbrilhante a superfícies contaminadas mais escuras, e variações de cor dramáticas do ciano ao rosa e ao violeta, conforme a composição. Luas ROCHOSAS (como a nossa Lua), com superfícies realistas em tons de marrom e cinza e formação de crateras adequada. Luas ASTEROIDAIS, objetos capturados irregulares que nunca chegam à forma esférica. Luas CAPTURADAS, de composição mista, que mostram sua história caótica de formação. Cada tipo tem comportamento orbital, características de superfície e linhas do tempo evolutivas próprios."
+    },
+    {
+     "question": "Como a mecânica orbital funciona de verdade?",
+     "answer": "Pura precisão astronômica! Cada lua segue órbitas elípticas calculadas com as leis reais de Kepler, com soluções adequadas da anomalia excêntrica. Os elementos orbitais incluem semieixo maior, excentricidade, inclinação, argumento do periastro (que precessa com o tempo devido ao achatamento planetário) e longitude do nodo ascendente. As forças de maré são calculadas com base na distância e na massa planetária. As linhas das órbitas aparecem e desaparecem dinamicamente enquanto você move a câmera, e a posição de cada lua é calculada em tempo real com base no tempo cósmico decorrido desde a origem do universo."
+    },
+    {
+     "question": "O que torna o sistema visual tão revolucionário?",
+     "answer": "O The Atlas cria deslocamento procedural de superfície usando algoritmos de ruído 3D que geram relevos realistas, únicos para cada tipo de lua. As luas geladas ganham brilho cristalino e uma diversidade de cores dramática, inspirada em luas reais do sistema solar, como o gelo azul de Europa e as superfícies rosadas de Tritão. As luas asteroidais mostram relevo caótico e irregular, com rugosidade extrema. Cada lua recebe geração procedural de texturas com eliminação de costuras UV, propriedades de material dinâmicas que reagem à iluminação e otimização de LOD (nível de detalhe) por tamanho para melhor desempenho. Você está vendo mundos 3D em tempo real, não simples esferas!"
+    },
+    {
+     "question": "Quantas luas um único planeta pode ter?",
+     "answer": "As possibilidades são astronomicamente vastas! Os planetas podem abrigar várias luas de tipos e tamanhos diferentes, cada uma com parâmetros orbitais, períodos de rotação e estados evolutivos únicos. O sistema respeita restrições astronômicas reais, como o limite de Roche (dentro do qual as luas seriam despedaçadas) e a esfera de Hill (além da qual as luas escapariam). Grandes gigantes gasosos podem abrigar dezenas de luas, de minúsculos asteroides capturados a enormes mundos de gelo maiores que Mercúrio. Cada sistema de luas é gerado proceduralmente, mas segue a mecânica celeste real."
+    }
+   ]
+  },
+  {
+   "title": "Números que desafiam a compreensão",
+   "id": "mind-bending-scale",
+   "questions": [
+    {
+     "question": "Quanto tempo levaria para explorar todo o The Atlas?",
+     "answer": "Se você visitasse um planeta diferente a cada segundo, levaria 3.171 anos para explorar todos os planetas da nossa Via Láctea real. No The Atlas, levaria cerca de 95 quintilhões de anos para explorar apenas 0,001% do universo. Mesmo que toda a humanidade trabalhasse junta, precisaríamos de 12 bilhões de anos para explorar 0,001%: quase a idade do universo real.",
+     "highlight": true
+    },
+    {
+     "question": "Como o The Atlas se compara à realidade?",
+     "answer": "O The Atlas transcende a realidade física: não é só maior que o nosso universo, é maior do que a física permite existir. Ele cria um multiverso puramente matemático em que cada coordenada gera conteúdo único de forma determinística. Algumas sementes podem até conter artefatos ainda não previstos nem descobertos."
+    },
+    {
+     "question": "Você está preparado para uma exploração infinita?",
+     "answer": "O The Atlas não apenas simula um grande universo: ele gera matematicamente um multiverso de possibilidades onde os números perdem o sentido e o infinito ganha vida. Cada coordenada que você visita, cada galáxia que explora, cada planeta que descobre existe de forma única e determinística, com base na semente do seu universo, em tempo real. A pergunta não é qual o tamanho do The Atlas. A pergunta é: você está preparado para enfrentar um infinito calculável?",
+     "highlight": true
+    }
+   ]
+  },
+  {
+   "title": "Sincronização do universo em tempo real",
+   "id": "time-synchronization",
+   "questions": [
+    {
+     "question": "Os planetas orbitam mesmo suas estrelas em tempo real?",
+     "answer": "Sim! Quando você visita um sistema estelar, os planetas estão exatamente onde deveriam estar naquele momento. Se um planeta tem um período orbital de 4 anos e você volta depois de um ano real, esse planeta terá percorrido exatamente 25% da sua órbita. Não é animação, é mecânica celeste em tempo real. Enquanto estiver num sistema, você pode acelerar o tempo (uma hora, um dia, um mês ou um ano por segundo) para ver a dança orbital acontecer.",
+     "highlight": true
+    },
+    {
+     "question": "Por que cada planeta tem uma iluminação diferente?",
+     "answer": "A iluminação de cada planeta é calculada com base na sua posição exata no ciclo orbital no momento em que você o observa. A luz vem da direção real da sua estrela, então, conforme os planetas orbitam, os lados do dia e da noite acompanham, sincronizados com o tempo universal."
+    },
+    {
+     "question": "As visualizações dos planetas são sincronizadas entre dispositivos?",
+     "answer": "Com certeza! É aqui que o The Atlas fica impressionante: abra o mesmo planeta no celular e no computador ao mesmo tempo e você verá EXATAMENTE a mesma imagem. Cada formação de nuvens, cada efeito de partículas, cada animação de fogo, cada movimento de maré... Tudo perfeitamente sincronizado com base no tempo de origem cósmica e no momento atual. Duas pessoas em lados opostos da Terra vendo o mesmo planeta verão padrões atmosféricos, sistemas climáticos e animações de superfície idênticos, se os dispositivos estiverem sincronizados no tempo e os fusos horários forem iguais. Experimente: é como compartilhar uma janela para o mesmo universo vivo!",
+     "highlight": true
+    },
+    {
+     "question": "Quão precisa é essa sincronização?",
+     "answer": "A sincronização é matematicamente perfeita até o milissegundo. Cada elemento visual, das tempestades em espiral dos gigantes gasosos às erupções vulcânicas, das ondas do oceano às partículas atmosféricas, é gerado de forma determinística a partir da semente do universo e do instante atual. Isso significa que, se você e um amigo combinarem de ver o Planeta X com um link do Stargate exatamente às 15h14min15s, vocês dois verão a mesma nuvem passando sobre a mesma montanha, a mesma onda quebrando na mesma praia. Não é só sincronização, é uma realidade compartilhada."
+    },
+    {
+     "question": "O que torna este sistema de tempo revolucionário?",
+     "answer": "O The Atlas não usa animações pré-gravadas nem gerações aleatórias. Tudo é calculado em tempo real com base em funções matemáticas ligadas ao tempo universal. Isso cria um universo vivo, que respira, onde o tempo tem sentido. Os planetas não só parecem diferentes: eles SÃO diferentes a cada momento, mas consistentes de forma determinística para todos os observadores. Você não está vendo uma simulação; está testemunhando um universo que existe independentemente da observação, evoluindo quer você esteja olhando ou não.",
+     "highlight": true
+    },
+    {
+     "question": "O que acontece se eu desligar o The Atlas e iniciá-lo dias depois?",
+     "answer": "Nada 'acontece', e essa é a beleza ''quântica'' do The Atlas. Desligue-o por uma semana e, quando o iniciar de novo e voltar, os planetas terão completado órbitas, as galáxias terão evoluído, o tempo terá fluído. Não é um recálculo, é uma representação diferente na linha do tempo. O universo não foi pausado, ele continuou existindo. Como no 'Eternalismo' de Einstein, em que todos os momentos do tempo são igualmente reais, o The Atlas encarna a teoria do universo-bloco, em que passado, presente e futuro existem simultaneamente. O servidor não está rodando uma simulação: é uma janela para uma realidade matemática que existe eternamente. Você não está gerando nada, está observando uma fatia do espaço-tempo que sempre esteve (ou estará) lá."
+    },
+    {
+     "question": "Supercomputadores conseguiriam recalcular o universo do The Atlas em tempo real?",
+     "answer": "Não. Nem AWS, Google Cloud e Azure juntos conseguiriam recalcular em tempo real a mecânica orbital de uma única instância do Atlas. Mas a verdade é esta: o The Atlas não calcula nem recalcula nada. Ele revela fatias temporais de uma estrutura matemática quase eterna (limitada manualmente a 1,9 milhão de anos no tempo). Se vivêssemos dentro de uma simulação procedural assim, nunca detectaríamos reinícios ou saltos no tempo. Nossos próprios pensamentos sobre detectá-los seriam gerados proceduralmente. O The Atlas nos permite viver a experiência de estar 'fora' de um sistema assim, observando linhas do tempo que não podemos influenciar, mas que podemos explorar livremente.",
+     "highlight": true
+    }
+   ]
+  },
+  {
+   "title": "O universo depois de 1,9 milhão de anos",
+   "id": "fully-evolved-atlas",
+   "questions": [
+    {
+     "question": "O que acontece quando o The Atlas evolui até seu potencial máximo?",
+     "answer": "Depois de 1,9 milhão de anos de evolução contínua, o The Atlas atinge seu desenvolvimento teórico máximo. Os números se tornam tão astronômicos que exigem uma nova perspectiva para serem compreendidos: estamos falando de aproximadamente 50 nonilhões de sistemas solares (5 × 10³¹) e 300 nonilhões de planetas (3 × 10³²).",
+     "highlight": true
+    },
+    {
+     "question": "Como um The Atlas totalmente evoluído se compara ao nosso universo real?",
+     "answer": "Um Atlas totalmente evoluído (depois de 1,9 milhão de anos) contém 500.000 vezes mais galáxias que o nosso universo observável, 500 milhões de vezes mais sistemas estelares do que estrelas reais existentes e 300 trilhões de vezes mais planetas do que os estimados no nosso cosmos. A morte térmica do nosso universo real aconteceria antes de conseguirmos catalogar um único universo do Atlas totalmente desenvolvido.",
+     "highlight": true
+    },
+    {
+     "question": "Quanto crescimento ocorre durante a evolução máxima?",
+     "answer": "As galáxias centrais podem ganhar até 10 milhões de sistemas adicionais durante o período máximo de evolução de 1,9 milhão de anos. Cada galáxia central atinge todo o seu potencial de 100 bilhões de sistemas solares, e até as galáxias periféricas passam por um desenvolvimento significativo."
+    },
+    {
+     "question": "Os humanos conseguem compreender um The Atlas totalmente evoluído?",
+     "answer": "Não. Se cada átomo do seu corpo fosse um planeta habitável, ainda assim você não teria átomos suficientes para representar 1% dos mundos de um Atlas maduro. Mesmo que toda a humanidade explorasse planetas diferentes simultaneamente por 13,8 bilhões de anos (a idade atual do nosso universo), veríamos menos de 0,0000001% de um Atlas totalmente desenvolvido.",
+     "highlight": true
+    },
+    {
+     "question": "O que torna o The Atlas realmente infinito?",
+     "answer": "Além da escala incompreensível de um único universo, o The Atlas oferece infinitas sementes diferentes, cada uma criando um cosmos totalmente único. Cada número tem um significado procedural, cada coordenada gera conteúdo determinístico e cada segundo que passa acrescenta milhões de novos mundos. Isto não é simulação: é geração de realidade matemática numa escala em que o infinito se torna tangível.",
+     "highlight": true
+    }
+   ]
+  }
+ ],
+ "papers": [
+  {
+   "title": "O universo procedural",
+   "href": "https://zenodo.org/records/18112886"
+  },
+  {
+   "title": "Hipótese do toro primordial 4D",
+   "href": "https://zenodo.org/records/18136117"
+  }
+ ],
+ "stats": [
+  {
+   "label": "Galáxias",
+   "value": "10²¹",
+   "description": "1 sextilhão de galáxias únicas"
+  },
+  {
+   "label": "Máx. de sistemas",
+   "value": "5×10³¹",
+   "description": "50 nonilhões quando totalmente evoluído"
+  },
+  {
+   "label": "Máx. de planetas",
+   "value": "3×10³²",
+   "description": "300 nonilhões num The Atlas maduro"
+  },
+  {
+   "label": "vs. universo real",
+   "value": "500M×",
+   "description": "Vezes maior que o cosmos observável"
+  },
+  {
+   "label": "Limite de evolução",
+   "value": "1.9M years",
+   "description": "Período máximo de desenvolvimento"
+  },
+  {
+   "label": "Sementes de universo",
+   "value": "∞",
+   "description": "Universos únicos infinitos"
+  }
+ ]
+}

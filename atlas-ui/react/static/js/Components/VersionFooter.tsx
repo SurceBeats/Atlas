@@ -1,6 +1,7 @@
 // atlas-ui/react/static/js/Components/VersionFooter.tsx
 import React, { useState, useEffect } from "react";
 import { PhotosensitivityManager } from "../Utils/PhotosensitivityManager";
+import { t } from "../i18n/i18n.ts";
 
 interface VersionFooterProps {
   version: string;
@@ -67,6 +68,9 @@ const VersionFooter: React.FC<VersionFooterProps> = ({ version, showBadge = fals
     setIsPhotosensitivityEnabled(PhotosensitivityManager.isEnabled());
   };
 
+  // The author's name highlighted wherever the language puts it
+  const [createdBefore, createdAfter = ""] = t("Created by %@", "\u0000").split("\u0000");
+
   return (
     <footer className="bg-black/30 backdrop-blur-md border-t border-white/10 mt-8 w-full">
       <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
@@ -80,34 +84,36 @@ const VersionFooter: React.FC<VersionFooterProps> = ({ version, showBadge = fals
               </div>
               <span className="text-gray-600">•</span>
               <span className="text-xs text-gray-500">
-                Created by <span className="text-gray-400 font-medium">SurceBeats</span>
+                {createdBefore}
+                <span className="text-gray-400 font-medium">SurceBeats</span>
+                {createdAfter}
               </span>
             </div>
 
             <div className="flex items-center flex-wrap justify-center gap-3">
-              <a href="https://github.com/SurceBeats/Atlas" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-all duration-200 group" title="View Atlas source on GitHub">
+              <a href="https://github.com/SurceBeats/Atlas" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-all duration-200 group" title={t("View Atlas source on GitHub")}>
                 <GitHubIcon />
                 <span className="text-sm text-gray-400 group-hover:text-white">Atlas</span>
               </a>
-              <a href="https://x.com/SurceBeats" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-all duration-200 group" title="Follow on Twitter/X">
+              <a href="https://x.com/SurceBeats" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-all duration-200 group" title={t("Follow on Twitter/X")}>
                 <TwitterIcon />
                 <span className="text-sm text-gray-400 group-hover:text-white">Twitter</span>
               </a>
-              <a href="https://www.linkedin.com/in/claudio-gonzalez-medina/" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-all duration-200 group" title="Connect on LinkedIn">
+              <a href="https://www.linkedin.com/in/claudio-gonzalez-medina/" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-all duration-200 group" title={t("Connect on LinkedIn")}>
                 <LinkedInIcon />
                 <span className="text-sm text-gray-400 group-hover:text-white">LinkedIn</span>
               </a>
-              <a href="https://www.banshee.pro" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-all duration-200 group" title="Visit Banshee Technologies">
+              <a href="https://www.banshee.pro" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-all duration-200 group" title={t("Visit %@", "Banshee Technologies")}>
                 <WebIcon />
                 <span className="text-sm text-gray-400 group-hover:text-white">Banshee</span>
               </a>
-              <a href="/multiverse" className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-all duration-200 group" title="Explore the Multiverse">
+              <a href="/multiverse" className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-all duration-200 group" title={t("Explore the Multiverse")}>
                 <MultiverseIcon />
-                <span className="text-sm text-gray-400 group-hover:text-white">Multiverse</span>
+                <span className="text-sm text-gray-400 group-hover:text-white">{t("Multiverse")}</span>
               </a>
-              <a href="/universe-faq" className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-all duration-200 group" title="Universe FAQ">
+              <a href="/universe-faq" className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-all duration-200 group" title={t("Universe FAQ")}>
                 <FAQIcon />
-                <span className="text-sm text-gray-400 group-hover:text-white">F.A.Q.</span>
+                <span className="text-sm text-gray-400 group-hover:text-white">{t("F.A.Q.")}</span>
               </a>
             </div>
           </div>
@@ -119,9 +125,9 @@ const VersionFooter: React.FC<VersionFooterProps> = ({ version, showBadge = fals
                 <svg className={`w-5 h-5 transition-colors duration-200 ${isPhotosensitivityEnabled ? "text-orange-400" : "text-gray-500"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
-                <span className="text-xs text-gray-400 font-medium">Photosensitive Mode</span>
+                <span className="text-xs text-gray-400 font-medium">{t("Photosensitive Mode")}</span>
               </div>
-              <button onClick={handleTogglePhotosensitivity} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 ${isPhotosensitivityEnabled ? "bg-orange-600 focus:ring-orange-500" : "bg-gray-600 focus:ring-gray-500"}`} title={isPhotosensitivityEnabled ? "Disable photosensitive mode" : "Enable photosensitive mode"}>
+              <button onClick={handleTogglePhotosensitivity} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 ${isPhotosensitivityEnabled ? "bg-orange-600 focus:ring-orange-500" : "bg-gray-600 focus:ring-gray-500"}`} title={isPhotosensitivityEnabled ? t("Disable photosensitive mode") : t("Enable photosensitive mode")}>
                 <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${isPhotosensitivityEnabled ? "translate-x-6" : "translate-x-1"}`} />
               </button>
             </div>
@@ -130,7 +136,7 @@ const VersionFooter: React.FC<VersionFooterProps> = ({ version, showBadge = fals
           {/* Row 3: GOAT badge */}
           {showBadge && (
             <div className="flex flex-col items-center gap-1 pt-3 border-t border-white/5">
-              <span className="text-[9px] text-gray-600 tracking-wide uppercase">Running it on elsewhereOS?</span>
+              <span className="text-[9px] text-gray-600 tracking-wide uppercase">{t("Running it on elsewhereOS?")}</span>
               <a href="https://github.com/BansheeTech/HomeDockOS" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100 transition-opacity duration-500">
                 <img src="/static/HDOSDarkSmallBadge.svg" />
               </a>

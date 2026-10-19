@@ -61,7 +61,8 @@ export interface DiskComponent {
   armStart: number;
 }
 
-export type PoiKind = "core" | "globular" | "open" | "blackhole" | "pulsar" | "quasar";
+// ("torus": the primordial torus, at the heart of a Singularity Void)
+export type PoiKind = "core" | "globular" | "open" | "blackhole" | "pulsar" | "quasar" | "torus";
 
 export interface PointOfInterest {
   id: string;
@@ -457,12 +458,26 @@ export class GalaxyModel {
   private buildPointsOfInterest(rng: SeededRng) {
     const prefix = this.info.name.replace(/[^A-Za-z]/g, "").slice(0, 3).toUpperCase() || "ATL";
 
+    // A Singularity Void is the universe before its Bit Bang: no core, no black hole, only
+    // the primordial torus, in superposition across every cell of the grid (ExoticLayer)
+    if (this.type === "Void") {
+      this.pois.push({
+        id: "torus",
+        kind: "torus",
+        name: "The primordial torus",
+        position: [0, 0, 0],
+        radius: 50,
+        description: "Before time: closed loops of +ε and −ε, everywhere at once. Nothing has begun yet.",
+      });
+      return;
+    }
+
     this.pois.push({
       id: "core",
       kind: this.info.quasars > 0 ? "quasar" : "core",
       name: this.info.quasars > 0 ? `${prefix} Quasar Core` : "Galactic Core",
       position: [0, 0, 0],
-      radius: this.type === "Void" ? 50 : this.radius * 0.06,
+      radius: this.radius * 0.06,
       description: this.info.quasars > 0 ? "An active galactic nucleus outshining the whole galaxy." : "The dense heart of the galaxy, home of its central supermassive black hole.",
     });
 
@@ -471,8 +486,8 @@ export class GalaxyModel {
       kind: "blackhole",
       name: `${prefix} A*`,
       position: [0, 0, 0],
-      radius: this.type === "Void" ? 3 : 0.3,
-      description: this.type === "Void" ? "A lone supermassive black hole that swallowed every star that ever formed here." : "The supermassive black hole at the very center, millions of suns packed beyond its event horizon.",
+      radius: 0.3,
+      description: "The supermassive black hole at the very center, millions of suns packed beyond its event horizon.",
     });
 
     let globularCount = 0;
@@ -500,8 +515,6 @@ export class GalaxyModel {
         });
       }
     });
-
-    if (this.type === "Void") return;
 
     for (let i = 1; i < this.info.black_holes; i++) {
       const pos = this.sampleDiskPosition(rng);

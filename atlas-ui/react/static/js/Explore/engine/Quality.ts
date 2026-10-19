@@ -3,7 +3,9 @@
 // Graphics presets. Everything expensive in the explorer reads its budget from here:
 // resolution, frame rate (and the lower rate used while nothing moves), how many
 // octree regions and real stars the galaxy LOD may produce, shadows and labels.
-// The choice is stored per browser in localStorage.
+// Auto (the default) picks a level from what the browser says about the device, afresh
+// on every visit; a level chosen by hand is stored per browser in localStorage, until
+// Auto is chosen again.
 
 export type QualityLevel = "low" | "medium" | "high" | "ultra";
 
@@ -98,8 +100,8 @@ export const QUALITY_PROFILES: Record<QualityLevel, QualityProfile> = {
 
 const STORAGE_KEY = "atlas-quality";
 
-// First visit: a conservative guess from what the browser tells us about the device
-function detectLevel(): QualityLevel {
+// Auto: a conservative guess from what the browser tells us about the device
+export function detectLevel(): QualityLevel {
   const cores = navigator.hardwareConcurrency || 4;
   const memory = (navigator as any).deviceMemory || 4;
   const touch = typeof window !== "undefined" && "ontouchstart" in window && window.innerWidth < 900;
@@ -108,19 +110,26 @@ function detectLevel(): QualityLevel {
   return "medium";
 }
 
-export function loadQuality(): QualityProfile {
+// The level chosen by hand, or null for Auto
+export function chosenQuality(): QualityLevel | null {
   try {
     const stored = localStorage.getItem(STORAGE_KEY) as QualityLevel | null;
-    if (stored && QUALITY_PROFILES[stored]) return QUALITY_PROFILES[stored];
+    if (stored && QUALITY_PROFILES[stored]) return stored;
   } catch {
     /* storage unavailable */
   }
-  return QUALITY_PROFILES[detectLevel()];
+  return null;
 }
 
-export function saveQuality(level: QualityLevel) {
+export function loadQuality(): QualityProfile {
+  return QUALITY_PROFILES[chosenQuality() ?? detectLevel()];
+}
+
+// A level fixes it; null goes back to Auto
+export function saveQuality(level: QualityLevel | null) {
   try {
-    localStorage.setItem(STORAGE_KEY, level);
+    if (level) localStorage.setItem(STORAGE_KEY, level);
+    else localStorage.removeItem(STORAGE_KEY);
   } catch {
     /* storage unavailable */
   }

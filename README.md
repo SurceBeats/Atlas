@@ -1,8 +1,5 @@
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="static/ghimages/atlas3/readme/atlas-logo-dark.webp">
-    <img src="static/ghimages/atlas3/readme/atlas-logo.webp" width="320" alt="The Atlas">
-  </picture>
+  <img src="static/ghimages/atlas3/readme/atlas-icon.webp" width="300" alt="The Atlas">
 </p>
 
 <h1 align="center">The Atlas</h1>
@@ -130,8 +127,8 @@ The whole explorer works on phones and tablets, with touch controls, a collapsib
 
 - **Galaxies**: up to **1 sextillion** (10²¹), placed in a 10-million-unit coordinate system.
 - **Galaxy types**: dwarf galaxies (100,000 to 10 million systems), spiral galaxies (1 to 50 billion systems) and elliptical galaxies (10 to 100 billion systems).
-- **Star systems**: about **50 tredecillion** (5 × 10³¹).
-- **Planets**: 1 to 6 per system, about **300 tredecillion** (3 × 10³²) in all.
+- **Star systems**: about **50 nonillion** (5 × 10³¹).
+- **Planets**: 1 to 6 per system, about **300 nonillion** (3 × 10³²) in all.
 
 ---
 

@@ -1,6 +1,7 @@
 // atlas-ui/react/static/js/Components/DidYouKnow.tsx
 
 import React, { useState, useEffect, useRef } from "react";
+import { num, t } from "../i18n/i18n.ts";
 
 interface DidYouKnowProps {
   currentView: "galaxy" | "system" | "planet";
@@ -25,15 +26,16 @@ const DidYouKnow: React.FC<DidYouKnowProps> = ({ currentView }) => {
     return Math.round(diffYears * 10) / 10;
   };
 
+  // In English, translated when shown; %@ is the Core Continuum's age in years
   // prettier-ignore
   const facts = [
     "The Atlas contains 1 sextillion galaxies, 133 times more galaxies than grains of sand on all Earth's beaches?",
-    "If you visited a different planet every second, it would take 300 trillion years to explore just 0.001% of The Atlas?",
+    "If you visited a different planet every second, it would take some 95 quintillion years to explore just 0.001% of The Atlas?",
     "A single fully developed elliptical galaxy in The Atlas contains more star systems than our real Milky Way has stars?",
     "The universe cube measures exactly 10 million units on each side, with a unique galaxy at every coordinate point?",
     "All galaxies near the center of the universe evolve faster, adding 10 new solar systems per minute from their Bit Bang?",
-    "If all of humanity explored The Atlas simultaneously, we'd need 39 billion years to see 0.001% of it?",
-    `The Core Continuum universe began on April 17, 1986, and has been evolving for ${calculateYearsSinceCoreContinuum()} real years?`,
+    "If all of humanity explored The Atlas simultaneously, we'd need 12 billion years to see 0.001% of it?",
+    "The Core Continuum universe began on April 17, 1986, and has been evolving for %@ real years?",
     "The cosmic origin time becomes the Bit Bang moment for your personal universe?",
     "Central galaxies have added over 200 million additional star systems during their evolution on the Core Continuum?",
     "The Singularity Void only appears when someone tries to see beyond 1.9 million years into the past by adjusting cosmic origin time?",
@@ -42,11 +44,11 @@ const DidYouKnow: React.FC<DidYouKnowProps> = ({ currentView }) => {
     "Planet temperatures vary with their orbits, and gravity is calculated based on real mass physics?",
     "Life forms in The Atlas range from bacteria to non-physical conscious entities and even... Otherworldly beings?",
     "Some planets have rings if they meet the physical conditions of the real physics behind the Roche limit?",
-    "A fully evolved The Atlas universe after 1.9 million years contains approximately 300 tredecillion planets (3 × 10³²)?",
+    "A fully evolved The Atlas universe after 1.9 million years contains approximately 300 nonillion planets (3 × 10³²)?",
     "The Atlas has 500,000 times more galaxies than our entire observable universe?",
     "A maxed-out The Atlas has 500 million times more star systems than there are real stars in existence?",
     "A central galaxy can add 10 million additional systems during The Atlas's maximum evolution period?",
-    "The Atlas generates approximately 50 quintillion solar systems when the universe is fully developed after 1.9 million years?",
+    "The Atlas generates approximately 50 nonillion solar systems when the universe is fully developed after 1.9 million years?",
     "If every atom in your body was a habitable planet, you still couldn't represent 1% of the worlds in The Atlas?",
     "Even if humanity explored The Atlas together for the next 13.8 billion years, we'd see less than 0.0000001% of it?",
     "The thermal death of our real universe would occur before we could catalog one fully developed The Atlas universe?",
@@ -60,8 +62,8 @@ const DidYouKnow: React.FC<DidYouKnowProps> = ({ currentView }) => {
     "The Atlas embodies Einstein's 'Eternalism', all moments in time exist simultaneously in the mathematical structure?",
     "Even AWS, Google Cloud, and Azure combined couldn't recalculate a single The Atlas instance's orbital mechanics in real-time?",
     "If we lived inside The Atlas, we'd never detect resets or time shifts, our thoughts would be procedurally generated too?",
-    "Storing every planet in The Atlas (at 1 byte each) would require 20 million times Google's entire data infrastructure?",
-    "If you bought hard drives to store The Atlas if each planet were 1 byte, they'd cost $15 quintillion and stack 15.6 times the distance to the Moon?",
+    "Storing every planet in The Atlas (at 1 byte each) would require 20 trillion times Google's entire data infrastructure?",
+    "If you bought hard drives to store The Atlas if each planet were 1 byte, they'd cost $15 sextillion and stack some 630 light years high, far beyond the nearest stars?",
     "The Life Forms analysis presents data inspired by humanity's Arecibo message sent to space on November 16, 1974?",
     "Alien life in The Atlas can have DNA helices ranging from single to quintuple strands for silicon-based organisms?",
     "There's an extremely rare intelligent life form called 'Have I Just Found God?' that appears near Z-Divinium compounds?",
@@ -85,13 +87,15 @@ const DidYouKnow: React.FC<DidYouKnowProps> = ({ currentView }) => {
     "You can access the Multiverse interface by clicking 'MULTIVERSE ONLINE' in the header or 'Multiverse' in the footer?",
     "Each Atlas instance becomes both a client and server, creating a cosmic democracy where explorers freely share infinite universes?",
     "Universe seed sharing uses military-grade cryptography to ensure your discoveries are protected yet freely shareable?",
-    "You can disable Multiverse P2P Multiverse with the --no-p2p flag, but why limit yourself to just one universe when infinite realities await?",
+    "You can disable the Multiverse P2P network with the --no-p2p flag, but why limit yourself to just one universe when infinite realities await?",
     "The Atlas achieves digital evolution, from single-user simulation to self-aware multiverse organism existing in the global network?",
     "Shared universe seeds are verified through cryptographic hashes, preventing any manipulation or corruption during Multiverse P2P exchange?",
     "The Multiverse interface at /multiverse shows all universe seeds discovered by your Atlas instance through the Multiverse P2P network?",
     "When thousands of Atlas instances interconnect, rare Z-Divinium worlds and impossible life forms get shared instantly worldwide?",
     "The Atlas Multiverse P2P network creates a living multiverse organism that evolves and discovers new realities through collective exploration?"
   ];
+  const fact = facts[factIndex];
+  const factText = fact.includes("%@") ? t(fact, num(calculateYearsSinceCoreContinuum(), 1)) : t(fact);
 
   useEffect(() => {
     const savedPreference = localStorage.getItem("atlasFactsShow");
@@ -171,7 +175,7 @@ const DidYouKnow: React.FC<DidYouKnowProps> = ({ currentView }) => {
   return (
     <>
       <div className={`fixed bottom-4 sm:bottom-6 left-4 sm:left-6 z-50 ${isCircleFading ? "animate-didYouKnowCircleFadeOut" : showCircle ? "animate-didYouKnowCircleFadeIn" : "opacity-0"}`}>
-        <button onClick={handleOpenModal} className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-yellow-600 via-orange-600 to-yellow-800 hover:from-yellow-500 hover:via-orange-500 hover:to-yellow-700 text-white rounded-full shadow-2xl border-2 border-yellow-400/30 transition-all duration-300 transform hover:scale-105 backdrop-blur-sm animate-pulse" title="Did You Know? - Universe Facts">
+        <button onClick={handleOpenModal} className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-yellow-600 via-orange-600 to-yellow-800 hover:from-yellow-500 hover:via-orange-500 hover:to-yellow-700 text-white rounded-full shadow-2xl border-2 border-yellow-400/30 transition-all duration-300 transform hover:scale-105 backdrop-blur-sm animate-pulse" title={t("Did You Know? - Universe Facts")}>
           <div className="flex items-center justify-center">
             <span className="text-xl sm:text-2xl font-bold">?</span>
           </div>
@@ -185,16 +189,16 @@ const DidYouKnow: React.FC<DidYouKnowProps> = ({ currentView }) => {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
-                <h3 className="text-lg font-bold text-yellow-400">Did you know that...</h3>
+                <h3 className="text-lg font-bold text-yellow-400">{t("Did you know that...")}</h3>
               </div>
-              <button onClick={handleCloseModal} className="text-gray-400 hover:text-white text-xl leading-none transition-colors" aria-label="Close">
+              <button onClick={handleCloseModal} className="text-gray-400 hover:text-white text-xl leading-none transition-colors" aria-label={t("Close")}>
                 ×
               </button>
             </div>
           </div>
 
           <div className="p-4">
-            <p className="text-sm text-gray-200 leading-relaxed mb-4">{facts[factIndex]}</p>
+            <p className="text-sm text-gray-200 leading-relaxed mb-4">{factText}</p>
 
             <div className="flex items-center justify-between">
               <label className="flex items-center space-x-2 cursor-pointer">
@@ -208,11 +212,11 @@ const DidYouKnow: React.FC<DidYouKnowProps> = ({ currentView }) => {
                     )}
                   </div>
                 </div>
-                <span className="text-xs text-gray-400 hover:text-yellow-400/80 transition-colors">Don't show again</span>
+                <span className="text-xs text-gray-400 hover:text-yellow-400/80 transition-colors">{t("Don't show again")}</span>
               </label>
 
               <a href="/universe-faq" className="px-4 py-2 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white text-sm font-semibold rounded-lg transition-all duration-300 transform hover:scale-105">
-                Learn More →
+                {t("Learn More →")}
               </a>
             </div>
           </div>

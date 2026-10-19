@@ -16,10 +16,12 @@ import { DeepSpace } from "./DeepSpace.ts";
 import { useDecrypt } from "./kit.tsx";
 import { readUniverseConfig } from "./universe.ts";
 import { ComfortNotice, useComfortAsked } from "./ComfortNotice.tsx";
+import { amount, num, t } from "../../i18n/i18n.ts";
 
 // Seconds from the click to the jump into hyperspace
 export const DIVE_SECONDS = 1.0;
 
+// (in English: translated as they are drawn)
 const PREFIX = "DIVE INTO ";
 const DESTINATIONS = ["THE VOID", "SPACE", "THE UNIVERSE", "GOD'S PLAN", "CREATION", "INFINITY", "THE COSMOS", "THE UNKNOWN", "THE ABYSS", "ETERNITY", "THE SINGULARITY", "THE MULTIVERSE", "THE BIT BANG", "THE STARS"];
 const GLYPHS = "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ0123456789Z#$%&*+=<>";
@@ -103,20 +105,21 @@ class MatrixText {
       this.index = (this.index + 1) % DESTINATIONS.length;
       this.since = time;
     }
-    const word = DESTINATIONS[this.index];
-    const t = (time - this.since) / DECRYPT_SECONDS;
-    const settled = Math.floor(Math.min(1, t) * word.length);
-    let out = PREFIX;
+    const word = t(DESTINATIONS[this.index]);
+    const prefix = t(PREFIX);
+    const progress = (time - this.since) / DECRYPT_SECONDS;
+    const settled = Math.floor(Math.min(1, progress) * word.length);
+    let out = prefix;
     for (let i = 0; i < word.length; i++) {
       const ch = word[i];
       if (ch === " ") out += " ";
       else if (i >= settled) out += GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
-      else out += this.glitch(PREFIX.length + i, ch, time);
+      else out += this.glitch(prefix.length + i, ch, time);
     }
     // The fixed words glitch too, now and then
     return out
       .split("")
-      .map((ch, i) => (i < PREFIX.length && ch !== " " ? this.glitch(i, ch, time) : ch))
+      .map((ch, i) => (i < prefix.length && ch !== " " ? this.glitch(i, ch, time) : ch))
       .join("");
   }
 
@@ -221,7 +224,7 @@ function DiveButton({ onDive, disabled, onHover }: { onDive: () => void; disable
       ref={mountRef}
       role="button"
       tabIndex={0}
-      aria-label="Dive into the void"
+      aria-label={t("Dive into the void")}
       className={`relative select-none outline-none ${disabled ? "pointer-events-none" : "cursor-pointer"}`}
       onPointerEnter={() => {
         hoverRef.current = 1;
@@ -253,17 +256,17 @@ function Telemetry({ accelerating }: { accelerating: boolean }) {
     return () => clearInterval(timer);
   }, []);
   const coordinate = (seed: number) => String(Math.floor((Math.sin(tick * 0.07 + seed) * 0.5 + 0.5) * 9_999_999)).padStart(7, "0");
-  const lines = accelerating ? ["DRIVE ENGAGED", "JUMP FIELD STABLE", "ENTERING HYPERSPACE"] : ["SYSTEMS NOMINAL", "DRIFTING", `SCAN ${coordinate(1)} · ${coordinate(2)} · ${coordinate(3)}`];
+  const lines = accelerating ? [t("DRIVE ENGAGED"), t("JUMP FIELD STABLE"), t("ENTERING HYPERSPACE")] : [t("SYSTEMS NOMINAL"), t("DRIFTING"), t("SCAN %@ · %@ · %@", coordinate(1), coordinate(2), coordinate(3))];
   return (
     <>
       <div className="absolute top-4 left-4 sm:top-6 sm:left-6 font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.3em] text-cyan-200/40 leading-5 pointer-events-none">
-        {lines.map((line) => (
-          <div key={line.slice(0, 6)}>{line}</div>
+        {lines.map((line, i) => (
+          <div key={i}>{line}</div>
         ))}
       </div>
       <div className="hidden sm:block absolute top-6 right-6 font-mono text-[10px] uppercase tracking-[0.3em] text-cyan-200/30 text-right leading-5 pointer-events-none">
-        <div>{accelerating ? "VELOCITY ∞" : `VELOCITY ${(0.12 + 0.02 * Math.sin(tick * 0.2)).toFixed(3)} C`}</div>
-        <div>∞ GALAXIES · ∞ SYSTEMS</div>
+        <div>{accelerating ? t("VELOCITY ∞") : t("VELOCITY %@ C", num(0.12 + 0.02 * Math.sin(tick * 0.2), 3))}</div>
+        <div>{t("∞ GALAXIES · ∞ SYSTEMS")}</div>
       </div>
     </>
   );
@@ -306,7 +309,7 @@ function useUniverseFacts(): UniverseFacts | null {
       .then((data) => {
         if (!data?.success) return;
         const seed = String(data.seed_str ?? config?.seed_str ?? "");
-        const name = config?.remote ? `Remote universe · ${config.node_id ?? ""}`.trim() : seed === CORE_CONTINUUM_SEED ? "The Core Continuum" : "Your own universe";
+        const name = config?.remote ? t("Remote universe · %@", config.node_id ?? "").trim() : seed === CORE_CONTINUUM_SEED ? t("The Core Continuum") : t("Your own universe");
         setFacts({ seed, hash: String(data.seed_hash ?? ""), origin: Number(data.cosmic_origin_time ?? config?.cosmic_origin_time ?? 0), name });
       })
       .catch(() => {});
@@ -325,7 +328,7 @@ function useNow(intervalMs: number) {
 }
 
 function formatAge(seconds: number) {
-  if (seconds < 0) return "Not yet born";
+  if (seconds < 0) return t("Not yet born");
   const years = Math.floor(seconds / YEAR);
   const days = Math.floor((seconds % YEAR) / 86400);
   const hours = Math.floor((seconds % 86400) / 3600);
@@ -335,8 +338,12 @@ function formatAge(seconds: number) {
   return `${years}Y ${String(days).padStart(3, "0")}D ${pad(hours)}H ${pad(minutes)}M ${pad(secs)}S`;
 }
 
+// (a Bit Bang set millions of years ahead, as for the Singularity Void, is past the last
+// date JavaScript can write: shown as its year)
 function formatOrigin(origin: number) {
-  return new Date(origin * 1000).toISOString().slice(0, 19).replace("T", " ") + " UTC";
+  const date = new Date(origin * 1000);
+  if (Number.isNaN(date.getTime())) return `${amount(Math.floor(1970 + origin / YEAR))} AD`;
+  return date.toISOString().slice(0, 19).replace("T", " ") + " UTC";
 }
 
 // The hash, streaming: a bright scan line runs along it
@@ -389,10 +396,10 @@ function UniverseReadout({ visible }: { visible: boolean }) {
           <span className="h-px flex-1 bg-gradient-to-r from-cyan-300/30 to-transparent" />
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-2.5">
-          <Readout label="Primordial seed" value={seed || "—"} accent="text-cyan-100" />
-          <Readout label="Big Bang" value={origin} accent="text-violet-200" />
-          <Readout label="Age" value={formatAge(age)} accent="text-emerald-200" />
-          <Readout label="Development" value={`${development.toFixed(15)}%`} accent="text-amber-200" />
+          <Readout label={t("Primordial seed")} value={seed || "—"} accent="text-cyan-100" />
+          <Readout label={t("Big Bang")} value={origin} accent="text-violet-200" />
+          <Readout label={t("Age")} value={formatAge(age)} accent="text-emerald-200" />
+          <Readout label={t("Development")} value={`${num(development, 15)}%`} accent="text-amber-200" />
         </div>
 
         {/* Where the universe stands between its first second and the evolution limit */}
@@ -468,14 +475,14 @@ export function DiveGate({ onIgnite, onDive }: { onIgnite: () => void; onDive: (
           <div className="text-4xl sm:text-6xl font-bold tracking-[0.5em] pl-[0.5em] text-white/95 drop-shadow-[0_0_24px_rgba(0,0,0,0.9)]">
             ATLAS<span className="text-cyan-300 drop-shadow-[0_0_18px_rgba(34,211,238,0.9)]">3</span>
           </div>
-          <div className="mt-4 text-[10px] sm:text-[11px] uppercase tracking-[0.22em] sm:tracking-[0.45em] text-cyan-100/60">A procedural universe, in real time</div>
+          <div className="mt-4 text-[10px] sm:text-[11px] uppercase tracking-[0.22em] sm:tracking-[0.45em] text-cyan-100/60">{t("A PROCEDURAL UNIVERSE, IN REAL TIME")}</div>
         </div>
         <DiveButton onDive={dive} disabled={accelerating} onHover={(hover) => deepRef.current?.setAnticipation(hover ? 1 : 0)} />
         <div className="text-[10px] uppercase tracking-[0.35em] text-gray-500 flex items-center gap-2">
           <svg width={12} height={12} viewBox="0 0 24 24" className="text-gray-500">
             <path fill="currentColor" d="M3 10v4h4l5 5V5L7 10H3zm13.5 2A4.5 4.5 0 0 0 14 7.97v8.05A4.5 4.5 0 0 0 16.5 12zM14 3.23v2.06a7 7 0 0 1 0 13.42v2.06A9 9 0 0 0 14 3.23z" />
           </svg>
-          Best with sound on
+          {t("BEST WITH SOUND ON")}
         </div>
       </div>
       {!comfortAsked && <ComfortNotice onChosen={markComfortAsked} />}

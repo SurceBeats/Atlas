@@ -1,0 +1,24 @@
+{
+  "%lld answers found": { "one": "%lld answer found", "other": "%lld answers found" },
+  "%lld planets": { "one": "%lld planet", "other": "%lld planets" },
+  "%lld planets in this system": { "one": "%lld planet in this system", "other": "%lld planets in this system" },
+  "%lld planets, all yours": { "one": "%lld planet, all yours", "other": "%lld planets, all yours" },
+  "%lld purchases left to claim a place with.": { "one": "%lld purchase left to claim a place with.", "other": "%lld purchases left to claim a place with." },
+  "%lld star systems": { "one": "%lld star system", "other": "%lld star systems" },
+  "A star and its %lld planets, all under your name. Name each of them as you like; nobody else can claim them.": {
+    "one": "A star and its planet, all under your name. Name it as you like; nobody else can claim it.",
+    "other": "A star and its %lld planets, all under your name. Name each of them as you like; nobody else can claim them."
+  },
+  "Claim this star system · %lld planets": { "one": "Claim this star system · %lld planet", "other": "Claim this star system · %lld planets" },
+  "Its %lld planets, all yours": { "one": "Its planet, all yours", "other": "Its %lld planets, all yours" },
+  "Its %lld planets, yours too, each named as you like": { "one": "Its planet, yours too, named as you like", "other": "Its %lld planets, yours too, each named as you like" },
+  "Its %lld stars, under your name. Nobody else can claim it.": { "one": "Its star, under your name. Nobody else can claim it.", "other": "Its %lld stars, under your name. Nobody else can claim it." },
+  "Its stars and their %lld planets, all under your name. Name each of them as you like; nobody else can claim them.": {
+    "one": "Its stars and their planet, all under your name. Name it as you like; nobody else can claim them.",
+    "other": "Its stars and their %lld planets, all under your name. Name each of them as you like; nobody else can claim them."
+  },
+  "Star system · %lld planets": { "one": "Star system · %lld planet", "other": "Star system · %lld planets" },
+  "Up to date: %lld places on your account.": { "one": "Up to date: %lld place on your account.", "other": "Up to date: %lld places on your account." },
+  "your %lld planets": { "one": "your planet", "other": "your %lld planets" },
+  "your %lld star systems": { "one": "your star system", "other": "your %lld star systems" }
+}

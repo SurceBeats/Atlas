@@ -5,9 +5,11 @@ import { ResourceEventManager } from "../Utils/ResourceEventManager.tsx";
 import AntimatterIcon from "../Icons/AntimatterIcon";
 import Element115Icon from "../Icons/Element115Icon";
 import DeuteriumIcon from "../Icons/DeuteriumIcon";
+import { amount, num, t } from "../i18n/i18n.ts";
 
 interface Resource {
   name: string;
+  label: string;
   value: number;
   color: string;
   glow: string;
@@ -42,12 +44,12 @@ const FuelBars: React.FC = () => {
 
   const formatResource = (value: number) => {
     if (value >= 1000000) {
-      return `${(value / 1000000).toFixed(2)}M`;
+      return `${num(value / 1000000, 2)}M`;
     }
     if (value >= 1000) {
-      return `${(value / 1000).toFixed(1)}k`;
+      return `${num(value / 1000, 1)}k`;
     }
-    return value.toFixed(0);
+    return amount(value);
   };
 
   const getPercentage = (value: number) => {
@@ -57,6 +59,7 @@ const FuelBars: React.FC = () => {
   const resourcesConfig: Resource[] = [
     {
       name: "ANTIMATTER",
+      label: t("Antimatter"),
       value: resources.antimatter,
       color: "purple",
       glow: "rgba(168, 85, 247, 0.5)",
@@ -65,6 +68,7 @@ const FuelBars: React.FC = () => {
     },
     {
       name: "ELEMENT 115",
+      label: t("Element 115"),
       value: resources.element115,
       color: "cyan",
       glow: "rgba(34, 211, 238, 0.5)",
@@ -73,6 +77,7 @@ const FuelBars: React.FC = () => {
     },
     {
       name: "DEUTERIUM",
+      label: t("Deuterium"),
       value: resources.deuterium,
       color: "orange",
       glow: "rgba(251, 146, 60, 0.5)",
@@ -147,7 +152,7 @@ const FuelBars: React.FC = () => {
                         >
                           {resource.icon}
                         </div>
-                        <span className="text-[10px] font-bold tracking-wider text-white/90 uppercase drop-shadow-lg">{resource.name}</span>
+                        <span className="text-[10px] font-bold tracking-wider text-white/90 uppercase drop-shadow-lg">{resource.label}</span>
                       </div>
                       <div className="flex items-baseline gap-1">
                         <span className="text-xs font-bold text-white font-mono drop-shadow-lg">{formatResource(resource.value)}</span>
@@ -155,12 +160,12 @@ const FuelBars: React.FC = () => {
                       </div>
                       {isCritical && (
                         <div className="absolute bottom-1 right-2">
-                          <span className="text-[8px] text-red-400 uppercase tracking-wider animate-pulse font-bold drop-shadow-lg">LOW</span>
+                          <span className="text-[8px] text-red-400 uppercase tracking-wider animate-pulse font-bold drop-shadow-lg">{t("LOW")}</span>
                         </div>
                       )}
                       {isAlmostFull && (
                         <div className="absolute bottom-1 right-2">
-                          <span className="text-[8px] text-green-400 uppercase tracking-wider font-bold drop-shadow-lg">FULL</span>
+                          <span className="text-[8px] text-green-400 uppercase tracking-wider font-bold drop-shadow-lg">{t("FULL")}</span>
                         </div>
                       )}
                     </div>
@@ -176,7 +181,7 @@ const FuelBars: React.FC = () => {
                           {resource.icon}
                         </div>
                         <div>
-                          <div className="text-[11px] font-bold tracking-wider text-white/90 uppercase drop-shadow-lg">{resource.name}</div>
+                          <div className="text-[11px] font-bold tracking-wider text-white/90 uppercase drop-shadow-lg">{resource.label}</div>
                           <div className="flex items-baseline gap-1">
                             <span className="text-base font-bold text-white font-mono drop-shadow-lg">{formatResource(resource.value)}</span>
                             <span className="text-xs text-white/80 drop-shadow-lg">/ {formatResource(maxStorage)}</span>
@@ -186,8 +191,8 @@ const FuelBars: React.FC = () => {
 
                       {(isCritical || isAlmostFull) && (
                         <div className={`text-right transition-all duration-300 ${isHovered ? "scale-110" : ""}`}>
-                          {isCritical && <div className="text-[11px] text-red-400 uppercase tracking-wider animate-pulse font-bold">LOW</div>}
-                          {isAlmostFull && <div className="text-[11px] text-green-400 uppercase tracking-wider font-bold">FULL</div>}
+                          {isCritical && <div className="text-[11px] text-red-400 uppercase tracking-wider animate-pulse font-bold">{t("LOW")}</div>}
+                          {isAlmostFull && <div className="text-[11px] text-green-400 uppercase tracking-wider font-bold">{t("FULL")}</div>}
                         </div>
                       )}
                     </div>

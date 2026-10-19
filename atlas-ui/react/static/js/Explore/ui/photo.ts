@@ -7,6 +7,7 @@
 
 import QRCode from "qrcode";
 import { readUniverseConfig } from "./universe.ts";
+import { t } from "../../i18n/i18n.ts";
 
 export interface PhotoPlace {
   title: string; // the deepest place in view: moon, planet, system or galaxy
@@ -153,7 +154,7 @@ export async function composePhoto(frame: HTMLCanvasElement, place: PhotoPlace, 
     ctx.restore();
     ctx.font = `${Math.round(9.5 * u)}px ${MONO}`;
     ctx.fillStyle = `rgba(${CYAN},0.8)`;
-    const label = "SCAN TO FLY HERE";
+    const label = t("SCAN TO FLY HERE");
     ctx.textBaseline = "middle";
     const width = [...label].reduce((sum, c) => sum + ctx.measureText(c).width, 0) + 2.4 * u * (label.length - 1);
     spaced(ctx, label, x + (w - width) / 2, top + pad + size + caption / 2 + pad / 2, 2.4 * u);

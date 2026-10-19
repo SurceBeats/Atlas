@@ -2,6 +2,7 @@
 import { createRoot } from 'react-dom/client';
 import { createElement } from 'react';
 import OnboardingLayout from '../Layouts/__onboarding__.tsx';
+import { loadLanguage } from '../i18n/i18n.ts';
 
 interface OnboardingData {
   version: string;
@@ -19,6 +20,8 @@ const onboardingData: OnboardingData = {
 const container = document.getElementById('atlas-react-root');
 
 if (container) {
-  const root = createRoot(container);
-  root.render(createElement(OnboardingLayout, onboardingData));
+  loadLanguage().then(() => {
+    const root = createRoot(container);
+    root.render(createElement(OnboardingLayout, onboardingData));
+  });
 }

@@ -1,5 +1,23 @@
 # Changelog
 
+## [3.0.1] - 2026-10-19
+
+The Atlas in 11 languages, owners of the Core Continuum, and the web brought level with the Apple apps.
+
+- The whole interface is now translated into German, Spanish, French, Italian, Japanese, Korean, Portuguese (Brazil), Russian, Ukrainian and Simplified Chinese, besides English: the explorer, the front door, the onboarding, the multiverse, the error page, the F.A.Q. and every panel. The language follows the browser's and can be changed from Graphics & view or the menu; numbers and dates follow the browser's region. No new dependencies: a small module of its own (`i18n/`) reads the Apple app's own translations as they are, plus the texts only the web has.
+- Owners of the Core Continuum, read-only: places claimed in the Apple app ecosystem show their owner's name for them everywhere (labels, console, Stargate panel, nearby systems, jump readouts and photos), with the owner's seal, "Property of … since …" and their note. Read from the owners registry; if it cannot be reached, the generated names stay. Owners' texts are always shown as text, and the space labels are now built without HTML.
+- Hamburger menu redesigned: Explore and Ship & settings sections, a row of square buttons (Photo, Hangar, Music, Sounds, Graphics), with Music and Sounds switching in place, and the language picker. Fixed the menu flickering and needing two taps.
+- Drop-down panels (Stargate, Hangar, Graphics & view, Landmarks) close with a touch anywhere else, and opening the menu closes them.
+- Graphics quality: Auto is now an option of its own and the default (detected afresh on every visit), with a row of icons and a line saying what the chosen level implies.
+- Up one level from everywhere, always in the same place: back to the planet from a moon, out of orbit, out of the system, out to the galaxy map, and the new "To the universe", out to the cube of neighbouring galaxies. Esc does the same; on phones the button is just an arrow.
+- New soundtrack: four pieces (Origin, Air Born, Deep Dive, The Family), shuffled on every visit and flowing into each other with a five-second fade, with only two decoded at a time. "Atlas Space Drift" was retired.
+- The Singularity Void is now shown as what it is, the universe before its Bit Bang: instead of a lone black hole, the primordial torus turns at its heart, inside a lattice of cubes with a faint copy of the same torus in every cell around it, in superposition. It is the very torus that opens the creation sequence of the onboarding, frozen before time, consistent with the pre-Big Bang state described in the paper Primordial 4D Torus Hypothesis: A Pre-Big Bang Cosmological Model. Closed loops of +ε and −ε with a Klein twist, before entropy saturates and the Big Bang begins.
+- F.A.Q. figures corrected in every language: 5×10³¹ systems are 50 nonillion and 3×10³² planets 300 nonillion; the storage answer was redone from the right numbers; exploring 0.001% at a planet per second takes about 95 quintillion years (12 billion with all of humanity). The same figures were fixed in the "Did you know" facts. The Core Continuum's age is now filled in live in every language.
+- On phones the F.A.Q. title shortens so the search always has room.
+- A way to the Apple apps (iPhone, iPad and Mac): a white Apple button next to the corner buttons on wide screens, and at the foot of the menu on phones. It appears on its own once the app is on the App Store.
+- New icon, the same as the Apple apps ecosystem: the ATLAS3 planet, for the browser tab, the home screen and the pinned tiles. The browser's theme colour is now black, and the icons listed in the web manifest are found again.
+- Fixed touch navigation getting stuck after zooming far out: a finger whose release the browser never reported could make a single finger zoom as if pinching.
+
 ## [3.0.0] - 2026-10-15
 
 ATLAS3: the whole interface rebuilt as a single, continuous 3D universe in Three.js.

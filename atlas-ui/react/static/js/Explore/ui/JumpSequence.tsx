@@ -9,6 +9,7 @@ import React, { useEffect, useState } from "react";
 import type { ExplorerState } from "../Explorer.ts";
 import type { Coordinates } from "../api.ts";
 import { useDecrypt } from "./kit.tsx";
+import { t } from "../../i18n/i18n.ts";
 
 export interface JumpPlan {
   kind: "random" | "stargate";
@@ -77,7 +78,7 @@ function StepLine({ kind, value, locked }: { kind: StepKind; value: string; lock
       <svg width={24} height={24} viewBox="0 0 24 24" className={`shrink-0 ${locked ? "text-emerald-300" : style.text}`}>
         {style.icon}
       </svg>
-      <span className={`px-2 py-1 text-[10px] font-mono uppercase rounded border shrink-0 ${style.chip}`}>{style.label}</span>
+      <span className={`px-2 py-1 text-[10px] font-mono uppercase rounded border shrink-0 ${style.chip}`}>{t(style.label)}</span>
       <span className={`text-sm font-mono truncate ${locked ? "text-emerald-100" : style.text}`}>{shown}</span>
     </div>
   );
@@ -87,8 +88,9 @@ export function JumpSequence({ plan, state, onDone }: { plan: JumpPlan; state: E
   const here = state.galaxy && state.galaxy.coordinates.join(",") === plan.coordinates.join(",") ? state.galaxy : null;
   const steps: Array<{ kind: StepKind; value: string }> = [{ kind: "coords", value: `[${plan.coordinates.map((v) => v.toLocaleString("en")).join(", ")}]` }];
   if (here) steps.push({ kind: "galaxy", value: pretty(here.name) });
-  if (here && plan.system !== null && state.system && state.system.index === plan.system) steps.push({ kind: "system", value: pretty(state.system.name) });
-  if (here && plan.planet !== null && state.orbiting && state.orbiting.index === plan.planet) steps.push({ kind: "planet", value: pretty(state.orbiting.name) });
+  // (somebody's place, by its owner's name)
+  if (here && plan.system !== null && state.system && state.system.index === plan.system) steps.push({ kind: "system", value: state.owners.systemName(state.system.index, state.system.name) });
+  if (here && plan.planet !== null && state.orbiting && state.orbiting.index === plan.planet) steps.push({ kind: "planet", value: state.owners.planetName(state.orbiting, plan.system) });
   const wanted = 2 + (plan.system !== null ? 1 : 0) + (plan.planet !== null ? 1 : 0);
 
   // Steps already reached stay reached even if the view moves on (leaving orbit, ...)
@@ -128,7 +130,7 @@ export function JumpSequence({ plan, state, onDone }: { plan: JumpPlan; state: E
       <div className={`relative rounded-xl border px-4 py-3 backdrop-blur-md shadow-[0_0_30px_rgba(0,0,0,0.5)] transition-colors duration-700 ${locked ? "bg-gradient-to-r from-emerald-950/85 to-blue-950/85 border-emerald-400/40" : "bg-gradient-to-r from-slate-950/85 to-blue-950/85 border-cyan-500/40"}`}>
         <div className="flex items-center justify-between mb-2">
           <span className={`text-[10px] font-mono uppercase tracking-[0.3em] ${locked ? "text-emerald-300/90" : "text-cyan-300/80"}`}>
-            {plan.kind === "stargate" ? "Stargate" : "Jump protocol"} · {locked ? "location locked" : "in transit"}
+            {plan.kind === "stargate" ? "Stargate" : t("Jump protocol")} · {locked ? t("location locked") : t("in transit")}
           </span>
           <span className="flex gap-1">
             {Array.from({ length: wanted }, (_, i) => (

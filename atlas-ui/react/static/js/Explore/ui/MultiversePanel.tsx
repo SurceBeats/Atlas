@@ -10,6 +10,7 @@ import { SeedSanitizer } from "../../Utils/SeedSanitizer.tsx";
 import { Button, Modal, Panel } from "./kit.tsx";
 import type { UniverseConfig } from "./universe.ts";
 import { reducedFlashing } from "../core/comfort.ts";
+import { t } from "../../i18n/i18n.ts";
 
 interface Peer {
   peer_id: string;
@@ -50,18 +51,18 @@ const CORE_CONTINUUM_SEED = "1.618033988749895";
 const blocked = (group: PeerGroup) => contentFilter.filterContent(group.seed_name).isBlocked || contentFilter.filterContent(group.seed).isBlocked;
 
 function formatBitBang(timestamp: number) {
-  if (!timestamp) return "Unknown origin";
+  if (!timestamp) return t("Unknown origin");
   const date = new Date(timestamp * 1000);
-  return Number.isNaN(date.getTime()) ? "Invalid date" : date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  return Number.isNaN(date.getTime()) ? t("Invalid date") : date.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
 function formatLastSeen(timestamp: number) {
-  if (!timestamp) return "never";
+  if (!timestamp) return t("never");
   const minutes = Math.floor((Date.now() - timestamp * 1000) / 60000);
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 1) return t("just now");
+  if (minutes < 60) return t("%lldm ago", minutes);
   const hours = Math.floor(minutes / 60);
-  return hours < 24 ? `${hours}h ago` : `${Math.floor(hours / 24)}d ago`;
+  return hours < 24 ? t("%lldh ago", hours) : t("%lldd ago", Math.floor(hours / 24));
 }
 
 function readFlag(key: string, fallback: boolean) {
@@ -99,9 +100,9 @@ export function MultiversePanel({ universe, onClose, onCross }: { universe: Univ
         setGroups(data.groups ?? []);
         setTotalPeers(data.total_peers ?? 0);
         setError(null);
-      } else setError(data.error || "The multiverse did not answer.");
+      } else setError(data.error || t("The multiverse did not answer."));
     } catch (e) {
-      setError(`Network error: ${e instanceof Error ? e.message : String(e)}`);
+      setError(t("Network error: %@", e instanceof Error ? e.message : String(e)));
     } finally {
       setLoading(false);
       setUpdated(new Date());
@@ -132,24 +133,24 @@ export function MultiversePanel({ universe, onClose, onCross }: { universe: Univ
       <Panel className="w-[min(1040px,calc(100vw-2rem))] h-[min(720px,calc(100vh-2rem))] flex flex-col overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b border-white/10">
           <div>
-            <div className="text-[10px] uppercase tracking-[0.3em] text-fuchsia-300/80">P2P universe network</div>
-            <div className="text-lg text-white font-light tracking-wide">The Multiverse</div>
+            <div className="text-[10px] uppercase tracking-[0.3em] text-fuchsia-300/80">{t("P2P universe network")}</div>
+            <div className="text-lg text-white font-light tracking-wide">{t("The Multiverse")}</div>
           </div>
           <div className="flex items-center gap-3 text-xs">
             <span className="text-gray-500">
-              Peers <span className="text-gray-100 font-mono">{totalPeers}</span>
+              {t("Peers")} <span className="text-gray-100 font-mono">{totalPeers}</span>
             </span>
             <span className="text-gray-500">
-              Universes <span className="text-gray-100 font-mono">{visible.length}</span>
+              {t("Universes")} <span className="text-gray-100 font-mono">{visible.length}</span>
             </span>
             {filtered > 0 && (
               <span className="text-gray-500">
-                Filtered <span className="text-red-300 font-mono">{filtered}</span>
+                {t("Filtered")} <span className="text-red-300 font-mono">{filtered}</span>
               </span>
             )}
             {updated && <span className="text-gray-600 hidden sm:inline">{updated.toLocaleTimeString()}</span>}
             <Button onClick={scan} disabled={loading}>
-              {loading ? "Scanning…" : "Refresh"}
+              {loading ? t("Scanning…") : t("Refresh")}
             </Button>
             <Button
               onClick={() => {
@@ -158,9 +159,9 @@ export function MultiversePanel({ universe, onClose, onCross }: { universe: Univ
               }}
               className={autoRefresh ? "!border-emerald-400/40 !text-emerald-200" : ""}
             >
-              Auto {autoRefresh ? "on" : "off"}
+              {autoRefresh ? t("Auto on") : t("Auto off")}
             </Button>
-            <button onClick={onClose} className="text-gray-400 hover:text-white text-lg leading-none px-1" title="Close">
+            <button onClick={onClose} className="text-gray-400 hover:text-white text-lg leading-none px-1" title={t("Close")}>
               ✕
             </button>
           </div>
@@ -170,12 +171,12 @@ export function MultiversePanel({ universe, onClose, onCross }: { universe: Univ
           {remote && universe && (
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-fuchsia-400/40 bg-gradient-to-r from-fuchsia-950/60 to-indigo-950/60 px-4 py-3">
               <div className="min-w-0">
-                <div className="text-[10px] uppercase tracking-[0.25em] text-fuchsia-300/90 mb-0.5">You are exploring a remote universe</div>
-                <div className="text-sm text-white font-mono truncate">{SeedSanitizer.sanitizeForDisplay(universe.seed_str) || "Unknown seed"}</div>
+                <div className="text-[10px] uppercase tracking-[0.25em] text-fuchsia-300/90 mb-0.5">{t("You are exploring a remote universe")}</div>
+                <div className="text-sm text-white font-mono truncate">{SeedSanitizer.sanitizeForDisplay(universe.seed_str) || t("Unknown seed")}</div>
                 <div className="text-[11px] text-gray-400 font-mono truncate">{universe.node_id}</div>
               </div>
-              <Button tone="primary" onClick={() => onCross({ url: "/multiverse/exit", name: "your universe", home: true })}>
-                Return to your universe
+              <Button tone="primary" onClick={() => onCross({ url: "/multiverse/exit", name: t("your universe"), home: true })}>
+                {t("Return to your universe")}
               </Button>
             </div>
           )}
@@ -183,8 +184,8 @@ export function MultiversePanel({ universe, onClose, onCross }: { universe: Univ
           {notice && (
             <div className="flex items-start gap-3 rounded-xl border border-sky-400/25 bg-sky-950/30 px-4 py-3">
               <div className="flex-1 text-xs leading-relaxed text-gray-300">
-                <span className="text-sky-200 font-medium">Private network? </span>
-                If you're behind a private connection or firewall, open the Atlas ports so other instances can reach yours. That is what lets universes travel across the network.
+                <span className="text-sky-200 font-medium">{t("Private network?")} </span>
+                {t("If you're behind a private connection or firewall, open the Atlas ports so other instances can reach yours. That is what lets universes travel across the network.")}
               </div>
               <button
                 onClick={() => {
@@ -192,7 +193,7 @@ export function MultiversePanel({ universe, onClose, onCross }: { universe: Univ
                   setNotice(false);
                 }}
                 className="text-gray-500 hover:text-white leading-none"
-                title="Dismiss"
+                title={t("Dismiss")}
               >
                 ✕
               </button>
@@ -204,11 +205,11 @@ export function MultiversePanel({ universe, onClose, onCross }: { universe: Univ
           {groups === null && !error && (
             <div className="flex flex-col items-center justify-center py-20 text-sm text-fuchsia-200/80">
               <div className="w-10 h-10 mb-3 rounded-full border-2 border-fuchsia-400/20 border-t-fuchsia-300 animate-spin" />
-              Scanning the multiverse…
+              {t("Scanning the multiverse…")}
             </div>
           )}
 
-          {groups !== null && visible.length === 0 && !error && <div className="py-16 text-center text-sm text-gray-400">No other universes found yet. Leave The Atlas running with P2P on: other explorers will appear here as they are discovered.</div>}
+          {groups !== null && visible.length === 0 && !error && <div className="py-16 text-center text-sm text-gray-400">{t("No other universes found yet. Leave The Atlas running with P2P on: other explorers will appear here as they are discovered.")}</div>}
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
             {visible.map((group) => {
@@ -228,7 +229,7 @@ export function MultiversePanel({ universe, onClose, onCross }: { universe: Univ
                     </div>
                     <div className={`flex items-center gap-1.5 shrink-0 text-[10px] font-mono uppercase ${status.text}`}>
                       <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
-                      {here ? "exploring" : latest.status.toLowerCase()}
+                      {here ? t("exploring") : t(latest.status.toLowerCase())}
                       {group.count > 1 && <span className="ml-1 px-1.5 rounded bg-white/10 text-gray-200">{group.count}</span>}
                     </div>
                   </div>
@@ -238,13 +239,13 @@ export function MultiversePanel({ universe, onClose, onCross }: { universe: Univ
                       <span className="text-gray-200">{formatBitBang(bitBang)}</span>
                     </div>
                     <div className="flex justify-between gap-3">
-                      <span className="text-gray-500">Last seen</span>
+                      <span className="text-gray-500">{t("Last seen")}</span>
                       <span className="text-gray-200">{formatLastSeen(latest.last_seen)}</span>
                     </div>
                   </div>
                   <details className="mb-3 text-[11px]">
                     <summary className="cursor-pointer text-gray-500 hover:text-gray-300 select-none">
-                      {group.count === 1 ? "Atlas instance" : `${group.count} Atlas instances`}
+                      {t("%lld Atlas instances", group.count)}
                     </summary>
                     <div className="mt-1.5 space-y-1">
                       {peers.map((peer) => (
@@ -257,7 +258,7 @@ export function MultiversePanel({ universe, onClose, onCross }: { universe: Univ
                   </details>
                   <div className="mt-auto">
                     <Button tone={here ? "ghost" : "primary"} className="w-full" disabled={here} onClick={() => explore(group)}>
-                      {here ? "You are here" : "Explore this universe"}
+                      {here ? t("You are here") : t("Explore this universe")}
                     </Button>
                   </div>
                 </div>
@@ -286,7 +287,7 @@ export function CrossingVeil({ crossing }: { crossing: Crossing }) {
         style={{ background: calm ? "radial-gradient(circle at 50% 50%, #0b2530 0%, #000 70%)" : "radial-gradient(circle at 50% 50%, #ffffff 0%, #a5f3fc 35%, rgba(0,0,0,0) 75%)" }}
       />
       <div className={`relative text-center transition-all duration-700 ${phase >= 1 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}`}>
-        <div className="text-[11px] uppercase tracking-[0.5em] text-cyan-200/90 mb-2">{crossing.home ? "Returning to" : "Crossing into"}</div>
+        <div className="text-[11px] uppercase tracking-[0.5em] text-cyan-200/90 mb-2">{crossing.home ? t("Returning to") : t("Crossing into")}</div>
         <div className="text-3xl sm:text-4xl font-light tracking-wide text-white drop-shadow-[0_0_20px_rgba(0,0,0,0.9)]">{crossing.name}</div>
       </div>
     </div>

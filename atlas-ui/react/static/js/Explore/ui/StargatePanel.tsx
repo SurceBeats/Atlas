@@ -12,8 +12,11 @@ import type { Explorer, ExplorerState } from "../Explorer.ts";
 import { Button, Panel } from "./kit.tsx";
 import { stargatePath, type UniverseConfig } from "./universe.ts";
 import { findPlace, loadPlaces, PLACES_EVENT, placeTarget, removePlace, renamePlace, savePlace, type PlaceKind, type SavedPlace } from "../core/places.ts";
+import { amount, t } from "../../i18n/i18n.ts";
 
 const pretty = (name: string) => name.replace(/_/g, " ");
+
+const ALIGNED = "Stargate Aligned";
 
 type Depth = "galaxy" | "system" | "planet";
 
@@ -28,7 +31,7 @@ const ALIGN_PHASES = [
 const ALIGNED_KEY = "stargateAnimationShown";
 
 function useAlignment(enabled: boolean) {
-  const [text, setText] = useState(() => (sessionStorage.getItem(ALIGNED_KEY) ? "Stargate Aligned" : "Aligning Stargate…"));
+  const [text, setText] = useState(() => (sessionStorage.getItem(ALIGNED_KEY) ? t(ALIGNED) : t("Aligning Stargate…")));
   const [aligned, setAligned] = useState(() => !!sessionStorage.getItem(ALIGNED_KEY));
   useEffect(() => {
     if (!enabled || aligned) return;
@@ -42,7 +45,7 @@ function useAlignment(enabled: boolean) {
           await sleep(phase.ms);
         }
       }
-      const final = "Stargate Aligned";
+      const final = t(ALIGNED);
       for (let i = 1; i <= final.length; i++) {
         if (cancelled) return;
         setText(final.slice(0, i));
@@ -74,9 +77,11 @@ function usePlaces() {
   return places;
 }
 
-const KIND_STYLE: Record<PlaceKind, { label: string; color: string; icon: React.ReactNode }> = {
+// (`label` and `plural` in English: translated when shown)
+const KIND_STYLE: Record<PlaceKind, { label: string; plural: string; color: string; icon: React.ReactNode }> = {
   galaxy: {
     label: "Galaxy",
+    plural: "Galaxies",
     color: "text-purple-300",
     icon: (
       <g fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round">
@@ -88,6 +93,7 @@ const KIND_STYLE: Record<PlaceKind, { label: string; color: string; icon: React.
   },
   system: {
     label: "System",
+    plural: "Systems",
     color: "text-cyan-300",
     icon: (
       <g fill="none" stroke="currentColor" strokeWidth={1.5}>
@@ -98,6 +104,7 @@ const KIND_STYLE: Record<PlaceKind, { label: string; color: string; icon: React.
   },
   planet: {
     label: "Planet",
+    plural: "Planets",
     color: "text-pink-300",
     icon: (
       <g fill="none" stroke="currentColor" strokeWidth={1.5}>
@@ -110,11 +117,11 @@ const KIND_STYLE: Record<PlaceKind, { label: string; color: string; icon: React.
 
 const ago = (timestamp: number) => {
   const minutes = Math.max(0, (Date.now() - timestamp) / 60000);
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${Math.floor(minutes)} min ago`;
-  if (minutes < 60 * 24) return `${Math.floor(minutes / 60)} h ago`;
-  if (minutes < 60 * 24 * 30) return `${Math.floor(minutes / 60 / 24)} d ago`;
-  return new Date(timestamp).toLocaleDateString();
+  if (minutes < 1) return t("Saved just now");
+  if (minutes < 60) return t("Saved %lld min ago", Math.floor(minutes));
+  if (minutes < 60 * 24) return t("Saved %lld h ago", Math.floor(minutes / 60));
+  if (minutes < 60 * 24 * 30) return t("Saved %lld d ago", Math.floor(minutes / 60 / 24));
+  return t("Saved %@", new Date(timestamp).toLocaleDateString());
 };
 
 const IconButton: React.FC<{ title: string; onClick: () => void; danger?: boolean; children: React.ReactNode }> = ({ title, onClick, danger, children }) => (
@@ -172,40 +179,40 @@ function PlaceRow({ place, disabled, onGo }: { place: SavedPlace; disabled: bool
             <div className="text-sm text-gray-100 truncate">{place.name}</div>
           )}
           <div className="text-[10px] text-gray-500 truncate">
-            <span className={kind.color}>{kind.label}</span>
+            <span className={kind.color}>{t(kind.label)}</span>
             {context && <> · {context}</>}
             {target && <span className="font-mono"> · {target.coordinates.join(", ")}</span>}
           </div>
         </div>
         {mode !== "confirm" && (
           <Button tone="primary" className="shrink-0 px-2.5" disabled={disabled || !target} onClick={() => onGo(place)}>
-            Go
+            {t("Go")}
           </Button>
         )}
       </div>
       <div className="flex items-center justify-between gap-2 mt-1.5 pl-[32px]">
-        <span className="text-[10px] text-gray-600">{copied ? <span className="text-cyan-300">Link copied</span> : `Saved ${ago(place.timestamp)}`}</span>
+        <span className="text-[10px] text-gray-600">{copied ? <span className="text-cyan-300">{t("Link copied")}</span> : ago(place.timestamp)}</span>
         {mode === "confirm" ? (
           <div className="flex items-center gap-1.5 animate-[fadeIn_0.2s_ease-out]">
-            <span className="text-[11px] text-red-200/90">Remove this place?</span>
+            <span className="text-[11px] text-red-200/90">{t("Remove this place?")}</span>
             <button onClick={() => setMode("idle")} className="px-2 py-0.5 rounded text-[11px] text-gray-300 bg-white/5 hover:bg-white/15 border border-white/10">
-              Keep
+              {t("Keep")}
             </button>
             <button onClick={() => removePlace(place.id)} className="px-2 py-0.5 rounded text-[11px] text-red-100 bg-red-500/30 hover:bg-red-500/50 border border-red-400/40">
-              Remove
+              {t("Remove")}
             </button>
           </div>
         ) : (
           <div className="flex items-center gap-1">
-            <IconButton title="Rename" onClick={() => setMode("rename")}>
+            <IconButton title={t("Rename")} onClick={() => setMode("rename")}>
               <path d="M4 20h4L19 9l-4-4L4 16v4z" />
               <path d="M13.5 6.5l4 4" />
             </IconButton>
-            <IconButton title="Copy Stargate link" onClick={copy}>
+            <IconButton title={t("Copy Stargate link")} onClick={copy}>
               <rect x={9} y={9} width={11} height={11} rx={2} />
               <path d="M5 15V5a1 1 0 0 1 1-1h10" />
             </IconButton>
-            <IconButton title="Remove" danger onClick={() => setMode("confirm")}>
+            <IconButton title={t("Remove")} danger onClick={() => setMode("confirm")}>
               <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />
             </IconButton>
           </div>
@@ -226,14 +233,14 @@ function SavedPlaces({ places, remote, onGo }: { places: SavedPlace[]; remote: b
         <svg width={34} height={34} viewBox="0 0 24 24" className="mx-auto text-cyan-300/50 mb-2" fill="none" stroke="currentColor" strokeWidth={1.3}>
           <path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7z" />
         </svg>
-        <div className="text-sm text-gray-200">No saved places yet</div>
-        <p className="text-xs text-gray-500 mt-1 max-w-[16rem] mx-auto">Save where your ship is from the Link tab, and come back to it from here at any time.</p>
+        <div className="text-sm text-gray-200">{t("No saved places yet")}</div>
+        <p className="text-xs text-gray-500 mt-1 max-w-[16rem] mx-auto">{t("Save where your ship is from the Link tab, and come back to it from here at any time.")}</p>
       </div>
     );
   }
   return (
     <div>
-      {remote && <p className="text-[11px] text-fuchsia-200/80 mb-2">These places belong to your own universe: return home to travel to them.</p>}
+      {remote && <p className="text-[11px] text-fuchsia-200/80 mb-2">{t("These places belong to your own universe: return home to travel to them.")}</p>}
       <div className="flex gap-1 mb-2 overflow-x-auto">
         {(["all", "galaxy", "system", "planet"] as const).map((kind) => (
           <button
@@ -242,7 +249,7 @@ function SavedPlaces({ places, remote, onGo }: { places: SavedPlace[]; remote: b
             onClick={() => setFilter(kind)}
             className={`shrink-0 px-2 py-1 rounded-md text-[11px] border transition-colors disabled:opacity-30 ${filter === kind ? "border-cyan-400/60 bg-cyan-400/10 text-cyan-100" : "border-white/10 bg-white/5 text-gray-400 hover:bg-white/10"}`}
           >
-            {kind === "all" ? "All" : `${KIND_STYLE[kind].label}s`} <span className="text-gray-500">{counts[kind]}</span>
+            {kind === "all" ? t("All") : t(KIND_STYLE[kind].plural)} <span className="text-gray-500">{counts[kind]}</span>
           </button>
         ))}
       </div>
@@ -278,19 +285,23 @@ export function StargatePanel({ explorer, state, universe, onClose }: { explorer
 
   if (!coordinates) return null;
   const system = depth !== "galaxy" && ship ? ship.system : null;
+  // The link carries the generated planet name: the registry resolves its owner
   const path = stargatePath(coordinates, system, depth === "planet" ? planetName : null);
   const url = `${window.location.origin}${path}`;
   const target = { coordinates, system, planet: depth === "planet" && ship ? ship.planet : null, planetName: depth === "planet" ? planetName : null };
   const saved = findPlace(target);
   const galaxyName = state.galaxy ? pretty(state.galaxy.name) : null;
-  const systemName = ship ? state.shipSystemName ?? `System #${ship.system.toLocaleString()}` : null;
+  // As everybody sees them: an owner's name for the place, or the generated one
+  const ownedSystemName = ship ? state.owners.system(ship.system)?.name ?? state.shipSystemName : null;
+  const systemName = ship ? ownedSystemName ?? t("System #%@", amount(ship.system)) : null;
+  const shownPlanetName = planetName && ship && ship.planet !== null ? state.owners.planetName({ index: ship.planet, name: planetName }, ship.system) : null;
 
   const toggleSaved = () => {
     if (saved) {
       removePlace(saved.id);
       return;
     }
-    const name = depth === "planet" && planetName ? pretty(planetName) : depth === "system" ? systemName ?? "Star system" : galaxyName ?? coordinates.join(", ");
+    const name = depth === "planet" && shownPlanetName ? shownPlanetName : depth === "system" ? systemName ?? t("Star system") : galaxyName ?? coordinates.join(", ");
     savePlace(target, { name, type: depth, galaxyName, systemName: depth === "planet" ? systemName : null });
   };
 
@@ -302,9 +313,9 @@ export function StargatePanel({ explorer, state, universe, onClose }: { explorer
   };
 
   const levels: Array<{ depth: Depth; label: string; name: string | null }> = [
-    { depth: "galaxy", label: "Galaxy", name: state.galaxy ? pretty(state.galaxy.name) : coordinates.join(", ") },
-    { depth: "system", label: "System", name: ship ? state.shipSystemName ?? `#${ship.system.toLocaleString()}` : null },
-    { depth: "planet", label: "Planet", name: planetName ? pretty(planetName) : null },
+    { depth: "galaxy", label: t("Galaxy"), name: state.galaxy ? pretty(state.galaxy.name) : coordinates.join(", ") },
+    { depth: "system", label: t("System"), name: ship ? ownedSystemName ?? `#${amount(ship.system)}` : null },
+    { depth: "planet", label: t("Planet"), name: shownPlanetName },
   ];
 
   const copy = async () => {
@@ -329,10 +340,10 @@ export function StargatePanel({ explorer, state, universe, onClose }: { explorer
           </svg>
           <div>
             <div className="text-[10px] uppercase tracking-[0.3em] text-gray-500">Stargate</div>
-            <div className={`font-mono text-sm ${remote ? "text-red-300" : aligned ? "text-cyan-200" : "text-cyan-400/80"}`}>{remote ? "Remote Universe" : text}</div>
+            <div className={`font-mono text-sm ${remote ? "text-red-300" : aligned ? "text-cyan-200" : "text-cyan-400/80"}`}>{remote ? t("Remote Universe") : text}</div>
           </div>
         </div>
-        <button onClick={onClose} className="text-gray-400 hover:text-white leading-none px-1" title="Close">
+        <button onClick={onClose} className="text-gray-400 hover:text-white leading-none px-1" title={t("Close")}>
           ✕
         </button>
       </div>
@@ -340,9 +351,11 @@ export function StargatePanel({ explorer, state, universe, onClose }: { explorer
       <div className="grid grid-cols-2 gap-1 p-1 mb-3 rounded-lg bg-black/30 border border-white/10">
         {(["link", "saved"] as const).map((id) => (
           <button key={id} onClick={() => setTab(id)} className={`py-1.5 rounded-md text-xs transition-colors ${tab === id ? "bg-white/10 text-white" : "text-gray-400 hover:text-gray-200"}`}>
-            {id === "link" ? "Link" : (
+            {id === "link" ? (
+              t("Link")
+            ) : (
               <>
-                Saved places <span className="text-gray-500">{places.length}</span>
+                {t("Saved places")} <span className="text-gray-500">{places.length}</span>
               </>
             )}
           </button>
@@ -352,10 +365,10 @@ export function StargatePanel({ explorer, state, universe, onClose }: { explorer
       {tab === "saved" ? (
         <SavedPlaces places={places} remote={remote} onGo={go} />
       ) : remote ? (
-        <p className="text-xs text-gray-400 leading-relaxed">Stargate links are disabled in remote universes: a gate points into one seed, and this one is not yours. Return to your own universe to open one.</p>
+        <p className="text-xs text-gray-400 leading-relaxed">{t("Stargate links are disabled in remote universes: a gate points into one seed, and this one is not yours. Return to your own universe to open one.")}</p>
       ) : (
         <div className={`transition-opacity duration-300 ${aligned ? "opacity-100" : "opacity-30 pointer-events-none"}`}>
-          <div className="text-[10px] uppercase tracking-[0.2em] text-gray-500 mb-1.5">Destination</div>
+          <div className="text-[10px] uppercase tracking-[0.2em] text-gray-500 mb-1.5">{t("Destination")}</div>
           <div className="grid grid-cols-3 gap-1.5 mb-3">
             {levels.map((level) => (
               <button
@@ -372,18 +385,18 @@ export function StargatePanel({ explorer, state, universe, onClose }: { explorer
           <input readOnly value={url} onFocus={(e) => e.currentTarget.select()} className="w-full bg-black/40 border border-white/10 rounded-lg px-2.5 py-1.5 text-[11px] font-mono text-cyan-100/90 outline-none select-text" />
           <div className="flex gap-2 mt-2.5">
             <Button tone="primary" className="flex-1" onClick={copy}>
-              {copied ? "Copied" : "Copy link"}
+              {copied ? t("Copied") : t("Copy link")}
             </Button>
             {typeof navigator.share === "function" && (
-              <Button className="flex-1" onClick={() => navigator.share({ title: "The Atlas", text: "Check out this Stargate destination on The Atlas!", url }).catch(() => {})}>
-                Share
+              <Button className="flex-1" onClick={() => navigator.share({ title: "The Atlas", text: t("Check out this Stargate destination on The Atlas!"), url }).catch(() => {})}>
+                {t("Share")}
               </Button>
             )}
-            <Button className={`flex-1 flex items-center justify-center gap-1.5 whitespace-nowrap ${saved ? "!border-amber-300/50 !bg-amber-300/10 text-amber-100" : ""}`} onClick={toggleSaved} title={saved ? "Remove from your saved places" : "Keep this destination in your saved places"}>
+            <Button className={`flex-1 flex items-center justify-center gap-1.5 whitespace-nowrap ${saved ? "!border-amber-300/50 !bg-amber-300/10 text-amber-100" : ""}`} onClick={toggleSaved} title={saved ? t("Remove from your saved places") : t("Keep this destination in your saved places")}>
               <svg width={13} height={13} viewBox="0 0 24 24" fill={saved ? "currentColor" : "none"} stroke="currentColor" strokeWidth={1.8} strokeLinejoin="round">
                 <path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7z" />
               </svg>
-              {saved ? "Saved" : "Save"}
+              {saved ? t("Saved") : t("Save")}
             </Button>
           </div>
         </div>

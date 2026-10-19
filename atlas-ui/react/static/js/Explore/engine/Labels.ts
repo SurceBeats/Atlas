@@ -1,6 +1,11 @@
 // atlas-ui/react/static/js/Explore/engine/Labels.ts
 //
 // World-anchored DOM labels, positioned every frame without going through React.
+// Their words may be somebody's (an owner's name for a place): always set as text.
+
+import { sealPath } from "../ui/seals.ts";
+
+const SVG = "http://www.w3.org/2000/svg";
 
 export type LabelKind = "star" | "planet" | "moon" | "poi" | "cluster" | "exotic" | "galaxy" | "hover" | "selected" | "ship";
 
@@ -9,6 +14,7 @@ interface Label {
   text: string;
   sub: string;
   kind: LabelKind;
+  seal: string | null;
   placed: boolean;
 }
 
@@ -50,12 +56,14 @@ export class LabelLayer {
   constructor(parent: HTMLElement, private wheelTarget?: HTMLElement) {
     this.container = document.createElement("div");
     this.container.className = "absolute inset-0 pointer-events-none overflow-hidden select-none";
+    // A finger landing on a label is a tap on it, never the browser's own pan or zoom
+    this.container.style.touchAction = "none";
     parent.appendChild(this.container);
   }
 
   // `onDoubleClick` is the label's "engage" (travel / go into orbit), like double-
-  // clicking the object itself
-  upsert(id: string, kind: LabelKind, text: string, sub = "", onClick?: () => void, onDoubleClick?: () => void) {
+  // clicking the object itself. `seal`: its owner's emblem, before the name
+  upsert(id: string, kind: LabelKind, text: string, sub = "", onClick?: () => void, onDoubleClick?: () => void, seal: string | null = null) {
     let label = this.labels.get(id);
     if (!label) {
       const el = document.createElement("div");
@@ -85,22 +93,40 @@ export class LabelLayer {
         { passive: false }
       );
       this.container.appendChild(el);
-      label = { el, text: "", sub: "", kind, placed: false };
+      label = { el, text: "", sub: "", kind, seal: null, placed: false };
       this.labels.set(id, label);
     }
     if (onClick) this.clickHandlers.set(id, onClick);
     if (onDoubleClick) this.doubleClickHandlers.set(id, onDoubleClick);
-    if (label.text !== text || label.sub !== sub || label.kind !== kind) {
+    if (label.text !== text || label.sub !== sub || label.kind !== kind || label.seal !== seal) {
       label.text = text;
       label.sub = sub;
       label.kind = kind;
+      label.seal = seal;
       label.el.className = `absolute left-0 top-0 whitespace-nowrap will-change-transform ${KIND_CLASSES[kind]}`;
-      const safe = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
-      label.el.innerHTML = `${MARKERS[kind]}<span class="absolute left-3 -top-2 font-mono tracking-wide drop-shadow-[0_0_4px_rgba(0,0,0,0.9)]">${safe(text)}${sub
-        .split("\n")
-        .filter(Boolean)
-        .map((line) => `<span class="block text-[10px] opacity-60">${safe(line)}</span>`)
-        .join("")}</span>`;
+      // The marker is ours; the words are set as text
+      label.el.innerHTML = MARKERS[kind];
+      const body = document.createElement("span");
+      body.className = "absolute left-3 -top-2 font-mono tracking-wide drop-shadow-[0_0_4px_rgba(0,0,0,0.9)]";
+      const path = sealPath(seal);
+      if (path) {
+        const icon = document.createElementNS(SVG, "svg");
+        icon.setAttribute("viewBox", "0 0 24 24");
+        icon.setAttribute("class", "inline-block w-3 h-3 mr-1 -mt-0.5 align-middle text-emerald-200");
+        const shape = document.createElementNS(SVG, "path");
+        shape.setAttribute("d", path);
+        shape.setAttribute("fill", "currentColor");
+        icon.appendChild(shape);
+        body.appendChild(icon);
+      }
+      body.appendChild(document.createTextNode(text));
+      for (const line of sub.split("\n").filter(Boolean)) {
+        const row = document.createElement("span");
+        row.className = "block text-[10px] opacity-60";
+        row.textContent = line;
+        body.appendChild(row);
+      }
+      label.el.appendChild(body);
     }
   }
 

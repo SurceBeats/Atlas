@@ -14,6 +14,7 @@ import SeedIcon from "../Icons/SeedIcon.tsx";
 import NodeIdIcon from "../Icons/NodeIdIcon.tsx";
 import contentFilter from "../Utils/ContentFilter.jsx";
 import { SeedSanitizer } from "../Utils/SeedSanitizer.tsx";
+import { t } from "../i18n/i18n.ts";
 
 interface Peer {
   peer_id: string;
@@ -43,7 +44,7 @@ interface MultiverseData {
 const MultiverseLayout: React.FC = () => {
   const API_ENDPOINT = "/api/multiverse/peers";
   const REFRESH_INTERVAL = 30000;
-  const VERSION = "3.0.0";
+  const VERSION = "3.0.1";
 
   const [data, setData] = useState<MultiverseData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -62,9 +63,10 @@ const MultiverseLayout: React.FC = () => {
   });
 
   const formatCosmicTime = (timestamp: number): string => {
-    if (!timestamp) return "Unknown Origin";
+    if (!timestamp) return t("Unknown Origin");
     const date = new Date(timestamp * 1000);
-    return date.toLocaleDateString("en-US", {
+    // As the browser's region writes dates
+    return date.toLocaleDateString(undefined, {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -74,7 +76,7 @@ const MultiverseLayout: React.FC = () => {
   };
 
   const formatLastSeen = (timestamp: number): { text: string; relative: string } => {
-    if (!timestamp) return { text: "Never", relative: "Unknown" };
+    if (!timestamp) return { text: t("Never"), relative: t("Unknown") };
     const date = new Date(timestamp * 1000);
     const now = new Date();
     const diff = now.getTime() - date.getTime();
@@ -84,17 +86,17 @@ const MultiverseLayout: React.FC = () => {
 
     let relative = "";
     if (days > 0) {
-      relative = `${days}d ago`;
+      relative = t("%lldd ago", days);
     } else if (hours > 0) {
-      relative = `${hours}h ago`;
+      relative = t("%lldh ago", hours);
     } else if (minutes > 0) {
-      relative = `${minutes}m ago`;
+      relative = t("%lldm ago", minutes);
     } else {
-      relative = "Just now";
+      relative = t("Just now");
     }
 
     return {
-      text: date.toLocaleDateString("en-US", {
+      text: date.toLocaleDateString(undefined, {
         month: "short",
         day: "numeric",
         hour: "2-digit",
@@ -163,10 +165,10 @@ const MultiverseLayout: React.FC = () => {
         setData(result);
         setError(null);
       } else {
-        setError(result.error || "Failed to fetch multiverse data");
+        setError(result.error || t("Failed to fetch multiverse data"));
       }
     } catch (err) {
-      setError(`Network error: ${err.message}`);
+      setError(t("Network error: %@", err.message));
     } finally {
       setLoading(false);
       setLastUpdate(new Date());
@@ -243,7 +245,7 @@ const MultiverseLayout: React.FC = () => {
           <div className="flex items-center justify-center h-[60vh] flex-1">
             <div className="text-center">
               <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-500 mx-auto mb-4"></div>
-              <p className="text-xl text-purple-300">Scanning Multiverse...</p>
+              <p className="text-xl text-purple-300">{t("Scanning Multiverse...")}</p>
             </div>
           </div>
         </div>
@@ -268,16 +270,16 @@ const MultiverseLayout: React.FC = () => {
 
         <div className="w-full px-2 sm:px-4 lg:px-6 py-4 sm:py-8 flex-1">
           <div className="text-center mb-6">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">Multiverse Network</h1>
-            <p className="text-sm text-gray-300 mb-4">Connected P2P Universe Instances</p>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">{t("Multiverse Network")}</h1>
+            <p className="text-sm text-gray-300 mb-4">{t("Connected P2P Universe Instances")}</p>
 
             <div className="flex items-center justify-center gap-2 text-xs flex-wrap mb-4">
               <div className="flex items-center gap-1">
-                <span className="text-gray-400">Total Peers:</span>
+                <span className="text-gray-400">{t("Total Peers:")}</span>
                 <span className="text-purple-300 font-bold">{data?.total_peers || 0}</span>
               </div>
               <div className="flex items-center gap-1">
-                <span className="text-gray-400">Valid Universes:</span>
+                <span className="text-gray-400">{t("Valid Universes:")}</span>
                 <span className="text-purple-300 font-bold">
                   {data?.groups?.filter((group) => {
                     const nameFiltered = contentFilter.filterContent(group.seed_name);
@@ -292,7 +294,7 @@ const MultiverseLayout: React.FC = () => {
                 return nameFiltered.isBlocked || seedFiltered.isBlocked;
               }).length > 0 && (
                 <div className="flex items-center gap-1">
-                  <span className="text-red-400">Filtered:</span>
+                  <span className="text-red-400">{t("Filtered:")}</span>
                   <span className="text-red-300 font-bold">
                     {
                       data.groups.filter((group) => {
@@ -306,12 +308,12 @@ const MultiverseLayout: React.FC = () => {
               )}
               {lastUpdate && (
                 <div className="flex items-center gap-1">
-                  <span className="text-gray-400">Last Update:</span>
+                  <span className="text-gray-400">{t("Last Update:")}</span>
                   <span className="text-purple-300">{lastUpdate.toLocaleTimeString()}</span>
                 </div>
               )}
               <button onClick={() => fetchData()} className="px-3 py-1 bg-purple-600/30 hover:bg-purple-600/50 rounded-full border border-purple-500/50 transition-colors">
-                Refresh
+                {t("Refresh")}
               </button>
               <button
                 onClick={() => {
@@ -321,14 +323,14 @@ const MultiverseLayout: React.FC = () => {
                 }}
                 className={`px-3 py-1 rounded-full border transition-colors ${autoRefresh ? "bg-green-600/30 hover:bg-green-600/50 border-green-500/50" : "bg-gray-600/30 hover:bg-gray-600/50 border-gray-500/50"}`}
               >
-                Auto-refresh: {autoRefresh ? "ON" : "OFF"}
+                {autoRefresh ? t("Auto-refresh: ON") : t("Auto-refresh: OFF")}
               </button>
             </div>
 
             {showPortMessage && (
               <div className="mt-4 max-w-4xl mx-auto">
                 <div className="bg-gradient-to-r from-blue-900/40 via-indigo-900/40 to-purple-900/40 backdrop-blur-lg rounded-xl border border-blue-500/40 p-4 shadow-xl relative">
-                  <button onClick={dismissPortMessage} className="absolute top-2 right-2 text-gray-400 hover:text-white transition-colors p-1" aria-label="Dismiss message">
+                  <button onClick={dismissPortMessage} className="absolute top-2 right-2 text-gray-400 hover:text-white transition-colors p-1" aria-label={t("Dismiss message")}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -339,9 +341,9 @@ const MultiverseLayout: React.FC = () => {
                         <svg className="w-5 h-5 text-blue-400 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                           <path fill="currentColor" d="m21.17 15.4l-5.91-9.85c-.78-1.3-1.96-2.04-3.26-2.04s-2.48.74-3.26 2.03L2.83 15.4c-.44.73-.66 1.49-.66 2.21c0 .57.14 1.13.42 1.62C3.23 20.35 4.47 21 6 21h12c1.53 0 2.77-.65 3.41-1.77c.28-.49.42-1.02.42-1.58c.01-.74-.21-1.51-.66-2.25M12 8.45c.85 0 1.55.7 1.55 1.55s-.69 1.55-1.55 1.55c-.85 0-1.55-.7-1.55-1.55c0-.86.69-1.55 1.55-1.55m1.69 8.46c-.03.04-.8.92-2.07.92h-.15c-.51-.03-.93-.25-1.18-.63c-.31-.47-.36-1.11-.12-1.82l.41-1.22c.23-.68.01-.79-.11-.85l-.14-.02c-.25 0-.6.15-.71.21c-.1.05-.23.03-.31-.07c-.07-.1-.07-.23.01-.32c.03-.04.87-.99 2.22-.91c.51.03.93.25 1.18.63c.32.47.36 1.11.12 1.83l-.41 1.22c-.23.68-.01.79.11.85l.14.02c.25 0 .6-.15.71-.2c.11-.06.23-.03.31.07c.07.07.07.2-.01.29" strokeWidth="0.5" stroke="currentColor" />
                         </svg>
-                        <h3 className="text-blue-200 font-semibold text-sm">Private Network Notice</h3>
+                        <h3 className="text-blue-200 font-semibold text-sm">{t("Private Network Notice")}</h3>
                       </div>
-                      <p className="text-gray-300 text-xs leading-relaxed text-center">If you're behind a private connection or firewall, make sure to open the Atlas ports to allow communication with other multiverse instances. This enables P2P connectivity across the network.</p>
+                      <p className="text-gray-300 text-xs leading-relaxed text-center">{t("If you're behind a private connection or firewall, make sure to open the Atlas ports to allow communication with other multiverse instances. This enables P2P connectivity across the network.")}</p>
                     </div>
                   </div>
                 </div>
@@ -356,29 +358,29 @@ const MultiverseLayout: React.FC = () => {
                   <div className="flex items-center gap-3">
                     <div className="text-center sm:text-left">
                       <h3 className="text-amber-200 font-bold text-sm sm:text-lg flex items-center justify-center sm:justify-start">
-                        <UniverseIcon className="mr-2" /> Exploring Remote Universe
+                        <UniverseIcon className="mr-2" /> {t("Exploring Remote Universe")}
                       </h3>
                       <div className="space-y-1 mt-2">
                         <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 text-xs">
                           <div className="flex items-center gap-2">
                             <SeedIcon className="w-4 h-4 text-amber-400" />
-                            <span className="text-amber-300/80">Seed:</span>
+                            <span className="text-amber-300/80">{t("Seed:")}</span>
                           </div>
-                          <span className="text-amber-200 font-mono">{SeedSanitizer.sanitizeForDisplay(universeConfig.seed_str) || "Unknown"}</span>
+                          <span className="text-amber-200 font-mono">{SeedSanitizer.sanitizeForDisplay(universeConfig.seed_str) || t("Unknown")}</span>
                         </div>
                         <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 text-xs">
                           <div className="flex items-center gap-2">
                             <NodeIdIcon className="w-4 h-4 text-amber-400" />
-                            <span className="text-amber-300/80">Atlas ID:</span>
+                            <span className="text-amber-300/80">{t("Atlas ID:")}</span>
                           </div>
-                          <span className="text-amber-200 font-mono truncate max-w-xs sm:max-w-none">{universeConfig.node_id || "Unknown"}</span>
+                          <span className="text-amber-200 font-mono truncate max-w-xs sm:max-w-none">{universeConfig.node_id || t("Unknown")}</span>
                         </div>
                       </div>
                     </div>
                   </div>
                   <button onClick={handleReturnToOriginalUniverse} className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-amber-500/25 flex items-center gap-2 w-full text-center sm:w-auto justify-center">
                     <UniverseIcon size={18} color="white" />
-                    <span>Return to Your Universe</span>
+                    <span>{t("Return to Your Universe")}</span>
                   </button>
                 </div>
               </div>
@@ -418,14 +420,14 @@ const MultiverseLayout: React.FC = () => {
                           <div className="absolute -top-2 -left-2 z-10">
                             <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold py-1 px-2 rounded-full shadow-lg flex items-center gap-1 animate-pulse">
                               <UniverseIcon size={12} color="white" />
-                              <span>Exploring</span>
+                              <span>{t("Exploring")}</span>
                             </div>
                           </div>
                         )}
                         <div className="absolute top-3 right-3 flex items-center gap-2">
                           <div className={`px-2 py-1 rounded-full text-xs font-semibold ${statusStyle.bgColor} ${statusStyle.textColor} ${statusStyle.animation} flex items-center gap-1`}>
                             <div className={`w-1.5 h-1.5 rounded-full ${statusStyle.dotColor}`}></div>
-                            {mostRecentPeer.status}
+                            {t(mostRecentPeer.status)}
                           </div>
                           {group.count > 1 && <div className="px-2 py-1 bg-purple-500/30 rounded-full text-xs font-semibold text-purple-200 flex items-center justify-center">{group.count}</div>}
                         </div>
@@ -438,18 +440,18 @@ const MultiverseLayout: React.FC = () => {
 
                         <div className="space-y-2 mb-4 text-xs">
                           <div className="flex items-center justify-between">
-                            <span className="text-gray-400">Seed:</span>
+                            <span className="text-gray-400">{t("Seed:")}</span>
                             <span className="text-gray-300 font-mono">{SeedSanitizer.sanitizeForDisplay(contentFilter.getDisplayText(group.seed))}</span>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span className="text-gray-400">Bit Bang:</span>
+                            <span className="text-gray-400">{t("Bit Bang:")}</span>
                             <span className="text-gray-300">{formatCosmicTime(preferredCosmicTime)}</span>
                           </div>
                         </div>
 
                         {group.count > 1 ? (
                           <details className="mt-4">
-                            <summary className="cursor-pointer text-xs text-purple-400 hover:text-purple-300">View all {group.count} instances</summary>
+                            <summary className="cursor-pointer text-xs text-purple-400 hover:text-purple-300">{t("View all %lld instances", group.count)}</summary>
                             <div className="mt-2 space-y-2">
                               {[...group.peers]
                                 .sort((a, b) => b.last_seen - a.last_seen)
@@ -460,11 +462,11 @@ const MultiverseLayout: React.FC = () => {
                                     <div key={peer.peer_id} className={`p-2 bg-black/20 rounded-lg text-xs ${peerStatus.opacity}`}>
                                       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-1">
                                         <div className="flex-1 sm:mr-2">
-                                          <div className="text-gray-500 text-xs mb-1">Atlas ID</div>
+                                          <div className="text-gray-500 text-xs mb-1">{t("Atlas ID")}</div>
                                           <span className="font-mono text-gray-400 truncate block">{peer.peer_id}</span>
                                         </div>
                                         <div className="flex-shrink-0 sm:text-right mt-2 sm:mt-0">
-                                          <div className="text-gray-500 text-xs mb-1">Last Seen</div>
+                                          <div className="text-gray-500 text-xs mb-1">{t("Last Seen")}</div>
                                           <span className="text-gray-400">{peerLastSeen.relative}</span>
                                         </div>
                                       </div>
@@ -482,11 +484,11 @@ const MultiverseLayout: React.FC = () => {
                                 <div key={peer.peer_id} className={`p-2 bg-black/20 rounded-lg text-xs ${peerStatus.opacity}`}>
                                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-1">
                                     <div className="flex-1 sm:mr-2">
-                                      <div className="text-gray-500 text-xs mb-1">Atlas ID</div>
+                                      <div className="text-gray-500 text-xs mb-1">{t("Atlas ID")}</div>
                                       <span className="font-mono text-gray-400 truncate block">{peer.peer_id}</span>
                                     </div>
                                     <div className="flex-shrink-0 sm:text-right mt-2 sm:mt-0">
-                                      <div className="text-gray-500 text-xs mb-1">Last Seen</div>
+                                      <div className="text-gray-500 text-xs mb-1">{t("Last Seen")}</div>
                                       <span className="text-gray-400">{peerLastSeen.relative}</span>
                                     </div>
                                   </div>
@@ -499,11 +501,11 @@ const MultiverseLayout: React.FC = () => {
                         <div className="mt-4 pt-4 border-t border-white/10">
                           {isCurrentlyExploring(group.seed) ? (
                             <div className="w-full bg-gradient-to-r from-amber-600/50 to-orange-600/50 text-amber-200 font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 border border-amber-500/30">
-                              <span>You are Here</span>
+                              <span>{t("You are here")}</span>
                             </div>
                           ) : (
                             <button onClick={() => handleUniverseExploration(group)} className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-purple-500/25">
-                              Explore this Universe
+                              {t("Explore this Universe")}
                             </button>
                           )}
                         </div>
@@ -519,8 +521,8 @@ const MultiverseLayout: React.FC = () => {
               }).length > 0 && (
                 <div className="mt-12">
                   <div className="text-center mb-6">
-                    <h2 className="text-xl font-bold text-red-400 mb-2">⚠️ Filtered Content</h2>
-                    <p className="text-sm text-red-300">The following universes contain inappropriate content and have been filtered</p>
+                    <h2 className="text-xl font-bold text-red-400 mb-2">⚠️ {t("Filtered Content")}</h2>
+                    <p className="text-sm text-red-300">{t("The following universes contain inappropriate content and have been filtered")}</p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
@@ -548,18 +550,18 @@ const MultiverseLayout: React.FC = () => {
                           <div key={`filtered-${group.seed}-${index}`} className="bg-red-900/20 backdrop-blur-lg rounded-lg border border-red-500/30 p-3 shadow-lg opacity-60 relative">
                             <div className="flex items-start justify-between mb-2">
                               <div className="flex-1 min-w-0">
-                                <h3 className="text-sm font-bold text-red-400 truncate">{nameFiltered.isBlocked ? "Forbidden" : group.seed_name}</h3>
+                                <h3 className="text-sm font-bold text-red-400 truncate">{nameFiltered.isBlocked ? t("Forbidden") : group.seed_name}</h3>
                               </div>
                               {group.count > 1 && <div className="ml-2 bg-red-500/30 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold text-red-200 flex-shrink-0">{group.count}</div>}
                             </div>
 
                             <div className="space-y-1 mb-2 text-xs">
                               <div className="flex items-center justify-between">
-                                <span className="text-red-400 flex-shrink-0">Seed:</span>
-                                <span className="text-red-300 font-mono text-xs truncate ml-2 min-w-0">{seedFiltered.isBlocked ? "Forbidden" : SeedSanitizer.sanitizeForDisplay(group.seed)}</span>
+                                <span className="text-red-400 flex-shrink-0">{t("Seed:")}</span>
+                                <span className="text-red-300 font-mono text-xs truncate ml-2 min-w-0">{seedFiltered.isBlocked ? t("Forbidden") : SeedSanitizer.sanitizeForDisplay(group.seed)}</span>
                               </div>
                               <div className="flex items-center justify-between">
-                                <span className="text-red-400 flex-shrink-0">Bit Bang:</span>
+                                <span className="text-red-400 flex-shrink-0">{t("Bit Bang:")}</span>
                                 <span className="text-red-300 text-xs truncate ml-2">{formatCosmicTime(preferredCosmicTime)}</span>
                               </div>
                             </div>
@@ -567,7 +569,7 @@ const MultiverseLayout: React.FC = () => {
                             <div className="flex items-center justify-between pt-2 border-t border-red-500/20">
                               <div className="flex items-center gap-1 min-w-0">
                                 <div className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0"></div>
-                                <span className="text-xs font-semibold text-red-400">FILTERED</span>
+                                <span className="text-xs font-semibold text-red-400">{t("FILTERED")}</span>
                               </div>
                               <div className="text-right flex-shrink-0">
                                 <div className="text-xs text-red-300">{lastSeenInfo.relative}</div>
@@ -575,7 +577,7 @@ const MultiverseLayout: React.FC = () => {
                             </div>
 
                             <div className="relative bottom-0 left-0 right-0 bg-red-500/20 rounded-lg mt-2 px-2 py-1">
-                              <div className="text-xs text-red-300 text-center truncate">Reason: {nameFiltered.isBlocked ? nameFiltered.reason : seedFiltered.reason}</div>
+                              <div className="text-xs text-red-300 text-center truncate">{t("Reason: %@", t(nameFiltered.isBlocked ? nameFiltered.reason : seedFiltered.reason))}</div>
                             </div>
                           </div>
                         );
@@ -588,15 +590,15 @@ const MultiverseLayout: React.FC = () => {
 
           {data && data.groups && data.groups.length === 0 && (
             <div className="bg-white/5 backdrop-blur-lg rounded-2xl border border-white/10 p-12 text-center">
-              <p className="text-xl text-gray-400 mb-2">No Multiverse Connections Found</p>
-              <p className="text-sm text-gray-500 mb-4">Waiting for P2P peers to connect...</p>
+              <p className="text-xl text-gray-400 mb-2">{t("No Multiverse Connections Found")}</p>
+              <p className="text-sm text-gray-500 mb-4">{t("Waiting for P2P peers to connect...")}</p>
             </div>
           )}
 
           {!data && !loading && (
             <div className="bg-red-500/20 backdrop-blur-lg rounded-2xl border border-red-500/50 p-12 text-center">
-              <p className="text-xl text-red-400 mb-2">No Data Received</p>
-              <p className="text-sm text-red-300">Check browser console for details</p>
+              <p className="text-xl text-red-400 mb-2">{t("No Data Received")}</p>
+              <p className="text-sm text-red-300">{t("Check browser console for details")}</p>
             </div>
           )}
         </div>
