@@ -9,6 +9,7 @@ from pymodules.__atlas_config import config
 from pymodules.__atlas_seedmaster import consistent_hash
 from pymodules.__atlas_fixed_vars import VISUAL_DEBUG
 from pymodules.__drawer_cplanet_type import get_planet_color_map, get_procedural_planet_color
+from pymodules.__universe_init_planet import FRONTIER_TYPES
 
 from .atmosphere_translator import AtmosphereTranslator
 from .rings_translator import RingsTranslator
@@ -55,6 +56,11 @@ class PlanetRenderingTranslator:
             "Nebulous": self.planet_type_translators.translate_nebulous,
             "Aquifer": self.planet_type_translators.translate_aquifer,
             "Exotic": self.planet_type_translators.translate_exotic,
+            # The frontier types (only an 11th planet) are drawn as gas giants
+            "Super Puff": self.planet_type_translators.translate_gas_giant,
+            "Super Ringed": self.planet_type_translators.translate_gas_giant,
+            "Mirror": self.planet_type_translators.translate_gas_giant,
+            "Ruby Cloud": self.planet_type_translators.translate_gas_giant,
         }
 
     def translate_planet_rendering(self, planet) -> Dict[str, Any]:
@@ -86,7 +92,7 @@ class PlanetRenderingTranslator:
         if planet_type in self.planet_types:
             orbital_period_years = planet.orbital_period_seconds / (365.25 * 24 * 3600) if planet.orbital_period_seconds else 1.0
 
-            if planet_type in ["Gas Giant", "Frozen Gas Giant", "Nebulous", "Anomaly", "Exotic", "Carbon"]:
+            if planet_type in ["Gas Giant", "Frozen Gas Giant", "Nebulous", "Anomaly", "Exotic", "Carbon", *FRONTIER_TYPES]:
                 planet_specific_data = self.planet_types[planet_type](planet_radius, rng, config.seed, spaced_planet_name, orbital_period_years)
             else:
                 planet_specific_data = self.planet_types[planet_type](planet_radius, rng, config.seed, spaced_planet_name)

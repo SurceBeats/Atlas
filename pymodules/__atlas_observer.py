@@ -34,6 +34,10 @@ planet_types = [
     "Nebulous",
     "Aquifer",
     "Exotic",
+    "Super Puff",
+    "Super Ringed",
+    "Mirror",
+    "Ruby Cloud",
 ]
 
 life_forms = [

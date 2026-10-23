@@ -15,6 +15,7 @@ import * as THREE from "three";
 import type { PointOfInterest } from "./GalaxyModel.ts";
 import { hashString, SeededRng } from "../core/hash.ts";
 import { primordial, RING, rng, TUBE, torusGeometry, torusMaterial } from "../core/torus.ts";
+import { NOISE } from "../planet/realistic/glsl.ts";
 
 // The primordial torus in the explorer: light years per unit of the creation's torus, and
 // the side of each cube of its lattice (3 × 3 × 3 cells, it at the centre of the middle one)
@@ -82,14 +83,127 @@ const BEAM_FRAGMENT = /* glsl */ `
   uniform float uIntensity;
   uniform float uTime;
   uniform float uFlow;
+  uniform float uSubpulses;
   varying float vAlong;
   varying float vRim;
   void main() {
     // Bright at the source, fading outwards; knots travel along jets
     float fade = pow(1.0 - vAlong, 1.4);
     float knots = 1.0 + uFlow * 0.6 * sin(vAlong * 46.0 - uTime * 4.0);
-    float core = pow(vRim, 2.0);
-    gl_FragColor = vec4(uColor * fade * knots * core * uIntensity, 1.0);
+    float core = vRim * vRim;
+    // A pulsar's emission cone is hollow: brighter towards its walls (low rim), and no
+    // two pulses are alike: the whole beam flickers from one to the next
+    float hollow = mix(1.0, 0.35 + 1.3 * (1.0 - vRim) * vRim * 2.0, uSubpulses);
+    float pulses = 1.0 + uSubpulses * 0.25 * sin(uTime * 7.3) * sin(uTime * 3.1 + 1.3);
+    gl_FragColor = vec4(uColor * fade * knots * core * hollow * pulses * uIntensity, 1.0);
+  }
+`;
+
+// A pulsar wind nebula and its jets (Chandra's Crab and Vela), ray-marched through a
+// sphere in the pulsar's spin frame (+Y the spin axis): a thick, turbulent torus in the
+// equator, wisps travelling out from it, Doppler-brighter on the side whose outflow
+// comes towards us, and jets along the axis. The jets stand still while the beams sweep
+const VOLUME_VERTEX = /* glsl */ `
+  uniform float uRadius;
+  varying vec3 vLocal;
+  varying vec3 vCamera;
+  void main() {
+    vLocal = position * uRadius;
+    // The camera in the nebula's frame (modelView is a rotation and a translation)
+    vCamera = transpose(mat3(modelViewMatrix)) * -modelViewMatrix[3].xyz;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(vLocal, 1.0);
+  }
+`;
+
+const VOLUME_FRAGMENT = /* glsl */ `
+  ${NOISE}
+  uniform float uTime;
+  uniform float uRadius;
+  uniform float uTorus;
+  uniform float uIntensity;
+  uniform int uSteps;
+  varying vec3 vLocal;
+  varying vec3 vCamera;
+
+  float hash12(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+
+  vec3 nebulaEmission(vec3 p, vec3 toCamera, float R, float radius, float time) {
+    float r = length(p);
+    float rho = length(p.xz);
+    float y = p.y;
+    // X-ray hot near the pulsar, violet further out; all of it gone before the bounding
+    // sphere's edge
+    vec3 color = mix(vec3(0.78, 0.9, 1.0), vec3(0.5, 0.32, 1.0), smoothstep(0.6, 2.0, r / R)) * (1.0 - smoothstep(0.8, 1.0, r / radius));
+    // Jets along the spin axis, widening and fading, knots flowing out
+    float ay = abs(y);
+    float width = R * 0.06 * (1.0 + ay / R * 0.4);
+    float jet = exp(-rho * rho / (width * width)) * exp(-ay / (R * 2.2)) * smoothstep(R * 0.05, R * 0.3, ay);
+    jet *= 0.65 + 0.35 * sin(ay / R * 12.0 - time * 2.5);
+    float halo = exp(-r * r / (R * R * 3.0)) * 0.05;
+    vec3 light = color * halo + vec3(0.5, 0.65, 1.0) * jet * 2.5;
+    // The torus, thick and turbulent, and the outflow in the equator beyond it
+    vec2 q = vec2(rho - R, y);
+    float h = R * 0.18;
+    float torus = exp(-dot(q, q) / (h * h)) * 2.0;
+    float sheet = exp(-y * y / (h * h * 0.15)) * exp(-rho * rho / (R * R * 5.0)) * smoothstep(R * 0.2, R * 0.6, rho);
+    // No plasma here: skip the costly part
+    if (torus + sheet < 0.004) return light;
+    // Wisps travelling out as bent, broken arcs
+    float angle = atan(p.z, p.x);
+    float bend = sin(angle * 2.0 + time * 0.15) * 1.6 + sin(angle * 5.0 - time * 0.1 + 2.1) * 0.7;
+    float wisps = pow(0.5 + 0.5 * sin(rho / R * 9.0 - time * 1.2 + bend), 4.0);
+    // Clumpy, knotted plasma
+    float turbulence = 0.6 + 0.4 * snoise(p / R * 4.0 + vec3(0.0, time * 0.04, 0.0));
+    // Doppler: the outflow is radial in the equator
+    vec3 outflow = rho > 1e-9 ? vec3(p.x, 0.0, p.z) / rho : vec3(0.0);
+    float boost = pow(max(1.0 + 0.6 * dot(outflow, toCamera), 0.05), 2.0);
+    return light + color * (torus + sheet * wisps * 0.9) * turbulence * boost;
+  }
+
+  void main() {
+    vec3 dir = normalize(vLocal - vCamera);
+    // One fragment per ray: where it leaves the sphere (works from inside it too)
+    if (dot(vLocal, dir) <= 0.0) discard;
+    float b = dot(vCamera, dir);
+    float c = dot(vCamera, vCamera) - uRadius * uRadius;
+    float disc = b * b - c;
+    if (disc <= 0.0) discard;
+    float s = sqrt(disc);
+    float t0 = max(-b - s, 0.0);
+    float t1 = -b + s;
+    float ds = (t1 - t0) / float(uSteps);
+    // Jittered start, so the steps don't show as bands
+    float jitter = hash12(gl_FragCoord.xy);
+    vec3 sum = vec3(0.0);
+    for (int i = 0; i < uSteps; i++) {
+      vec3 p = vCamera + dir * (t0 + (float(i) + jitter) * ds);
+      sum += nebulaEmission(p, -dir, uTorus, uRadius, uTime);
+    }
+    gl_FragColor = vec4(sum * (ds / uTorus) * uIntensity, 1.0);
+  }
+`;
+
+// A pulsar's magnetosphere: the closed dipole field lines (line segments), turning with
+// the magnetic axis; light runs along them
+const FIELD_VERTEX = /* glsl */ `
+  varying float vAlong;
+  void main() {
+    vAlong = uv.x;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const FIELD_FRAGMENT = /* glsl */ `
+  uniform vec3 uColor;
+  uniform float uIntensity;
+  uniform float uTime;
+  varying float vAlong;
+  void main() {
+    // Brightest near the star (both feet of a loop), a glow flowing along each line
+    float foot = vAlong * 2.0 - 1.0;
+    float feet = 0.45 + 0.55 * foot * foot;
+    float flow = 0.6 + 0.4 * sin(vAlong * 30.0 - uTime * 3.0);
+    gl_FragColor = vec4(uColor * feet * flow * uIntensity, 1.0);
   }
 `;
 
@@ -125,7 +239,9 @@ interface Exotic {
   object: THREE.Group;
   horizon: number; // ly, 0 for objects that do not lens
   approach: number; // ly, good distance to look at it from
-  update: (time: number, toCamera: THREE.Vector3, view: { pixels: number; exposure: number }) => void;
+  // `time`: Unix seconds, for the spins (double precision); `view.shaderTime`: the same
+  // modulo a day, for the shaders' uTime (a float still resolves it smoothly)
+  update: (time: number, toCamera: THREE.Vector3, view: { pixels: number; exposure: number; detailed: boolean; projectionY: number; shaderTime: number }) => void;
 }
 
 function beacon(color: THREE.Color, size: number, intensity: number) {
@@ -167,11 +283,16 @@ function disk(inner: number, outer: number, intensity: number) {
 }
 
 // A cone/cylinder along +Y starting at the origin
-function beam(length: number, baseRadius: number, tipRadius: number, color: THREE.Color, intensity: number, flow: number) {
+function beamGeometry(length: number, baseRadius: number, tipRadius: number) {
   const geometry = new THREE.CylinderGeometry(tipRadius, baseRadius, length, 24, 1, true);
   geometry.translate(0, length / 2, 0);
+  return geometry;
+}
+
+// subpulses: 1 for a pulsar's hollow, flickering beam, 0 for a jet
+function beam(geometry: THREE.BufferGeometry, color: THREE.Color, intensity: number, flow: number, subpulses = 0) {
   const material = new THREE.ShaderMaterial({
-    uniforms: { uColor: { value: color }, uIntensity: { value: intensity }, uTime: { value: 0 }, uFlow: { value: flow } },
+    uniforms: { uColor: { value: color }, uIntensity: { value: intensity }, uTime: { value: 0 }, uFlow: { value: flow }, uSubpulses: { value: subpulses } },
     vertexShader: BEAM_VERTEX,
     fragmentShader: BEAM_FRAGMENT,
     blending: THREE.AdditiveBlending,
@@ -185,6 +306,45 @@ function beam(length: number, baseRadius: number, tipRadius: number, color: THRE
   return mesh;
 }
 
+// A dipole's closed field lines, r = L sin²θ about +Y, as line segments: loops of three
+// sizes at eight azimuths, from the star's surface out and back; uv.x runs 0..1 along
+// each loop
+function fieldGeometry(star: number, shells: number[]) {
+  const steps = 48;
+  const positions: number[] = [];
+  const uvs: number[] = [];
+  for (const shell of shells) {
+    // Where the loop leaves the star: L sin²θ = star
+    const start = Math.asin(Math.min(1, Math.sqrt(star / shell)));
+    for (let k = 0; k < 8; k++) {
+      const phi = (k / 8) * Math.PI * 2 + shell * 97;
+      const point = (i: number) => {
+        const s = i / steps;
+        const theta = start + (Math.PI - 2 * start) * s;
+        const r = shell * Math.sin(theta) * Math.sin(theta);
+        positions.push(r * Math.sin(theta) * Math.cos(phi), r * Math.cos(theta), r * Math.sin(theta) * Math.sin(phi));
+        uvs.push(s, 0);
+      };
+      for (let i = 1; i <= steps; i++) {
+        point(i - 1);
+        point(i);
+      }
+    }
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
+  return geometry;
+}
+
+// A pulsar's meshes (shared by every pulsar): its beams, the unit sphere its wind nebula
+// is ray-marched in and the magnetosphere
+interface PulsarParts {
+  beam: THREE.BufferGeometry;
+  volume: THREE.BufferGeometry;
+  field: THREE.BufferGeometry;
+}
+
 function randomTilt(rng: SeededRng) {
   return new THREE.Euler(rng.range(-1.2, 1.2), rng.range(0, Math.PI * 2), rng.range(-1.2, 1.2));
 }
@@ -193,6 +353,7 @@ export class ExoticLayer {
   readonly root = new THREE.Group();
   private items: Exotic[] = [];
   private toCamera = new THREE.Vector3();
+  private pulsarParts: PulsarParts | null = null;
 
   constructor(pois: PointOfInterest[], galaxyRadius: number, galaxyType: string, quasar: boolean) {
     for (const poi of pois) {
@@ -220,8 +381,8 @@ export class ExoticLayer {
       object: group,
       horizon,
       approach: horizon * 45,
-      update: (time) => {
-        material.uniforms.uTime.value = time;
+      update: (_time, _toCamera, view) => {
+        material.uniforms.uTime.value = view.shaderTime;
       },
     };
   }
@@ -232,12 +393,51 @@ export class ExoticLayer {
     const spin = new THREE.Group();
     const magnetic = new THREE.Group();
     magnetic.rotation.z = rng.range(0.35, 0.8); // magnetic axis misaligned with the spin axis
-    const color = new THREE.Color(0.65, 0.8, 1.0);
     const length = 0.05;
-    const north = beam(length, 0.0002, length * 0.12, color, 2.2, 0);
-    const south = beam(length, 0.0002, length * 0.12, color, 2.2, 0);
+    // Narrow, well collimated lighthouse beams
+    const parts = (this.pulsarParts ??= {
+      beam: beamGeometry(length, 0.0002, length * 0.07),
+      volume: new THREE.SphereGeometry(1, 48, 24),
+      field: fieldGeometry(length * 0.004, [length * 0.08, length * 0.14, length * 0.22]),
+    });
+
+    // The wind nebula and its jets, a volume in the spin frame (the group: +Y the spin axis)
+    const volumeMaterial = new THREE.ShaderMaterial({
+      // Radius just past where the outflow fades (the shader fades it out before the edge)
+      uniforms: { uTime: { value: 0 }, uRadius: { value: length * 0.55 }, uTorus: { value: length * 0.16 }, uIntensity: { value: 1.6 }, uSteps: { value: 40 } },
+      vertexShader: VOLUME_VERTEX,
+      fragmentShader: VOLUME_FRAGMENT,
+      blending: THREE.AdditiveBlending,
+      depthTest: false,
+      depthWrite: false,
+      transparent: true,
+      side: THREE.DoubleSide,
+    });
+    const volume = new THREE.Mesh(parts.volume, volumeMaterial);
+    volume.frustumCulled = false;
+    group.add(volume);
+
+    // The lighthouse beams from the magnetic poles, hollow, pulse after pulse
+    const color = new THREE.Color(0.65, 0.8, 1.0);
+    const north = beam(parts.beam, color, 2.2, 0, 1);
+    const south = beam(parts.beam, color, 2.2, 0, 1);
     south.rotation.z = Math.PI;
     magnetic.add(north, south);
+
+    // The magnetosphere, turning with the magnetic axis
+    const fieldMaterial = new THREE.ShaderMaterial({
+      uniforms: { uColor: { value: new THREE.Color(0.62, 0.5, 1.0) }, uIntensity: { value: 1.4 }, uTime: { value: 0 } },
+      vertexShader: FIELD_VERTEX,
+      fragmentShader: FIELD_FRAGMENT,
+      blending: THREE.AdditiveBlending,
+      depthTest: false,
+      depthWrite: false,
+      transparent: true,
+    });
+    const field = new THREE.LineSegments(parts.field, fieldMaterial);
+    field.frustumCulled = false;
+    magnetic.add(field);
+
     spin.add(magnetic);
     group.add(spin);
     const mark = beacon(new THREE.Color(0.7, 0.85, 1.0), 4, 1.2);
@@ -246,13 +446,21 @@ export class ExoticLayer {
     const beamDirection = new THREE.Vector3();
     const beamRotation = new THREE.Quaternion();
     const markMaterial = mark.material as THREE.ShaderMaterial;
+    const timed = [volumeMaterial, fieldMaterial, ...[north, south].map((m) => m.material as THREE.ShaderMaterial)];
     return {
       poi,
       object: group,
       horizon: 0,
       approach: length * 3,
-      update: (time, toCamera) => {
+      update: (time, toCamera, view) => {
         spin.rotation.y = ((time / period) % 1) * Math.PI * 2;
+        for (const m of timed) m.uniforms.uTime.value = view.shaderTime;
+        // Up close, the neutron star itself: a fierce blue-white point
+        markMaterial.uniforms.uSize.value = view.detailed ? 12 : 4;
+        // Steps along each ray: 40, down to 24 as the nebula fills the screen (its radius
+        // against half the screen height); the jitter hides the difference
+        const coverage = (volumeMaterial.uniforms.uRadius.value / Math.max(group.position.length(), 1e-9)) * view.projectionY;
+        volumeMaterial.uniforms.uSteps.value = Math.round(40 - 16 * THREE.MathUtils.smoothstep(coverage, 0.3, 1.0));
         // Flash when a beam sweeps across the line of sight
         group.updateMatrixWorld();
         beamDirection.set(0, 1, 0).applyQuaternion(north.getWorldQuaternion(beamRotation));
@@ -266,8 +474,9 @@ export class ExoticLayer {
     const group = new THREE.Group();
     const length = galaxyRadius * 0.4;
     const color = new THREE.Color(0.55, 0.72, 1.0);
-    const up = beam(length, galaxyRadius * 0.002, galaxyRadius * 0.018, color, 1.6, 1);
-    const down = beam(length, galaxyRadius * 0.002, galaxyRadius * 0.018, color, 1.6, 1);
+    const jet = beamGeometry(length, galaxyRadius * 0.002, galaxyRadius * 0.018);
+    const up = beam(jet, color, 1.6, 1);
+    const down = beam(jet, color, 1.6, 1);
     down.rotation.z = Math.PI;
     group.add(up, down);
     const mark = beacon(new THREE.Color(1.0, 0.95, 0.9), 9, 3);
@@ -279,14 +488,14 @@ export class ExoticLayer {
       object: group,
       horizon: 0,
       approach: poi.radius * 3.5,
-      update: (time) => {
+      update: (_time, _toCamera, view) => {
         // From inside (or right next to) a jet it would flood the whole view with light:
         // fade it out as the camera approaches its axis
         const p = group.position; // jet base relative to the camera
         const fromAxis = Math.hypot(p.x, p.z);
         const fade = THREE.MathUtils.smoothstep(fromAxis, jetRadius * 2, jetRadius * 8);
         materials.forEach((m) => {
-          m.uniforms.uTime.value = time;
+          m.uniforms.uTime.value = view.shaderTime;
           m.uniforms.uIntensity.value = 1.6 * fade;
         });
         up.visible = down.visible = fade > 0.001;
@@ -377,7 +586,7 @@ export class ExoticLayer {
         ] as const) {
           const u = material.uniforms;
           u.uFlow.value = flow;
-          u.uTime.value = time;
+          u.uTime.value = view.shaderTime;
           u.uTension.value = TORUS_TENSION;
           u.uAlpha.value = Math.min(4, alpha * level);
           u.uPixels.value = view.pixels * TORUS_SCALE;
@@ -392,15 +601,19 @@ export class ExoticLayer {
     return this.items.find((i) => i.poi.id === poi.id)?.approach ?? null;
   }
 
-  // `viewportHeight` in CSS pixels; `exposure`: the deep sky exposure (eye adaptation)
-  update(time: number, cameraWorld: THREE.Vector3, pixelRatio: number, viewportHeight = 900, exposure = 1) {
-    const view = { pixels: viewportHeight * pixelRatio, exposure };
+  // `viewportHeight` in CSS pixels; `exposure`: the deep sky exposure (eye adaptation);
+  // `projectionY`: the camera's projection [1][1] (1 / tan of half the vertical field).
+  // `time`: Unix seconds, the wall clock shared by every device and the app, so a
+  // pulsar's beams point the same way everywhere at the same moment
+  update(time: number, cameraWorld: THREE.Vector3, pixelRatio: number, viewportHeight = 900, exposure = 1, projectionY = 1) {
+    const shaderTime = time % 86400;
     for (const item of this.items) {
       const [x, y, z] = item.poi.position;
       item.object.position.set(x - cameraWorld.x, y - cameraWorld.y, z - cameraWorld.z);
       // Far away the structure is sub-pixel: draw only the beacon (still animated: a
       // pulsar's beacon flashes as its beam sweeps past, and that shows from anywhere)
       const detailed = item.approach / 3.5 / Math.max(item.object.position.length(), 1e-9) > DETAIL_ANGLE;
+      const view = { pixels: viewportHeight * pixelRatio, exposure, detailed, projectionY, shaderTime };
       const structure = item.object.children.filter((child) => !child.userData.beacon);
       if (detailed) structure.forEach((child) => (child.visible = true));
       this.toCamera.copy(item.object.position).negate().normalize();

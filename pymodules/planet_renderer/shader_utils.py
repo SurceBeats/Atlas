@@ -2,6 +2,8 @@
 
 from typing import Dict, Any, List
 
+from pymodules.__universe_init_planet import FRONTIER_TYPES
+
 
 class ShaderUtils:
 
@@ -11,7 +13,7 @@ class ShaderUtils:
 
         uniforms = {"time": {"value": 0.0, "type": "float"}, "seed": {"value": shape_seed * 0.001, "type": "float"}, "rotationAngle": {"value": angle_rotation, "type": "float"}, "baseColor": {"value": base_rgb, "type": "vec3"}, "planetType": {"value": planet_type, "type": "string"}}
 
-        if planet_type == "Gas Giant" and "cloud_bands" in planet_data:
+        if planet_type in ["Gas Giant", *FRONTIER_TYPES] and "cloud_bands" in planet_data:
             bands_data = planet_data["cloud_bands"]
             uniforms.update({"numBands": {"value": bands_data["num_bands"], "type": "float"}, "bandPositions": {"value": bands_data["positions"], "type": "float[]"}, "bandWidths": {"value": bands_data["widths"], "type": "float[]"}, "bandRotation": {"value": bands_data["rotation"], "type": "float"}})
 

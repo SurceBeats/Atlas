@@ -1,4 +1,4 @@
-import"./atlas_D0CDU_zgRQ1L3XbOi9taH.js";import{C as x,i as A,av as w,cg as M,bL as T,ch as y,B as E,ci as G,m as p,cj as B,ck as U,cl as R}from"./atlas_BUnHktt_WsVovWPX8BirI.js";const H={name:"CopyShader",uniforms:{tDiffuse:{value:null},opacity:{value:1}},vertexShader:`
+import"./atlas_DSJ7C9RPCcnrgjWfRLuaL.js";import{C as x,i as A,av as w,cg as M,bL as T,ch as y,B as E,ci as G,m as p,cj as B,ck as U,cl as R}from"./atlas_BUnHktt_WsVovWPX8BirI.js";const H={name:"CopyShader",uniforms:{tDiffuse:{value:null},opacity:{value:1}},vertexShader:`
 
 		varying vec2 vUv;
 

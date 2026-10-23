@@ -2,6 +2,92 @@
 
 import * as THREE from "three";
 import { createNoise3D } from "simplex-noise";
+import { NOISE } from "../Explore/planet/realistic/glsl.ts";
+
+// Per-pixel detail drawn over the 256px map and the mesh's relief, on the moon's own
+// sphere: small craters at three scales, grit and, on icy moons, a web of fine fractures,
+// as albedo and as bump-mapped relief, fading in as far as the pixel can resolve it.
+// uDetail: x craters, y fractures (icy), z bump height (fraction of the radius, in
+// object units), w grit; uDetailSeed: where in noise space this moon's detail lies
+const MOON_DETAIL_GLSL = /* glsl */ `
+${NOISE}
+uniform vec4 uDetail;
+uniform vec3 uDetailSeed;
+varying vec3 vMoonSphere;
+varying float vMoonScale;
+// The mesh's own normal (view space), before the bump: keeps the round moon's terminator
+vec3 moonGeometryNormal;
+
+// Bump mapping from screen derivatives of the height (Mikkelsen), as the planets do
+vec3 moonBump(vec3 pos, vec3 n, float h) {
+  vec3 dpx = dFdx(pos), dpy = dFdy(pos);
+  float dhx = dFdx(h), dhy = dFdy(h);
+  vec3 r1 = cross(dpy, n), r2 = cross(n, dpx);
+  float det = dot(dpx, r1);
+  vec3 grad = sign(det) * (dhx * r1 + dhy * r2);
+  return normalize(abs(det) * n - grad);
+}
+
+// How well a pixel spanning footprint radians draws a feature of frequency cycles per
+// radian: fully from eight pixels a cycle, nothing below four
+float moonResolve(float frequency, float footprint) {
+  return clamp(log2(0.25 / (frequency * footprint)) + 1.0, 0.0, 1.0);
+}
+
+// A crater in about half the cells, of random size: bowl, then a raised rim. Every
+// neighbouring cell's crater is added (the deepest bowl wins), so no rim is cut off where
+// the nearest cell changes: a cut would be an edge for the bump
+float moonCraters(vec3 p, float scale) {
+  vec3 cell = floor(p * scale);
+  vec3 f = fract(p * scale);
+  float bowl = 0.0, rim = 0.0;
+  for (int x = -1; x <= 1; x++)
+    for (int y = -1; y <= 1; y++)
+      for (int z = -1; z <= 1; z++) {
+        vec3 o = vec3(float(x), float(y), float(z));
+        vec3 h = hash33(cell + o);
+        if (fract(h.x * 3.71) < 0.4) continue;
+        float size = 0.18 + 0.32 * fract(h.x * 7.13);
+        float t = length(o + h - f) / size;
+        if (t < 1.0) bowl = min(bowl, t * t - 1.0);
+        float e = (t - 1.0) / 0.2;
+        rim += exp(-e * e) * 0.3;
+      }
+  return bowl + rim;
+}
+
+// p: the direction on the moon's sphere; footprint: radians of it one pixel spans.
+// Returns the albedo factor (fresh rims brighter, floors darker); height is the bump in
+// units of uDetail.z, fractures the icy lines (0..1, stained darker and redder)
+float moonDetail(vec3 p, float footprint, out float height, out float fractures) {
+  vec3 q = p + uDetailSeed;
+  float craters = moonCraters(q, 6.0) * 0.55 * moonResolve(12.0, footprint)
+                + moonCraters(q + 3.7, 14.0) * 0.3 * moonResolve(28.0, footprint)
+                + moonCraters(q + 9.1, 32.0) * 0.17 * moonResolve(64.0, footprint);
+  craters *= uDetail.x;
+  float octaves = clamp(log2(0.25 / (24.0 * footprint)) + 1.0, 0.0, 5.0);
+  float grit = octaves > 0.0 ? fbmN(q * 24.0, octaves) * clamp(octaves, 0.0, 1.0) * uDetail.w : 0.0;
+  fractures = 0.0;
+  if (uDetail.y > 0.0) {
+    // Lineae, as on Europa: long winding cracks along the zero lines of noise, at two
+    // scales, each only where a broad mask lets it through; thin, but never under a pixel
+    vec3 warp = vec3(snoise(q * 1.3 + 11.0), snoise(q * 1.3 + 23.0), snoise(q * 1.3 + 37.0)) * 0.25;
+    float frequency = 2.5, width = 0.035, weight = 1.0;
+    for (int i = 0; i < 2; i++) {
+      float n = snoise((q + warp) * frequency + float(i) * 17.0);
+      float line = 1.0 - smoothstep(0.0, max(width, fwidth(n) * 1.5), abs(n));
+      float mask = smoothstep(-0.1, 0.35, snoise(q * 1.7 + float(i) * 5.3));
+      fractures = max(fractures, line * mask * weight * moonResolve(frequency * 4.0, footprint));
+      frequency *= 2.2;
+      width *= 0.85;
+      weight *= 0.75;
+    }
+    fractures *= uDetail.y;
+  }
+  height = craters + grit * 0.35 - fractures * 0.4;
+  return 1.0 + craters * 0.3 + grit * 0.12;
+}
+`;
 
 interface MoonData {
   name: string;
@@ -370,6 +456,8 @@ export class MoonSystem {
 
     moonMaterial.normalScale = new THREE.Vector2(1.0, 1.0);
 
+    this.applyMoonDetail(moonMaterial, moonData, moonRadius);
+
     const moonMesh = new THREE.Mesh(geometry, moonMaterial);
     moonMesh.name = `moon-surface-${moonData.name}`;
 
@@ -433,6 +521,61 @@ export class MoonSystem {
     this.updateMoonPosition(moonGroup, moonData, 0, index);
 
     return moonGroup;
+  }
+
+  // The per-pixel detail (MOON_DETAIL_GLSL) on the moon's material: how cratered,
+  // fractured and gritty, and where in noise space it lies. Others may chain their own
+  // onBeforeCompile after this one (PlanetFrame's eclipses)
+  private applyMoonDetail(material: THREE.MeshStandardMaterial, moonData: MoonData, moonRadius: number): void {
+    const type = moonData.properties.type;
+    const procedural: any = moonData.procedural ?? {};
+    const typeCraters = type === "icy" ? 0.45 : type === "asteroidal" ? 1.15 : 1.0;
+    const rng = this.createSeededRandom(((procedural.seed || 0) % 1e9) + 31337);
+    const seed = new THREE.Vector3(rng() * 100, rng() * 100, rng() * 100);
+    const craters = (0.35 + (procedural.crater_density ?? 0.5)) * typeCraters;
+    const fractures = type === "icy" ? 1 : 0;
+    const grit = type === "icy" ? 0.5 : type === "asteroidal" ? 1.2 : 1;
+    const bump = 0.012;
+    // The bump height in object units; the vertex shader brings in the moon's scale
+    const uniforms = {
+      uDetail: { value: new THREE.Vector4(craters, fractures, moonRadius * bump, grit) },
+      uDetailSeed: { value: seed },
+    };
+
+    // Direct light: the bumped normal, but the terminator stays the round moon's, so
+    // bumps never light up its night side
+    const lightsPars = THREE.ShaderChunk.lights_physical_pars_fragment.replace(
+      "vec3 irradiance = dotNL * directLight.color;",
+      "vec3 irradiance = dotNL * saturate( dot( moonGeometryNormal, directLight.direction ) * 10.0 + 0.5 ) * directLight.color;",
+    );
+
+    material.onBeforeCompile = (shader) => {
+      Object.assign(shader.uniforms, uniforms);
+      shader.vertexShader = shader.vertexShader
+        .replace("#include <common>", "#include <common>\nvarying vec3 vMoonSphere;\nvarying float vMoonScale;")
+        .replace("#include <begin_vertex>", "#include <begin_vertex>\nvMoonSphere = position;\nvMoonScale = length(modelMatrix[0].xyz);");
+      shader.fragmentShader = shader.fragmentShader
+        .replace("#include <common>", `#include <common>\n${MOON_DETAIL_GLSL}`)
+        .replace("#include <lights_physical_pars_fragment>", lightsPars)
+        .replace(
+          "#include <map_fragment>",
+          `#include <map_fragment>
+          vec3 moonSphere = normalize(vMoonSphere);
+          float moonHeight, moonFractures;
+          diffuseColor.rgb *= moonDetail(moonSphere, max(length(fwidth(moonSphere)), 1e-6), moonHeight, moonFractures);
+          diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.72, 0.58, 0.5), moonFractures * 0.6);`,
+        )
+        // Bumped around the mesh's normal over the view-space position; three's
+        // geometryRoughness then widens with the bumped normal
+        .replace(
+          "#include <normal_fragment_maps>",
+          `#include <normal_fragment_maps>
+          moonGeometryNormal = normal;
+          normal = moonBump(-vViewPosition, normal, moonHeight * uDetail.z * vMoonScale);
+          nonPerturbedNormal = normal;`,
+        );
+    };
+    material.needsUpdate = true;
   }
 
   private generateProceduralSurface(geometry: THREE.SphereGeometry, moonData: MoonData, moonRadius: number): void {

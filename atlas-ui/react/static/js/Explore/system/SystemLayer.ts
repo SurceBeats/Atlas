@@ -36,8 +36,8 @@ const STAR_POWER: Record<string, number> = {
   "Neutron Star": 1.0,
 };
 
-const GAS_TYPES = new Set(["Gas Giant", "Frozen Gas Giant", "Nebulous"]);
-const HOT_TYPES = new Set(["Lava", "Magma", "Molten Core", "Radioactive"]);
+const GAS_TYPES = new Set(["Gas Giant", "Frozen Gas Giant", "Nebulous", "Super Puff", "Super Ringed", "Mirror", "Ruby Cloud"]);
+const HOT_TYPES = new Set(["Lava", "Magma", "Molten Core", "Radioactive", "Ruby Cloud"]);
 
 export interface PlanetBody {
   data: PlanetDetail;
@@ -105,7 +105,8 @@ function planetTexture(planet: PlanetDetail, realColor?: THREE.Color): THREE.Tex
       ctx.fill();
     }
     ctx.globalAlpha = 1;
-    if (planet.surface_temperature < 260) {
+    // surface_temperature is in °C; caps below 260 K
+    if (planet.surface_temperature + 273.15 < 260) {
       ctx.fillStyle = "rgba(240,248,255,0.85)";
       ctx.fillRect(0, 0, w, 10);
       ctx.fillRect(0, h - 10, w, 10);

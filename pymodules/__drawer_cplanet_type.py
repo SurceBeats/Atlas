@@ -52,6 +52,10 @@ def get_planet_color_map():
         "Nebulous": "#FFC0CB",
         "Aquifer": "#00FFFF",
         "Exotic": "#FF00FF",
+        "Super Puff": "#F7C6D9",
+        "Super Ringed": "#E3C99A",
+        "Mirror": "#D9DEE6",
+        "Ruby Cloud": "#9B111E",
     }
 
 

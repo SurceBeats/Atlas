@@ -9,13 +9,22 @@ from pymodules.__atlas_seedmaster import seedmaster
 from pymodules.__atlas_config import config
 from pymodules.__universe_elements import periodic_table
 
+# The types only an 11th planet (a frontier world, beyond a ten-planet system) can have;
+# they behave as giant/gas planets. The system draws one of 8 slots for it (SolarSystem):
+# slot n is FRONTIER_TYPES[n - 1], the rest mean no 11th planet yet, so new types are only
+# ever appended, and adding one never changes an existing planet
+FRONTIER_TYPES = ["Super Puff", "Super Ringed", "Mirror", "Ruby Cloud"]
+FRONTIER_SLOTS = 8
+
 
 class Planet:
-    def __init__(self, seed, name, constants, star_mass=None):
+    # frontier_type: the type an 11th planet was given by its system's slot, or None
+    def __init__(self, seed, name, constants, star_mass=None, frontier_type=None):
         self.seed = seed
         self.name = name
         self.constants = constants
         self.star_mass = star_mass or constants.M_SUN
+        self.frontier_type = frontier_type
 
         self.initialize_planet_attributes()
 
@@ -61,6 +70,10 @@ class Planet:
         return seed_int
 
     def choose_planet_type(self):
+        # (no draw for a frontier type: a choice over a growing list would consume a
+        # different number of bits and shift every other attribute when types are added)
+        if self.frontier_type:
+            return self.frontier_type
         return random.choice(
             [
                 "Rocky",
@@ -94,7 +107,7 @@ class Planet:
         )
 
     def choose_atmosphere(self):
-        if self.planet_type in ["Gas Giant", "Frozen Gas Giant", "Nebulous", "Anomaly"]:
+        if self.planet_type in ["Gas Giant", "Frozen Gas Giant", "Nebulous", "Anomaly", *FRONTIER_TYPES]:
             possible_atmospheres = [
                 "Hydrogen",
                 "Helium",
@@ -204,6 +217,10 @@ class Planet:
             "Nebulous": ["Hydrogen", "Helium", "Neon", "Argon"],
             "Aquifer": ["Oxygen", "Hydrogen", "Sodium", "Chlorine"],
             "Exotic": ["Oganesson", "Livermorium", "Tennessine", "Flerovium"],
+            "Super Puff": ["Hydrogen", "Helium", "Carbon", "Nitrogen"],
+            "Super Ringed": ["Hydrogen", "Helium", "Oxygen", "Silicon"],
+            "Mirror": ["Titanium", "Silicon", "Oxygen", "Iron"],
+            "Ruby Cloud": ["Aluminum", "Oxygen", "Chromium", "Titanium"],
         }
 
         possible_elements = elements_mapping.get(
@@ -242,6 +259,10 @@ class Planet:
             "Nebulous": (5, 15),
             "Aquifer": (0.8, 1.5),
             "Exotic": (0.5, 3),
+            "Super Puff": (8, 14),
+            "Super Ringed": (9, 13),
+            "Mirror": (3.5, 5),
+            "Ruby Cloud": (12, 22),
         }
 
         diameter_range = diameter_ranges.get(self.planet_type, (0.5, 2))
@@ -272,7 +293,7 @@ class Planet:
             score += 30
         elif self.planet_type in ["Rocky", "Forest", "Savannah"]:
             score += 20
-        elif self.planet_type in ["Gas Giant", "Frozen Gas Giant"]:
+        elif self.planet_type in ["Gas Giant", "Frozen Gas Giant", *FRONTIER_TYPES]:
             score -= 10
 
         if "Water" in self.elements:
@@ -351,6 +372,10 @@ class Planet:
             "Nebulous": (100, 300),
             "Aquifer": (2000, 3000),
             "Exotic": (1000, 20000),
+            "Super Puff": (20, 100),
+            "Super Ringed": (600, 1400),
+            "Mirror": (1500, 2500),
+            "Ruby Cloud": (150, 500),
         }
 
         density_range = density_ranges.get(self.planet_type, (3000, 6000))
@@ -395,6 +420,10 @@ class Planet:
             "Nebulous": (-200, 50),
             "Aquifer": (-10, 50),
             "Exotic": (-273, 1500),
+            "Super Puff": (-100, 250),
+            "Super Ringed": (-200, 0),
+            "Mirror": (1600, 2200),
+            "Ruby Cloud": (2000, 3000),
         }
 
         temperature_range = temperature_ranges.get(self.planet_type, (-100, 500))
@@ -544,6 +573,9 @@ class Planet:
                 "base_rotation_seconds": (5 * 3600, 50 * 3600),
             },
         }
+        # The frontier types are giants inside: the Gas Giant's tides and spin
+        for planet_type in FRONTIER_TYPES:
+            internal_factors[planet_type] = internal_factors["Gas Giant"]
 
         factors = internal_factors.get(self.planet_type, internal_factors["default"])
 
@@ -566,6 +598,10 @@ class Planet:
             "Crystalline": 0.5,
             "Anomaly": 0.5,
             "Exotic": 0.5,
+            "Super Puff": 0.4,
+            "Super Ringed": 0.4,
+            "Mirror": 0.4,
+            "Ruby Cloud": 0.4,
         }
 
         return k_factor_map.get(self.planet_type, 0.3)
@@ -633,6 +669,10 @@ class Planet:
     def decide_planet_rings(self, seed):
         random.seed(seed)
 
+        # Its rings are what it is
+        if self.planet_type == "Super Ringed":
+            return True
+
         roche_limit = 2.44 * (self.diameter * 1e3 / 2) * (self.density / 3000) ** (1 / 3)
         orbital_radius_km = self.orbital_radius_m / 1e6
 
@@ -656,22 +696,8 @@ class Planet:
     def correct_temperature_orbital_distance(self):
         current_time = time.time()
 
-        time_elapsed_seconds = current_time - config.cosmic_origin_time
-
-        orbital_period = self.orbital_period_seconds
-        angle_velocity_orbit = 2 * math.pi / orbital_period
-
-        angle_orbit = (self.initial_orbital_angle + time_elapsed_seconds * angle_velocity_orbit) % (2 * math.pi)
-
-        semi_major_axis = self.orbital_radius
-        eccentricity = self.eccentricity_factor
-        current_distance = semi_major_axis * (1 - eccentricity**2) / (1 + eccentricity * math.cos(angle_orbit))
-
-        if current_distance < 0.1:
-            current_distance = 0.1
-
-        distance_factor = 1 / (current_distance**0.5)
-        self.surface_temperature *= distance_factor
+        # The type's temperature is the planet's mean, at its mean distance
+        self.mean_temperature = self.surface_temperature
 
         atmosphere_factors = {
             "Thick": 1.2,
@@ -696,6 +722,34 @@ class Planet:
             "Toxic": 1.4,
         }
 
-        atmosphere_factor = atmosphere_factors.get(self.atmosphere, 1.0)
+        self.atmosphere_factor = atmosphere_factors.get(self.atmosphere, 1.0)
+        self.surface_temperature = self.temperature_at(current_time)
 
-        self.surface_temperature *= atmosphere_factor
+    # Its temperature at a moment (unix seconds) along its orbit: the clients work it out
+    # the same way from mean_temperature and atmosphere_factor as their clock runs
+    def temperature_at(self, unix_time):
+        time_elapsed_seconds = unix_time - config.cosmic_origin_time
+
+        orbital_period = self.orbital_period_seconds
+        angle_velocity_orbit = 2 * math.pi / orbital_period
+
+        angle_orbit = (self.initial_orbital_angle + time_elapsed_seconds * angle_velocity_orbit) % (2 * math.pi)
+
+        semi_major_axis = self.orbital_radius
+        eccentricity = self.eccentricity_factor
+        current_distance = semi_major_axis * (1 - eccentricity**2) / (1 + eccentricity * math.cos(angle_orbit))
+
+        if current_distance < 0.1:
+            current_distance = 0.1
+
+        # The mean temperature is at the mean distance; along the orbit radiative
+        # equilibrium scales it, in kelvin, by sqrt(a/d)
+        kelvin = self.mean_temperature + 273.15
+        kelvin *= (semi_major_axis / current_distance) ** 0.5
+        celsius = kelvin - 273.15
+
+        atmosphere_factor = self.atmosphere_factor
+        # Multiplies above 0 °C, divides below: a cold world never warms under a frozen sky
+        celsius = celsius * atmosphere_factor if celsius >= 0 else celsius / atmosphere_factor
+        # Nothing is colder than the cosmic background (2.7 K)
+        return max(celsius, -270.45)

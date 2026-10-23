@@ -9,7 +9,7 @@ import * as THREE from "three";
 import type { PlanetLook } from "./looks.ts";
 import { RealisticRings, type RingsData } from "./rings.ts";
 import { PlanetEffects, type EffectKind } from "./effects.ts";
-import { ATMOSPHERE_FRAGMENT, ATMOSPHERE_VERTEX, CLOUD_FRAGMENT, SURFACE_FRAGMENT, SURFACE_VERTEX } from "./shaders.ts";
+import { ATMOSPHERE_FRAGMENT, ATMOSPHERE_VERTEX, CLOUD_FRAGMENT, HAZE_FRAGMENT, SURFACE_FRAGMENT, SURFACE_VERTEX } from "./shaders.ts";
 
 export interface RealisticFrameState {
   lightDir: THREE.Vector3; // towards the star, world (frame) space
@@ -20,6 +20,9 @@ export interface RealisticFrameState {
   // Seconds since the cosmic origin (animation clock) and the planet's rotation period
   elapsed: number;
   rotationPeriod: number;
+  // Towards the galaxy's core, in the galaxy's frame (what a mirror world reflects); zero
+  // outside a galaxy
+  galacticCore?: THREE.Vector3;
 }
 
 const SUN_INTENSITY = 1.45;
@@ -27,6 +30,7 @@ const SUN_INTENSITY = 1.45;
 export class RealisticPlanet {
   private surface: THREE.ShaderMaterial;
   private cloudMesh: THREE.Mesh | null = null;
+  private hazeMesh: THREE.Mesh | null = null;
   private atmosphereMesh: THREE.Mesh | null = null;
   private atmosphereMaterial: THREE.ShaderMaterial | null = null;
   private shared: Record<string, THREE.IUniform>;
@@ -40,7 +44,12 @@ export class RealisticPlanet {
     private scene: THREE.Scene,
     private radius: number,
     rings?: (RingsData & { has_rings?: boolean }) | null,
-    kinds: Set<EffectKind> = new Set()
+    kinds: Set<EffectKind> = new Set(),
+    // A Super Ringed planet's rings: a dense ring inside the Roche limit, a dusty disc beyond
+    // it (setRingRoche)
+    superRings = false,
+    // A Super Puff's haze: its scale height (fraction of the radius), 0 for none
+    hazeHeight = 0
   ) {
     this.shared = {
       uLightDir: { value: new THREE.Vector3(1, 0, 0) },
@@ -81,31 +90,62 @@ export class RealisticPlanet {
       uLifeGlow: { value: look.lifeGlow },
       uBandFreq: { value: look.bandFrequency },
       uBloom: { value: look.bloom },
+      // xyz towards the galaxy's core (its disc on XZ), w 1 inside one
+      uGalaxy: { value: new THREE.Vector4() },
     };
 
     const defines: Record<string, string> = { [`FAMILY_${look.family.toUpperCase()}`]: "" };
     if (rings?.has_rings && rings.bands?.length) {
       // Rocky and icy debris, a touch of the planet's own colour
       const ringColor = new THREE.Color(0xcdbfa4).lerp(look.mid, 0.25);
-      this.rings = new RealisticRings(rings, radius, ringColor, this.shared);
+      this.rings = new RealisticRings(rings, radius, ringColor, this.shared, superRings);
       scene.add(this.rings.mesh);
       defines.HAS_RINGS = "";
       Object.assign(this.shared, {
         uRingBands: { value: this.rings.bands },
         uRingBandCount: { value: this.rings.bandCount },
         uRingSeed: { value: this.rings.seed },
+        uRingSuper: { value: superRings ? 1 : 0 },
+        ...this.rings.structure,
         uRingNormal: { value: this.rings.normal },
         uPlanetRadius: { value: radius },
       });
     }
     this.surface = new THREE.ShaderMaterial({ uniforms: this.shared, vertexShader: SURFACE_VERTEX, fragmentShader: SURFACE_FRAGMENT, defines });
     mesh.material = this.surface;
+    if (hazeHeight > 0) {
+      // A Super Puff's surface is the deep, opaque part, a few scale heights under the top of
+      // its haze, which is drawn translucent over it
+      const old = mesh.geometry;
+      mesh.geometry = new THREE.SphereGeometry(radius * (1 - hazeHeight * 3), 128, 64);
+      old.dispose();
+    }
 
     if (look.clouds > 0.01) {
       const material = new THREE.ShaderMaterial({ uniforms: this.shared, vertexShader: SURFACE_VERTEX, fragmentShader: CLOUD_FRAGMENT, defines, transparent: true, depthWrite: false });
       this.cloudMesh = new THREE.Mesh(new THREE.SphereGeometry(radius * 1.007, 128, 64), material);
       this.cloudMesh.name = "realistic-clouds";
       scene.add(this.cloudMesh);
+    }
+
+    if (hazeHeight > 0) {
+      // A Super Puff's haze: thick enough to hide everything at the centre of the disc,
+      // thinning out towards the limb as the line of sight climbs above the haze, so the
+      // planet has no edge and the stars show through its outer reaches
+      const material = new THREE.ShaderMaterial({
+        uniforms: { ...this.shared, uPlanetRadius: { value: radius }, uHaze: { value: new THREE.Vector4(hazeHeight, 1, 0, 0) } },
+        vertexShader: SURFACE_VERTEX,
+        fragmentShader: HAZE_FRAGMENT,
+        defines,
+        transparent: true,
+        depthWrite: false,
+        side: THREE.FrontSide,
+      });
+      this.hazeMesh = new THREE.Mesh(new THREE.SphereGeometry(radius * (1 + hazeHeight * 4), 128, 64), material);
+      this.hazeMesh.name = "realistic-haze";
+      // After the clouds, before the atmosphere's glow
+      this.hazeMesh.renderOrder = 1;
+      scene.add(this.hazeMesh);
     }
 
     if (look.atmosphereDensity > 0) {
@@ -163,14 +203,17 @@ export class RealisticPlanet {
     u.uOctaves.value = THREE.MathUtils.clamp(Math.log2(Math.max(pixels, 1)) - 0.5, 2.5, state.maxOctaves);
 
     u.uTime.value = state.elapsed % 20000;
+    const core = state.galacticCore;
+    (u.uGalaxy.value as THREE.Vector4).set(core?.x ?? 0, core?.y ?? 0, core?.z ?? 0, core && core.lengthSq() > 0 ? 1 : 0);
     // Clouds run slightly ahead of the ground, as on every planet with weather
     u.uCloudSpin.value = ((state.elapsed / Math.max(state.rotationPeriod, 3600)) * Math.PI * 2 * 0.035) % (Math.PI * 2);
 
     this.mesh.updateMatrixWorld();
     this.worldToObject.setFromMatrix4(this.mesh.matrixWorld).invert();
-    if (this.cloudMesh) {
-      this.cloudMesh.position.copy(this.mesh.position);
-      this.cloudMesh.quaternion.copy(this.mesh.quaternion);
+    for (const shell of [this.cloudMesh, this.hazeMesh]) {
+      if (!shell) continue;
+      shell.position.copy(this.mesh.position);
+      shell.quaternion.copy(this.mesh.quaternion);
     }
     if (this.atmosphereMesh && this.atmosphereMaterial) {
       // From outside, the near face of the shell; from inside, the far one
@@ -179,11 +222,16 @@ export class RealisticPlanet {
     this.effects.update(state.elapsed, performance.now() / 1000, this.mesh.quaternion);
   }
 
+  // A Super Ringed planet's Roche limit (planet radii)
+  setRingRoche(rocheRadii: number) {
+    this.rings?.setRoche(rocheRadii);
+  }
+
   dispose() {
     this.surface.dispose();
     this.rings?.dispose();
     this.effects.dispose();
-    for (const mesh of [this.cloudMesh, this.atmosphereMesh]) {
+    for (const mesh of [this.cloudMesh, this.hazeMesh, this.atmosphereMesh]) {
       if (!mesh) continue;
       this.scene.remove(mesh);
       mesh.geometry.dispose();

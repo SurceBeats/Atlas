@@ -12,14 +12,15 @@
 
 import * as THREE from "three";
 
-export type Family = "terran" | "desert" | "barren" | "metal" | "crystal" | "diamond" | "ice" | "lava" | "gas" | "veiled" | "radioactive" | "exotic" | "anomaly";
+export type Family = "terran" | "desert" | "barren" | "metal" | "crystal" | "diamond" | "ice" | "lava" | "gas" | "veiled" | "radioactive" | "exotic" | "anomaly" | "mirror";
 
 export interface PlanetLook {
   family: Family;
   // Structure: which variant of its family (0..3), and how it is shaped
   variant: number;
   // Which kind within a family that holds several types: lava 0 lava world, 1 magma
-  // ocean, 2 molten core; gas 0 gas giant, 1 ice giant, 2 nebulous
+  // ocean, 2 molten core; gas 0 gas giant, 1 ice giant, 2 nebulous, 3 super puff, 4 ruby
+  // cloud
   style: number;
   warp: number; // how much the shapes twist (0..1.2)
   featureScale: number; // size of the secondary features (craters, plates, facets...)
@@ -349,6 +350,91 @@ export function planetLook(data: any): PlanetLook {
       look.atmosphereHeight = 0.03;
       break;
     }
+    case "Super Puff":
+      // Kepler-51: a Saturn-sized envelope around a few Earth masses, pastel and hazy,
+      // its vast, tenuous atmosphere glowing far past the cloud tops
+      look.family = "gas";
+      look.style = 3;
+      {
+        // Its haze is photochemical, tholins as on Titan: pale tan, peach, amber, brown,
+        // depending on how far the chemistry has run (low, mid, high, accent, the air
+        // above). A haze this thick flattens everything under it: no bands, no storms
+        const haze = pick(rnd, [
+          [0xc9a27a, 0xa87e5a, 0xe6cca8, 0x7a5a3e, 0xe8d2b4],
+          [0xd49a6e, 0xb27650, 0xedc6a2, 0x8a5434, 0xf0ccaa],
+          [0xc8862e, 0xa0661e, 0xe6b470, 0x6e4414, 0xe8be84],
+          [0x9c7a5e, 0x7e604a, 0xc8ae94, 0x54402e, 0xceb8a2],
+        ]);
+        look.low = drift(c(haze[0]), rnd, 0.02);
+        look.mid = drift(c(haze[1]), rnd, 0.02);
+        look.high = c(haze[2]);
+        look.accent = c(haze[3]);
+        look.bands = 0.1 + rnd() * 0.1;
+        look.storms = 0.0 * rnd();
+        // (its height is the haze's own, from its scale height: PlanetFrame)
+        look.atmosphere = c(haze[4]);
+        look.atmosphereDensity = 0.5;
+        look.atmosphereHeight = 0.03;
+      }
+      break;
+    case "Super Ringed":
+      // J1407b: a young giant (some 16 million years old) whose rings, stretched tenfold
+      // by the generator, dwarf it; turbulent ochre and salmon bands, still faintly
+      // red-hot from its formation on the night side
+      look.family = "gas";
+      look.variant = 3;
+      look.low = drift(tint(c(0xc9875a), base, 0.2), rnd, 0.04);
+      look.mid = drift(tint(c(0xa8623e), base, 0.2), rnd, 0.04);
+      look.high = c(0xe8c3a0);
+      look.accent = c(0x6e3220);
+      look.emissive = c(0x9a3a18);
+      look.emission = 0.3;
+      look.bands = 0.6 + rnd() * 0.4;
+      look.storms = 0.2 + rnd() * 0.4;
+      look.atmosphere = c(0xe0b896);
+      look.atmosphereDensity = 0.9;
+      look.atmosphereHeight = 0.03;
+      break;
+    case "Mirror":
+      // LTT 9779 b: clouds of metal (silicates, titanium) that mirror most of the light
+      look.family = "mirror";
+      look.low = c(pick(rnd, [0xe8ecf2, 0xf2e6cc, 0xdce6f0, 0xe6e0f0]));
+      look.mid = c(0xffffff);
+      look.high = c(0x8a929c);
+      look.accent = c(0xbfd4ff);
+      look.specular = 1;
+      look.roughness = 0.04 + rnd() * 0.05;
+      look.metal = 1;
+      look.bands = 0.5 + rnd() * 0.5;
+      {
+        // Its thermal glow (shaders.ts): the blackbody colour at its temperature, deep red
+        // at 1000 °C to orange-white near 3000 °C, its strength rising with the heat but
+        // held low by the metal's poor emissivity
+        const heat = THREE.MathUtils.clamp((temperature - 800) / 2200, 0, 1);
+        look.emissive = c(0xb0300a).lerp(c(0xffb46a), heat);
+        look.emission = 0.012 + 0.05 * heat;
+      }
+      look.atmosphere = c(0xcfddf5);
+      look.atmosphereDensity = 0.25;
+      look.atmosphereHeight = 0.02;
+      break;
+    case "Ruby Cloud":
+      // WASP-121 b: an ultra-hot giant where corundum, the mineral of rubies and
+      // sapphires, condenses into clouds; its day side glows
+      look.family = "gas";
+      look.style = 4;
+      look.low = drift(c(0x8e0a1c), rnd, 0.03);
+      look.mid = drift(c(0x173a9e), rnd, 0.03);
+      look.high = c(0xd9485f);
+      look.accent = c(0x2a0410);
+      look.emissive = c(0xc8281a);
+      look.emission = 0.8 + rnd() * 0.3;
+      look.bands = 0.8 + rnd() * 0.4;
+      look.storms = 0.3 + rnd() * 0.5;
+      look.atmosphere = c(0xff7a6a);
+      look.atmosphereDensity = 1.1;
+      look.atmosphereHeight = 0.035;
+      break;
     case "Toxic":
       look.family = "veiled";
       look.low = drift(tint(c(0xa8b050), base, 0.25), rnd);

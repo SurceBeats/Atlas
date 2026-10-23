@@ -160,6 +160,8 @@ def register_explore_routes(app, config):
                         "axial_tilt": planet.axial_tilt,
                         "rotation_period_seconds": planet.rotation_period_seconds,
                         "surface_temperature": planet.surface_temperature,
+                        "mean_temperature": planet.mean_temperature,
+                        "atmosphere_factor": planet.atmosphere_factor,
                         "atmosphere": planet.atmosphere,
                         "life_forms": planet.life_forms,
                         "elements": planet.elements,
@@ -202,7 +204,7 @@ def register_explore_routes(app, config):
             angle_velocity_orbit = (2 * math.pi) / planet.orbital_period_seconds
             current_orbital_angle = (planet.initial_orbital_angle + elapsed_time * angle_velocity_orbit) % (2 * math.pi)
 
-            planet_data = {"name": planet.name, "planet_type": planet.planet_type, "diameter": planet.diameter, "mass": planet.mass, "density": planet.density, "gravity": planet.gravity, "orbital_radius": planet.orbital_radius, "orbital_period_seconds": planet.orbital_period_seconds, "orbital_speed": planet.orbital_speed, "rotation_period_seconds": planet.rotation_period_seconds, "surface_temperature": planet.surface_temperature, "axial_tilt": planet.axial_tilt, "atmosphere": planet.atmosphere, "life_forms": planet.life_forms, "elements": planet.elements, "eccentricity_factor": getattr(planet, "eccentricity_factor", 0.1), "initial_orbital_angle": planet.initial_orbital_angle, "current_orbital_angle": current_orbital_angle, "relative_orbital_radius": planet.orbital_radius / max_orbital_radius if max_orbital_radius > 0 else 0, "system_max_orbital_radius": max_orbital_radius}
+            planet_data = {"name": planet.name, "planet_type": planet.planet_type, "diameter": planet.diameter, "mass": planet.mass, "density": planet.density, "gravity": planet.gravity, "orbital_radius": planet.orbital_radius, "orbital_period_seconds": planet.orbital_period_seconds, "orbital_speed": planet.orbital_speed, "rotation_period_seconds": planet.rotation_period_seconds, "surface_temperature": planet.surface_temperature, "mean_temperature": planet.mean_temperature, "atmosphere_factor": planet.atmosphere_factor, "axial_tilt": planet.axial_tilt, "atmosphere": planet.atmosphere, "life_forms": planet.life_forms, "elements": planet.elements, "eccentricity_factor": getattr(planet, "eccentricity_factor", 0.1), "initial_orbital_angle": planet.initial_orbital_angle, "current_orbital_angle": current_orbital_angle, "relative_orbital_radius": planet.orbital_radius / max_orbital_radius if max_orbital_radius > 0 else 0, "system_max_orbital_radius": max_orbital_radius}
 
             timing_data = {"cosmic_origin_time": config.cosmic_origin_time, "current_time_seconds": current_time_seconds, "elapsed_time": elapsed_time, "max_orbital_radius": max_orbital_radius}
 

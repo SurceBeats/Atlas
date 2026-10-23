@@ -34,6 +34,10 @@ export interface PlanetDetail {
   axial_tilt: number;
   rotation_period_seconds: number;
   surface_temperature: number;
+  // The type's temperature at the mean distance, and the atmosphere's factor on it: with
+  // them its temperature anywhere along its orbit (planetTemperatureAt)
+  mean_temperature?: number;
+  atmosphere_factor?: number;
   atmosphere: string;
   life_forms: string;
   elements: string[];
@@ -42,6 +46,27 @@ export interface PlanetDetail {
   current_orbital_angle: number;
   relative_orbital_radius: number;
   stargate_url: string;
+}
+
+// A planet's temperature (°C) at `elapsed` seconds since the cosmic origin, as the generator
+// works it out (Planet.temperature_at, same operations in the same order): radiative
+// equilibrium scales the mean temperature, in kelvin, by sqrt(a/d) at the distance d of
+// that moment; the atmosphere multiplies it above 0 °C and divides it below; nothing is
+// colder than the cosmic background. The loaded surface_temperature without the new fields
+export function planetTemperatureAt(p: PlanetDetail, elapsed: number): number {
+  if (p.mean_temperature === undefined || p.atmosphere_factor === undefined) return p.surface_temperature;
+  const angleVelocity = (2 * Math.PI) / p.orbital_period_seconds;
+  const angle = (p.initial_orbital_angle + elapsed * angleVelocity) % (2 * Math.PI);
+  const a = p.orbital_radius;
+  const e = p.eccentricity_factor;
+  let d = (a * (1 - e ** 2)) / (1 + e * Math.cos(angle));
+  if (d < 0.1) d = 0.1;
+  let kelvin = p.mean_temperature + 273.15;
+  kelvin *= (a / d) ** 0.5;
+  let celsius = kelvin - 273.15;
+  const f = p.atmosphere_factor;
+  celsius = celsius >= 0 ? celsius * f : celsius / f;
+  return Math.max(celsius, -270.45);
 }
 
 export interface SystemDetail extends SystemSummary {

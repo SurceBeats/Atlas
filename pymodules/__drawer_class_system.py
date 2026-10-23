@@ -135,6 +135,10 @@ def generate_solar_system_image(solar_system):
                 "Nebulous": "#FFC0CB",
                 "Aquifer": "#00FFFF",
                 "Exotic": "#FF00FF",
+                "Super Puff": "#F7C6D9",
+                "Super Ringed": "#E3C99A",
+                "Mirror": "#D9DEE6",
+                "Ruby Cloud": "#9B111E",
             }.get(planet.planet_type, "white")
 
             max_diameter = max([p.diameter for p in solar_system.planets.values()])

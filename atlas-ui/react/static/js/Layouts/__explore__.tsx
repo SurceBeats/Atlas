@@ -10,7 +10,7 @@
 import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { Explorer, loadStoredShip, recentGalaxies, type ExplorerState } from "../Explore/Explorer.ts";
 import type { PointOfInterest } from "../Explore/galaxy/GalaxyModel.ts";
-import { fetchCurrentLocation, fetchRandomLocation, type Coordinates } from "../Explore/api.ts";
+import { fetchCurrentLocation, fetchRandomLocation, planetTemperatureAt, type Coordinates } from "../Explore/api.ts";
 import { loadQuality, QUALITY_PROFILES, type QualityLevel } from "../Explore/engine/Quality.ts";
 import type { ViewToggle } from "../Explore/engine/ViewOptions.ts";
 import type { ShipKind } from "../Explore/engine/ShipView.ts";
@@ -282,7 +282,8 @@ function TargetBlock({ explorer, state }: { explorer: Explorer; state: ExplorerS
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-5 mt-1.5">
           <Stat label={t("Diameter")} value={`${amount(Math.round(p.diameter))} km`} />
           <Stat label={t("Gravity")} value={`${num(p.gravity, 1)} m/s²`} />
-          <Stat label={t("Temperature")} value={`${num(p.surface_temperature, 0)} °C`} />
+          {/* Along its orbit at the system's simulated time (the clock that moves the planets) */}
+          <Stat label={t("Temperature")} value={`${num(state.cosmicOrigin ? planetTemperatureAt(p, state.cosmicTime - state.cosmicOrigin) : p.surface_temperature, 0)} °C`} />
           <Stat label={t("Atmosphere")} value={L(p.atmosphere)} />
           <Stat label={t("Day")} value={t("%@ h", num(Math.abs(p.rotation_period_seconds) / 3600, 1))} />
           <Stat label={t("Year")} value={t("%@ yr", num(p.orbital_period_seconds / 31557600, 2))} />

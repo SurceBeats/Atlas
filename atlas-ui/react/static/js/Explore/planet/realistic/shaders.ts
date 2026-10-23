@@ -97,6 +97,43 @@ float craterField(vec3 p, float scale) {
   return (bowl + rim) * present;
 }
 
+// A Ruby Cloud's gem glints: each a corundum crystal, a flat hexagonal plate, as corundum
+// grows. The nearest of the feature points around x (the same as cellular's, so its id
+// is cellular's .z), seen on the sphere at p: the plate turned its own way and tilted
+// (foreshortened), with crisp but unaliased edges and brighter rims, as a cut stone's.
+// Returns x: coverage (0..1), y: unused, z: the crystal's id
+vec3 gemCrystal(vec3 x, vec3 p) {
+  vec3 cell = floor(x);
+  vec3 f = fract(x);
+  float d1 = 8.0, id = 0.0;
+  vec3 toFeature = vec3(0.0);
+  for (int i = -1; i <= 1; i++)
+    for (int j = -1; j <= 1; j++)
+      for (int k = -1; k <= 1; k++) {
+        vec3 o = vec3(float(i), float(j), float(k));
+        vec3 h = hash33(cell + o);
+        vec3 r = o + h - f;
+        float d = dot(r, r);
+        if (d < d1) { d1 = d; id = h.x; toFeature = r; }
+      }
+  // Into the plane of the sphere there
+  vec3 up = abs(p.y) < 0.99 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+  vec3 t1 = normalize(cross(up, p));
+  vec3 t2 = cross(p, t1);
+  vec2 q = vec2(dot(toFeature, t1), dot(toFeature, t2));
+  float angle = fract(id * 17.31) * 1.0472;
+  float c = cos(angle), s = sin(angle);
+  q = vec2(c * q.x - s * q.y, s * q.x + c * q.y);
+  q.y /= 0.45 + 0.55 * fract(id * 29.7);
+  q = abs(q);
+  float hex = max(q.x * 0.8660254 + q.y * 0.5, q.y);
+  float size = 0.22 + 0.14 * fract(id * 5.3);
+  float edge = max(fwidth(hex), size * 0.06);
+  float plate = 1.0 - smoothstep(size - edge, size, hex);
+  float rim = 0.7 + 0.3 * smoothstep(size * 0.55, size - edge, hex);
+  return vec3(plate * rim, 0.0, id);
+}
+
 #if defined(FAMILY_DIAMOND)
 // What a diamond facet sees, inside or out: black space, faint stars, the glow of the
 // galaxy, and the star (a sharp disc and a softer halo)
@@ -106,6 +143,58 @@ vec3 diamondSky(vec3 d) {
   float stars = step(0.9985, hash33(floor(d * 240.0)).x) * 0.15;
   float galaxy = exp(-pow(dot(d, normalize(vec3(0.25, 1.0, 0.15))) / 0.3, 2.0)) * 0.035;
   return star + vec3(stars) + vec3(0.55, 0.6, 0.8) * galaxy;
+}
+#endif
+
+#if defined(FAMILY_MIRROR)
+// The stars a mirror reflects. Each is a point, so its image is as small as the optics allow:
+// blurred by the metal's roughness and never smaller than what one pixel covers of the
+// reflected sky (footprint, radians). A star whose image the pixel can't resolve spreads
+// its light over it, dimmer, instead of flickering on and off: the same light, filtered.
+// Some three thousand stars over the sky, as the naked eye sees it: most faint, a few
+// bright (a steep power law), of varied colour (cool red to hot blue). One may sit in some
+// of the cells of a grid on the sky; the eight cells around the direction are searched
+vec3 mirrorStars(vec3 d, float footprint, float rough) {
+  const float S = 40.0;
+  vec3 g = d * S;
+  vec3 base = floor(g - 0.5);
+  float core = 0.003;
+  float sigma2 = core * core + footprint * footprint + (rough * 0.03) * (rough * 0.03);
+  vec3 sum = vec3(0.0);
+  for (int i = 0; i < 8; i++) {
+    vec3 cell = base + vec3(float(i & 1), float((i >> 1) & 1), float((i >> 2) & 1));
+    vec3 h = hash33(cell + 17.0);
+    if (h.z > 0.15) continue;
+    vec3 star = normalize((cell + h) / S);
+    vec3 diff = d - star;
+    float flux = pow(fract(h.x * 13.7), 10.0) * 1.6 + 0.04;
+    vec3 tint = mix(vec3(1.0, 0.72, 0.5), vec3(0.7, 0.82, 1.0), fract(h.y * 7.3));
+    sum += tint * flux * (core * core / sigma2) * exp(-dot(diff, diff) / (2.0 * sigma2));
+  }
+  return sum * 4.0;
+}
+
+// What a mirror world mirrors: the star (sharper the smoother the metal), the stars, the
+// galaxy's dusty band across the sky and the faint glow of the rest of it.
+// uGalaxy: xyz towards the galaxy's core in its own frame (its disc on XZ), w 1 inside one
+uniform vec4 uGalaxy;
+vec3 mirrorSky(vec3 d, float rough, float footprint) {
+  float s = max(dot(d, uLightDir), 0.0);
+  float sharp = mix(2000.0, 120.0, clamp(rough * 6.0, 0.0, 1.0));
+  vec3 star = uSunColor * uSunIntensity * (pow(s, sharp) * 40.0 + pow(s, 24.0) * 0.5 + pow(s, 4.0) * 0.08);
+  vec3 stars = mirrorStars(d, footprint, rough);
+  // The galaxy as it really lies from here: its disc's band across the sky (the disc is on
+  // XZ), brightest towards the core, the warm glow of the bulge there; nebulae around it
+  // (broad bright and dark patches, which is what makes chrome read as chrome)
+  vec3 core = uGalaxy.w > 0.5 ? uGalaxy.xyz : vec3(0.0);
+  float toCore = max(dot(d, core), 0.0);
+  float band = exp(-d.y * d.y / 0.3) * (0.55 + 0.9 * toCore * toCore);
+  float bulge = exp(-(1.0 - toCore) * 7.0) * uGalaxy.w;
+  float clouds = smoothstep(-0.3, 0.6, fbmN(d * 2.2 + 7.0, 5.0));
+  float dust = 1.0 - 0.6 * smoothstep(0.1, 0.5, fbmN(d * 5.0 + 3.0, 4.0)) * band;
+  // (the sky's glow as faint as the night sides of the other planets: no light of its own)
+  vec3 glow = ((vec3(0.62, 0.66, 0.8) * band * 0.45 + vec3(1.0, 0.84, 0.6) * bulge * 0.5 + vec3(0.34, 0.36, 0.46) * clouds * 0.35) * dust + vec3(0.03, 0.035, 0.05)) * 0.45;
+  return star + stars + glow;
 }
 #endif
 
@@ -123,6 +212,7 @@ void main() {
   vec3 emission = vec3(0.0);
   float wet = 0.0;       // 1 over open water
   float landMask = 0.0;  // where cities may be
+  float rubyHeat = 0.0;  // a Ruby Cloud's day-side incandescence (0..1)
 
 #if defined(FAMILY_TERRAN)
   // Continents: big coherent shapes, twisted by the planet's own warp. Variants: 0 a few
@@ -368,6 +458,29 @@ void main() {
   spec = 1.0;
   landMask = 0.1;
 
+#elif defined(FAMILY_MIRROR)
+  // A mirror world: a deck of metal clouds, smooth enough to mirror the sky, in faint
+  // lanes where it thickens and roughens; slow ripples ruffle the reflections
+  float drift = uTime * 0.004;
+  vec3 w = vec3(fbmN(q, 3.0), fbmN(q + 4.4, 3.0), fbmN(q + 8.8, 3.0)) * uWarp * 0.5;
+  float lanes = sin(p.y * uBandFreq * 0.7 + fbmN(vec3(p.x * 2.0, p.y * 6.0, p.z * 2.0) + uSeed + w + vec3(drift), 4.0) * 2.0);
+  float ripple = fbmN(vec3(p.x * 6.0, p.y * 30.0, p.z * 6.0) + uSeed + vec3(drift * 2.0), uOctaves - 1.0);
+  // The deck churns in convection cells, like any cloud layer heated from below: each a
+  // faintly domed top, the downdrafts between them rougher and a little duller. Two scales,
+  // the finer one only where the view resolves it; the domes tilt the reflections a little
+  vec3 cells = cellular(q * 4.0 * uFeature + w + vec3(drift));
+  vec3 fineCells = cellular(q * 13.0 * uFeature + w * 1.5 + vec3(drift * 1.6));
+  float fineSeen = clamp(uOctaves - 4.0, 0.0, 1.0);
+  float domes = (1.0 - cells.x * cells.x) * 0.7 + (1.0 - fineCells.x * fineCells.x) * 0.3 * fineSeen;
+  // (broad, soft downdrafts: a cloud deck's lanes, not cracks)
+  float downdraft = (1.0 - smoothstep(0.0, 0.3, cells.y - cells.x)) * 0.6 + (1.0 - smoothstep(0.0, 0.2, fineCells.y - fineCells.x)) * 0.25 * fineSeen;
+  albedo = mix(uLow, uLow * 0.82, smoothstep(-0.2, 1.0, lanes) * uBands * 0.6);
+  albedo *= 1.0 - downdraft * 0.06;
+  height = (lanes * 0.0008 + ripple * 0.0004) * uBands + domes * 0.0005 - downdraft * 0.0002;
+  rough = uRoughness * (1.0 + smoothstep(0.3, 1.0, lanes) * 1.5 + downdraft * 1.2);
+  spec = 1.0;
+  metal = 1.0;
+
 #elif defined(FAMILY_ICE)
   // Variants after the real icy moons: 0 Europa (long double ridges, rust-stained
   // lineae), 1 Enceladus (smooth, with "tiger stripes" at one pole), 2 Callisto (dirty
@@ -532,10 +645,29 @@ void main() {
     streaks *= smoothstep(0.08, 0.25, alat) * (1.0 - smoothstep(0.7, 0.85, alat));
     albedo = mix(albedo, uHigh, streaks * 0.85);
     albedo = mix(albedo, mix(uLow, uHigh, 0.55), smoothstep(0.6, 0.92, lat) * 0.6);
+  } else if (uStyle > 2.5 && uStyle < 3.5) {
+    // Super-puff: so tenuous an envelope that its bands wash out into a soft pastel haze
+    float haze = fbmN(g * 1.5 + uSeed + vec3(t * 0.5), 4.0);
+    // Super-puff: below its haze's top there is only more haze, as optically thick as you
+    // like, never a banded deck: the same colour HAZE_FRAGMENT gives it, seamless with it
+    albedo = mix(uLow, uHigh, 0.5 + 0.15 * fbmN(vec3(p.x * 2.0, p.y * 7.0, p.z * 2.0) + uSeed, 3.0));
+  } else if (uStyle > 3.5) {
+    // Ruby cloud, an ultra-hot giant split in two (WASP-121 b): on the day side the
+    // corundum evaporates and the sky burns cloudless, hottest east of the substellar point
+    // where the winds carry the heat; on the night side it condenses into decks of ruby and
+    // sapphire (uLow, uMid), pale crests, wine-red troughs where it rains out
+    vec3 lightObj = uWorldToObject * uLightDir;
+    vec3 hotDir = rotY(lightObj, 0.35);
+    float dayness = smoothstep(-0.25, 0.35, dot(p, lightObj));
+    vec3 gems = mix(uMid, uLow, smoothstep(-0.45, 0.45, b));
+    gems = mix(gems, uAccent, smoothstep(-0.3, -0.9, b) * 0.5);
+    gems = mix(gems, uHigh, smoothstep(0.8, 1.15, b) * 0.4);
+    albedo = mix(gems, gems * 0.2, dayness);
+    rubyHeat = smoothstep(-0.1, 0.9, dot(p, hotDir)) * (0.8 + 0.2 * fine);
   }
 #endif
-  // Hazy, darker poles
-  albedo *= 1.0 - smoothstep(0.75, 0.98, alat) * 0.35;
+  // Hazy, darker poles (not under a Super Puff's haze, which is the same everywhere)
+  if (uStyle < 2.5 || uStyle > 3.5) albedo *= 1.0 - smoothstep(0.75, 0.98, alat) * 0.35;
   // Nothing to cast bumps: the light sinks into the haze
   height = 0.0;
   emission = uEmissive * uEmission * smoothstep(0.2, 0.9, fine + band * 0.3) * 0.6;
@@ -678,6 +810,40 @@ void main() {
   diffuse = mix(stone, diffuse, graphite);
   highlight *= graphite;
   ambient = mix(vec3(0.004, 0.005, 0.008) + albedo * 0.01, ambient, graphite);
+#elif defined(FAMILY_MIRROR)
+  // Chrome: nearly all it shows is what it mirrors, tinted by the metal and brighter at
+  // grazing angles (Schlick); a little diffuse light from the cloud deck itself
+  float nvM = max(dot(n, v), 0.0);
+  vec3 fresnel = albedo + (1.0 - albedo) * pow(1.0 - nvM, 5.0);
+  ambient = mirrorSky(r, rough, length(fwidth(r))) * fresnel;
+  diffuse = albedo * sun * day * shadow * 0.06;
+  highlight = specularGGX(n, v, max(rough, 0.03), albedo) * sun * shadow * sunUp;
+  // Thousands of degrees hot, it glows by its own heat, but a mirror is a poor emitter
+  // (Kirchhoff: what it reflects it cannot radiate), so faintly: through its clouds most
+  // where the downdrafts open onto the hotter depths, and only where it isn't drowned out
+  // by the starlight it mirrors. uEmissive is the blackbody colour at its temperature,
+  // uEmission its emissivity times how hot (looks.ts)
+  emission = uEmissive * uEmission * (1.0 - fresnel.g * 0.6) * (0.25 + 0.75 * downdraft);
+#endif
+#if defined(FAMILY_GAS)
+  if (uStyle > 3.5) {
+    // The day side glows by its own heat, orange to white-hot at the hottest spot
+    emission += mix(vec3(1.0, 0.36, 0.08), vec3(1.0, 0.8, 0.55), rubyHeat * rubyHeat) * rubyHeat * uEmission * 2.0;
+    // The gem front: along the terminator, where the corundum condenses, crystals at every
+    // angle catch the grazing starlight and sparkle ruby or sapphire. Each twinkles slowly
+    // (cycles of several seconds, nothing like a flash), and they fade out before they
+    // shrink below a few pixels
+    float scale = 70.0;
+    vec3 gem = gemCrystal(p * scale + uSeed, p);
+    float facet = fract(gem.z * 91.7);
+    vec3 axis = normalize(hash33(vec3(gem.z * 37.0, facet, 1.0)) - 0.5);
+    vec3 nf = normalize(ng + (transpose(uWorldToObject) * axis) * 0.9);
+    float resolved = 1.0 - smoothstep(0.2, 0.6, length(fwidth(p)) * scale);
+    float front = 1.0 - smoothstep(0.0, 0.25, abs(dot(ng, uLightDir) - 0.04));
+    float twinkle = 0.35 + 0.65 * (0.5 + 0.5 * sin(uTime * 1.2 + facet * 40.0));
+    float glint = pow(max(dot(reflect(-v, nf), uLightDir), 0.0), 4.0) * gem.x * step(0.45, facet) * front * twinkle * resolved;
+    highlight += sun * glint * 3.0 * mix(vec3(1.0, 0.12, 0.2), vec3(0.25, 0.45, 1.0), step(0.72, facet));
+  }
 #endif
   vec3 color = diffuse + highlight + ambient;
 
@@ -731,6 +897,63 @@ void main() {
 }
 `;
 
+// A Super Puff's haze (Kepler-51's): photochemical haze filling an envelope so light that it
+// rises many of its scale heights H. Along a line of sight passing at b from the centre its
+// optical depth is the grazing (Chapman) one, falling by e for every H that b climbs above
+// the radius where it is 1: opaque across the disc, thinning to nothing past the limb, so
+// there is no edge and the stars show through its outer reaches. Lit with a soft terminator
+// (light diffuses deep into it) and forward scattering, which rings it with light when the
+// star is behind it, as Titan's haze is. Drawn on a shell over the planet, at its origin
+export const HAZE_FRAGMENT = /* glsl */ `
+${NOISE}
+${LIGHTING}
+${PALETTE}
+uniform float uPlanetRadius;
+uniform vec4 uHaze;  // x scale height (radii), y 1 if any
+varying vec3 vObj;
+varying vec3 vWorldPos;
+varying vec3 vWorldNormal;
+
+// Where a ray from o along d enters and leaves a sphere of radius r at the origin
+vec2 sphereHit(vec3 o, vec3 d, float r) {
+  float b = dot(o, d);
+  float c = dot(o, o) - r * r;
+  float h = b * b - c;
+  if (h < 0.0) return vec2(1e9, -1e9);
+  h = sqrt(h);
+  return vec2(-b - h, -b + h);
+}
+
+void main() {
+  float H = max(uHaze.x, 1e-3);
+  float R = uPlanetRadius;
+  vec3 d = normalize(vWorldPos - cameraPosition);
+  vec3 closest = cameraPosition - d * dot(cameraPosition, d);
+  float b = length(closest) / R;
+  float tau = exp(-(b - 1.0) / H);
+  float alpha = 1.0 - exp(-tau);
+  if (alpha < 0.003) discard;
+  // The haze's colour, uniform but for the faintest of latitude shading
+  vec3 p = normalize(vObj);
+  vec3 haze = mix(uLow, uHigh, 0.5 + 0.15 * fbmN(vec3(p.x * 2.0, p.y * 7.0, p.z * 2.0) + uSeed, 3.0));
+  // Lit where the line of sight meets the haze's tau = 1 level (the radius R), or at its
+  // closest approach where it passes above it
+  vec2 hit = sphereHit(cameraPosition, d, R);
+  vec3 n = b < 1.0 && hit.x > 0.0 ? normalize(cameraPosition + d * hit.x) : normalize(closest);
+  float nl = dot(n, uLightDir);
+  float lit = smoothstep(-0.25, 0.45, nl) * (0.45 + 0.55 * max(nl, 0.0));
+  float mu = dot(d, uLightDir);
+  float g = 0.7;
+  float phase = (1.0 - g * g) / pow(1.0 + g * g - 2.0 * g * mu, 1.5) * 0.08;
+  vec3 sun = uSunColor * uSunIntensity;
+  // (tholin haze is dark-ish, Titan's albedo is some 0.2: it never glares)
+  vec3 color = haze * sun * (lit * 0.8 + phase * smoothstep(-0.3, 0.1, nl + 0.3)) + haze * 0.012;
+  gl_FragColor = vec4(color, alpha);
+  #include <tonemapping_fragment>
+  #include <colorspace_fragment>
+}
+`;
+
 export const ATMOSPHERE_VERTEX = /* glsl */ `
 varying vec3 vWorldPos;
 void main() {
@@ -776,10 +999,13 @@ void main() {
   const int STEPS = 12;
   const int LIGHT_STEPS = 4;
   float ds = (t1 - t0) / float(STEPS);
+  // A very tall envelope (a Super Puff's) shows its few steps as bands: jitter them per
+  // pixel there; every other atmosphere samples the middle of each step, as always
+  float offset = uAtmosphereRadius - uPlanetRadius > uPlanetRadius * 0.2 ? fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453) : 0.5;
   vec3 sumR = vec3(0.0), sumM = vec3(0.0);
   float depthR = 0.0, depthM = 0.0;
   for (int i = 0; i < STEPS; i++) {
-    vec3 x = o + d * (t0 + ds * (float(i) + 0.5));
+    vec3 x = o + d * (t0 + ds * (float(i) + offset));
     float h = length(x) - uPlanetRadius;
     float hr = exp(-h / uScaleR) * ds;
     float hm = exp(-h / uScaleM) * ds;

@@ -125,6 +125,11 @@ def generate_planet_image(planet):
         "Nebulous": draw_nebulous_elements,
         "Aquifer": draw_aquifer_elements,
         "Exotic": draw_exotic_elements,
+        # The frontier types (only an 11th planet) are drawn as gas giants
+        "Super Puff": draw_gas_giant_elements,
+        "Super Ringed": draw_gas_giant_elements,
+        "Mirror": draw_gas_giant_elements,
+        "Ruby Cloud": draw_gas_giant_elements,
     }
 
     surface_layer = Image.new("RGBA", (img_size, img_size), (0, 0, 0, 0))

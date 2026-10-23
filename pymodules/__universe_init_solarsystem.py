@@ -42,6 +42,8 @@ class SolarSystem:
             7: 0.25,
             8: 0.10,
             9: 0.05,
+            # Beyond ten planets, a frontier world (one of the FRONTIER_TYPES)
+            10: 0.30,
         }
 
         for extra_planet_index, probability in extra_planet_probabilities.items():
@@ -56,7 +58,16 @@ class SolarSystem:
             random.seed(extra_seed)
 
             if random.random() < probability:
-                from pymodules.__universe_init_planet import Planet
+                from pymodules.__universe_init_planet import Planet, FRONTIER_TYPES, FRONTIER_SLOTS
+
+                # The 11th planet's type comes from one of FRONTIER_SLOTS slots; one with no
+                # type yet means no 11th planet
+                frontier_type = None
+                if extra_planet_index == 10:
+                    slot = random.randint(1, FRONTIER_SLOTS)
+                    if slot > len(FRONTIER_TYPES):
+                        break
+                    frontier_type = FRONTIER_TYPES[slot - 1]
 
                 planet_seed = int(
                     hashlib.sha256(f"{self.seed}-{seedmaster(4)}-{extra_planet_index}".encode()).hexdigest(),
@@ -77,7 +88,7 @@ class SolarSystem:
                     }
                     star_mass *= mass_factors.get(star_type, 1.0)
 
-                self.planets[extra_planet_index] = Planet(planet_seed, planet_name, self.constants, star_mass)
+                self.planets[extra_planet_index] = Planet(planet_seed, planet_name, self.constants, star_mass, frontier_type=frontier_type)
                 self.num_planets = extra_planet_index + 1
             else:
                 break

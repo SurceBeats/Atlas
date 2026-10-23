@@ -31,6 +31,11 @@ class RingsTranslator:
     def translate_rings(self, planet, planet_radius: int, rng: random.Random, tilt_factor: float, angle_rotation: float) -> Dict[str, Any]:
         bands = self._generate_bands(planet_radius, rng)
 
+        # A Super Ringed planet's rings reach ten times as far out from their inner edge
+        if planet.planet_type == "Super Ringed":
+            first = bands[0][0]
+            bands = [(first + (a - first) * 10, first + (b - first) * 10) for a, b in bands]
+
         ring_inner_radius = bands[0][0]
         ring_outer_radius = bands[-1][1]
 

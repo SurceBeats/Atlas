@@ -156,7 +156,10 @@ export class PlanetFrame {
       const material = mesh.material as THREE.MeshStandardMaterial;
       if (material.userData.eclipse) return;
       material.userData.eclipse = true;
-      material.onBeforeCompile = (shader) => {
+      // After the moon's own changes (MoonSystem's per-pixel detail)
+      const moonDetail = material.onBeforeCompile;
+      material.onBeforeCompile = (shader, renderer) => {
+        moonDetail.call(material, shader, renderer);
         Object.assign(shader.uniforms, this.eclipse);
         shader.vertexShader = shader.vertexShader
           .replace("#include <common>", "#include <common>\nvarying vec3 vEclipseWorld;")
@@ -220,6 +223,30 @@ export class PlanetFrame {
         seeds: rendering.seeds,
       };
 
+      const planetType = String(this.data.planet_info?.type ?? planet.planet_type ?? "").replace(/_/g, " ");
+      const look = planetLook(this.data);
+      // A Super Puff's haze: its scale height H = kT / (mu m_H g), hydrogen and helium (mu
+      // 2.3) at its temperature under its own (feeble) gravity, as a fraction of its radius.
+      // The haze thins out over a few of them, so that is how soft its edge is; the
+      // scattering glow reaches some eight above it
+      let hazeHeight = 0;
+      if (planetType === "Super Puff") {
+        const kelvin = Math.max(Number(planet.surface_temperature ?? 15) + 273.15, 20);
+        const metres = (1.380649e-23 * kelvin) / (2.3 * 1.6735575e-27 * Math.max(Number(planet.gravity ?? 1), 0.05));
+        hazeHeight = THREE.MathUtils.clamp(metres / (Number(planet.diameter) * 500), 0.004, 0.08);
+        look.atmosphereHeight = Math.max(0.03, hazeHeight * 8);
+      }
+      this.realistic = new RealisticPlanet(look, this.mesh, this.scene, PLANET_UNITS_RADIUS, this.data.rings, effectKinds(this.data), planetType === "Super Ringed", hazeHeight);
+
+      // A Super Ringed planet's rings: dense ice inside its Roche limit, a dusty disc beyond
+      // it. (The generator's Roche limit, km; without moons it sends none, so the same
+      // formula: a gas giant's, with satellites of 1000 kg/m³)
+      if (planetType === "Super Ringed") {
+        const radiusKm = Number(planet.diameter) / 2;
+        const rocheKm = this.data.moons?.roche_limit ?? 2.456 * radiusKm * Math.pow(Number(planet.density) / 1000, 1 / 3);
+        this.realistic.setRingRoche(rocheKm / radiusKm);
+      }
+
       if (this.data.moons?.moons?.length) {
         this.moonCount = this.data.moons.moons.length;
         this.moons = this.data.moons.moons.map((moon: any) => ({
@@ -255,8 +282,6 @@ export class PlanetFrame {
         this.eclipse.uEclipseGlow.value = air && air !== "none" && !air.includes("no atmosphere") ? 0.35 : 0;
         this.applyEclipses();
       }
-
-      this.realistic = new RealisticPlanet(planetLook(this.data), this.mesh, this.scene, PLANET_UNITS_RADIUS, this.data.rings, effectKinds(this.data));
       this.ready = true;
     } catch (error) {
       this.error = error instanceof Error ? error.message : String(error);
@@ -269,8 +294,10 @@ export class PlanetFrame {
    * @param orientation  main camera orientation
    * @param cosmicNow    current (possibly accelerated) cosmic time, unix seconds
    * @param timeOffset   seconds of simulated time ahead of the wall clock
+   * @param galacticCore towards the galaxy's core, in the galaxy's frame (what a mirror
+   *                     world reflects); zero outside a galaxy
    */
-  update(dt: number, cameraLocal: THREE.Vector3, planetLocal: THREE.Vector3, orientation: THREE.Quaternion, cosmicNow: number, timeOffset: number) {
+  update(dt: number, cameraLocal: THREE.Vector3, planetLocal: THREE.Vector3, orientation: THREE.Quaternion, cosmicNow: number, timeOffset: number, galacticCore = new THREE.Vector3()) {
     const scale = this.unitsPerAU;
     this.camera.position.copy(cameraLocal).sub(planetLocal).multiplyScalar(scale);
     this.camera.quaternion.copy(orientation);
@@ -324,6 +351,7 @@ export class PlanetFrame {
         maxOctaves: this.source.maxOctaves ?? 7.5,
         elapsed,
         rotationPeriod: Math.abs(planet.rotation_period_seconds || 86400),
+        galacticCore,
       });
     }
     const awayFromStar = planetLocal.clone().normalize();

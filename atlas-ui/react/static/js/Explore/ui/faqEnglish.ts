@@ -135,7 +135,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
     questions: [
       {
         question: "How unique are planets in The Atlas?",
-        answer: "Each of the potential 3×10³² planets has completely unique characteristics across 27 different planet types (from rocky to exotic) and may increase in a near future. Every planet has specific chemical composition of up to 119 elements (including fictional Z-Divinium), calculated temperature that varies with orbital position, gravity based on real mass, and life possibilities ranging from bacteria to non-physical conscious entities.",
+        answer: "Each of the potential 3×10³² planets has completely unique characteristics across 31 different planet types (from rocky to exotic) and may increase in a near future. Every planet has specific chemical composition of up to 119 elements (including fictional Z-Divinium), calculated temperature that varies with orbital position, gravity based on real mass, and life possibilities ranging from bacteria to non-physical conscious entities.",
       },
       {
         question: "What elements can planets contain?",

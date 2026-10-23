@@ -14,6 +14,10 @@ export const RING_DENSITY = /* glsl */ `
 uniform vec2 uRingBands[${MAX_RING_BANDS}];
 uniform int uRingBandCount;
 uniform float uRingSeed;
+// A Super Ringed planet's rings (1): a dense ring inside its Roche limit (uRingRoche, planet
+// radii), a dusty disc beyond it
+uniform float uRingSuper;
+uniform float uRingRoche;
 
 float ringHash(float x) { return fract(sin(x * 127.1 + uRingSeed) * 43758.5453); }
 float ringNoise(float x) { float i = floor(x); float f = fract(x); f = f * f * (3.0 - 2.0 * f); return mix(ringHash(i), ringHash(i + 1.0), f); }
@@ -32,6 +36,12 @@ float ringDensity(float r) {
   // Ringlets at three scales, and a few sharp gaps
   float ringlets = 0.55 + 0.25 * ringNoise(r * 40.0) + 0.15 * ringNoise(r * 160.0) + 0.1 * ringNoise(r * 700.0);
   float gaps = smoothstep(0.02, 0.06, ringNoise(r * 22.0 + 3.0)) * smoothstep(0.0, 0.03, ringNoise(r * 75.0 + 9.0));
+  if (uRingSuper > 0.5) {
+    // A Super Ringed planet's (J1407 b's): inside its Roche limit a dense ring of ice; beyond
+    // it, where ring material can no longer stay a ring, the young circumplanetary disc
+    // still forming moons, thinner and dustier
+    density *= mix(1.0, 0.75, smoothstep(uRingRoche * 0.9, uRingRoche * 1.3, r));
+  }
   return clamp(density * ringlets * mix(1.0, gaps, 0.6), 0.0, 1.0);
 }
 `;
@@ -78,6 +88,13 @@ void main() {
   // Forward scattering: rings brighten looking towards the star
   brightness += pow(max(dot(-v, uLightDir), 0.0), 8.0) * 0.6 * (1.0 - density);
   vec3 tone = uRingColor * (0.8 + 0.4 * ringNoise(r * 55.0 + 17.0));
+  if (uRingSuper > 0.5) {
+    // Clean ice inside the Roche limit, the disc's dust beyond it, redder further out
+    float outer = uRingBands[max(uRingBandCount - 1, 0)].y;
+    float dust = smoothstep(uRingRoche * 0.9, uRingRoche * 1.3, r);
+    vec3 disc = mix(vec3(0.92, 0.72, 0.52), vec3(0.86, 0.52, 0.3), smoothstep(uRingRoche, outer, r));
+    tone = mix(vec3(0.8, 0.9, 1.0), disc, dust) * (0.8 + 0.4 * ringNoise(r * 55.0 + 17.0));
+  }
   vec3 color = tone * uSunColor * uSunIntensity * brightness * shadow + tone * 0.01;
   gl_FragColor = vec4(color, density * 0.92);
   #include <tonemapping_fragment>
@@ -100,9 +117,15 @@ export class RealisticRings {
   readonly bands: THREE.Vector2[];
   readonly bandCount: number;
   readonly seed: number;
+  // A Super Ringed planet's Roche limit (setRoche), shared with the surface's ring shadow
+  readonly structure = {
+    uRingRoche: { value: 2.5 },
+  };
   private material: THREE.ShaderMaterial;
 
-  constructor(data: RingsData, planetRadius: number, color: THREE.Color, shared: Record<string, THREE.IUniform>) {
+  // superRings: a Super Ringed planet's (a dense ring inside the Roche limit, a dusty disc
+  // beyond it, gaps cleared by its moons)
+  constructor(data: RingsData, planetRadius: number, color: THREE.Color, shared: Record<string, THREE.IUniform>, superRings = false) {
     // Same orientation as the classic rings: the ring plane tilted about X
     const unit = 1 / (data.planet_radius || 200);
     const tilt = Math.asin((data.tilt_factor || 0.2) * 0.5);
@@ -127,6 +150,8 @@ export class RealisticRings {
         uRingNormal: { value: this.normal },
         uPlanetRadius: { value: planetRadius },
         uRingColor: { value: color },
+        uRingSuper: { value: superRings ? 1 : 0 },
+        ...this.structure,
       },
       vertexShader: RING_VERTEX,
       fragmentShader: RING_FRAGMENT,
@@ -141,6 +166,11 @@ export class RealisticRings {
     this.mesh.updateMatrixWorld();
     this.normal.set(0, 0, 1).applyQuaternion(this.mesh.quaternion).normalize();
     this.mesh.renderOrder = 1;
+  }
+
+  // The planet's Roche limit (planet radii)
+  setRoche(rocheRadii: number) {
+    this.structure.uRingRoche.value = rocheRadii;
   }
 
   dispose() {

@@ -72,7 +72,7 @@ Single and multiple stars, with planets on orbits computed from their real perio
 
 ### Planets
 
-Every one of the 26 planet types has its own physically based renderer, and every planet draws its own structure from its seed, so no two planets of a type share a shape:
+Every one of the 31 planet types has its own physically based renderer, and every planet draws its own structure from its seed, so no two planets of a type share a shape:
 
 - **Earth-like worlds** (Oceanic, Forest, Super Earth, Sub Earth, Savannah, Swamp, Tundra, Aquifer): continents, mountain belts, climate, vegetation, polar caps, clouds that cast shadows, city lights on the night side.
 - **Gas and ice giants** (Gas Giant, Frozen Gas Giant, Nebulous): bands that shear at their own speed, storms, polar hexagons, rings that cast and catch shadows.
@@ -123,7 +123,7 @@ The whole explorer works on phones and tablets, with touch controls, a collapsib
 
 ## How big is The Atlas
 
-<p align="center"><img src="static/ghimages/atlas3/readme/stats.png" width="888" alt="10²¹ galaxies, 5×10³¹ star systems, 3×10³² planets, 26 planet types, 0 worlds stored"></p>
+<p align="center"><img src="static/ghimages/atlas3/readme/stats.png" width="888" alt="10²¹ galaxies, 5×10³¹ star systems, 3×10³² planets, 31 planet types, 0 worlds stored"></p>
 
 - **Galaxies**: up to **1 sextillion** (10²¹), placed in a 10-million-unit coordinate system.
 - **Galaxy types**: dwarf galaxies (100,000 to 10 million systems), spiral galaxies (1 to 50 billion systems) and elliptical galaxies (10 to 100 billion systems).

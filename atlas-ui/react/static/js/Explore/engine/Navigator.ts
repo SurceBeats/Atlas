@@ -33,6 +33,12 @@ const smoothstep = (a: number, b: number, t: number) => {
   return x * x * (3 - 2 * x);
 };
 
+// An angle into (-π, π]: the orbit may go round over the poles indefinitely
+function wrapAngle(a: number) {
+  const w = a % (2 * Math.PI);
+  return w > Math.PI ? w - 2 * Math.PI : w <= -Math.PI ? w + 2 * Math.PI : w;
+}
+
 // Yaw / pitch of the orbit offset that makes the camera look along `look`
 function anglesFor(look: THREE.Vector3): { yaw: number; pitch: number } {
   const n = look.clone().normalize().negate();
@@ -310,10 +316,12 @@ export class Navigator {
 
   rotate(dx: number, dy: number) {
     this.cancelFlight();
-    this.yawVelocity = -dx * 0.0045;
+    // Upside down past a pole the screen's left and right are the orbit's the other way
+    // round: dragging right still turns the scene right
+    this.yawVelocity = -dx * 0.0045 * (Math.cos(this.pitch) < 0 ? -1 : 1);
     this.pitchVelocity = dy * 0.0045;
     this.yaw += this.yawVelocity;
-    this.pitch = THREE.MathUtils.clamp(this.pitch + this.pitchVelocity, -1.55, 1.55);
+    this.pitch = wrapAngle(this.pitch + this.pitchVelocity);
     this.touched();
   }
 
@@ -322,8 +330,7 @@ export class Navigator {
     this.follow = null;
     const height = this.dom?.clientHeight || 800;
     const scale = (this.distance * 1.15) / height;
-    const right = new THREE.Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw));
-    const up = new THREE.Vector3().crossVectors(this.offsetDirection(this.tmp), right).normalize();
+    const { right, up } = this.basis();
     this.focus.addScaledVector(right, -dx * scale);
     this.focus.addScaledVector(up, dy * scale);
     this.touched();
@@ -437,10 +444,20 @@ export class Navigator {
     return this.offsetDirection(out).multiplyScalar(this.distance).add(this.focus);
   }
 
+  // The camera's axes. Its top is the orbit's own, d(offset)/d(pitch): upright for pitches
+  // within ±90° (the same basis as looking along -offset with Y up), upside down past a
+  // pole, with no jump on the way over it
+  basis(): { right: THREE.Vector3; up: THREE.Vector3; back: THREE.Vector3 } {
+    const back = this.offsetDirection(new THREE.Vector3());
+    const sp = Math.sin(this.pitch);
+    const up = new THREE.Vector3(-sp * Math.sin(this.yaw), Math.cos(this.pitch), -sp * Math.cos(this.yaw)).normalize();
+    const right = new THREE.Vector3().crossVectors(up, back).normalize();
+    return { right, up, back };
+  }
+
   orientation(out: THREE.Quaternion): THREE.Quaternion {
-    const dir = this.offsetDirection(this.tmp).negate();
-    const m = new THREE.Matrix4().lookAt(new THREE.Vector3(), dir, new THREE.Vector3(0, 1, 0));
-    return out.setFromRotationMatrix(m);
+    const { right, up, back } = this.basis();
+    return out.setFromRotationMatrix(new THREE.Matrix4().makeBasis(right, up, back));
   }
 
   update(dt: number) {
@@ -487,7 +504,7 @@ export class Navigator {
 
       if (this.pointers.size === 0) {
         this.yaw += this.yawVelocity;
-        this.pitch = THREE.MathUtils.clamp(this.pitch + this.pitchVelocity, -1.55, 1.55);
+        this.pitch = wrapAngle(this.pitch + this.pitchVelocity);
         this.yawVelocity *= Math.pow(0.02, dt);
         this.pitchVelocity *= Math.pow(0.02, dt);
       }
@@ -534,10 +551,9 @@ export class Navigator {
       }
     }
 
-    // The ship's axes, from the view
+    // The ship's axes, from the view (the screen's directions, so they hold upside down too)
     const forward = this.offsetDirection(new THREE.Vector3()).negate();
-    const right = new THREE.Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw));
-    const up = new THREE.Vector3(0, 1, 0);
+    const { right, up } = this.basis();
     const want = new THREE.Vector3()
       // Q / E slide sideways
       .addScaledVector(right, (held("e") ? 1 : 0) - (held("q") ? 1 : 0))

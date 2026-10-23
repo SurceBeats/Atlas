@@ -74,6 +74,9 @@ export interface ExplorerState {
   arrival: { name: string; type: string; systems: number } | null;
   timeScale: number;
   cosmicTime: number;
+  // The universe's origin (unix seconds), for what follows the simulation clock (the
+  // planet panel's temperature); 0 outside a system
+  cosmicOrigin: number;
   // Seconds the simulated time has drifted from the real present (0 in real time)
   timeDrift: number;
   readout: { primary: string; secondary: string };
@@ -169,6 +172,7 @@ export class Explorer {
     arrival: null,
     timeScale: 1,
     cosmicTime: 0,
+    cosmicOrigin: 0,
     timeDrift: 0,
     readout: { primary: "", secondary: "" },
     quality: "medium",
@@ -917,7 +921,7 @@ export class Explorer {
   resetTime() {
     this.systemLayer?.resetTime();
     this.setTimeScale(1);
-    this.setState({ timeDrift: 0, cosmicTime: this.systemLayer?.cosmicNow ?? Date.now() / 1000 });
+    this.setState({ timeDrift: 0, cosmicTime: this.systemLayer?.cosmicNow ?? Date.now() / 1000, cosmicOrigin: this.systemLayer?.timing.cosmic_origin_time ?? 0 });
   }
 
   // A level, or null for Auto (what this device affords). Returns true when the change
@@ -1189,9 +1193,10 @@ export class Explorer {
     // Still camera, nothing to animate fast: drop to the idle frame rate
     this.engine.idle = nav.isIdle && this.warpBurst === 0 && this.warpFov < 0.01 && !this.jumpFx;
 
-    const time = performance.now() / 1000;
+    // The wall clock (Unix seconds), not the simulation's: the same on every device
+    const time = Date.now() / 1000;
     if (this.exotics) {
-      this.exotics.update(time, this.cameraWorld, this.engine.pixelRatio, this.engine.viewportHeight, this.engine.exposure);
+      this.exotics.update(time, this.cameraWorld, this.engine.pixelRatio, this.engine.viewportHeight, this.engine.exposure, this.engine.camera.projectionMatrix.elements[5]);
       this.engine.setLenses(this.exotics.lenses(this.cameraWorld, this.engine.camera));
     }
     if (this.neighbors) {
@@ -1234,7 +1239,7 @@ export class Explorer {
       this.lastEmit = now;
       const remaining = this.systemLayer ? nav.flightRemaining / AU_PER_LY : nav.flightRemaining;
       const travel = this.state.travel ? (nav.isFlying ? { ...this.state.travel, progress: nav.flightProgress, speed: this.speed, remaining } : null) : null;
-      this.setState({ readout: this.readout(), cosmicTime: this.systemLayer?.cosmicNow ?? Date.now() / 1000, timeDrift: this.systemLayer?.drift ?? 0, travel, mapView: this.isMapView(), universeView: this.isUniverseView(), fps: this.engine.fps });
+      this.setState({ readout: this.readout(), cosmicTime: this.systemLayer?.cosmicNow ?? Date.now() / 1000, cosmicOrigin: this.systemLayer?.timing.cosmic_origin_time ?? 0, timeDrift: this.systemLayer?.drift ?? 0, travel, mapView: this.isMapView(), universeView: this.isUniverseView(), fps: this.engine.fps });
     }
     if (this.state.mode === "galaxy" && now - this.lastNearbyRefresh > 1000) {
       this.lastNearbyRefresh = now;
@@ -1304,7 +1309,9 @@ export class Explorer {
     const nav = this.navigator;
     let yawDelta = nav.yaw - this.lastYaw;
     yawDelta = Math.atan2(Math.sin(yawDelta), Math.cos(yawDelta));
-    const pitchDelta = nav.pitch - this.lastPitch;
+    // (wrapped too: the orbit's pitch wraps round at ±π over the poles)
+    let pitchDelta = nav.pitch - this.lastPitch;
+    pitchDelta = Math.atan2(Math.sin(pitchDelta), Math.cos(pitchDelta));
     this.lastYaw = nav.yaw;
     this.lastPitch = nav.pitch;
     const rate = dt > 0 ? 1 / dt : 0;
@@ -1363,7 +1370,7 @@ export class Explorer {
       // Full detail while the planet is more than a speck; the plain sphere otherwise
       const detailed = frame.ready && distance < body.radius * 600;
       frame.viewportHeight = this.engine.viewportHeight * this.engine.pixelRatio;
-      frame.update(dt, this.cameraLocal, body.position, this.quaternion, layer.cosmicNow, timeOffset);
+      frame.update(dt, this.cameraLocal, body.position, this.quaternion, layer.cosmicNow, timeOffset, this.cameraWorld.clone().negate().normalize());
       if (detailed) {
         passes.push({ distance, pass: { scene: frame.scene, camera: frame.camera } });
         detailedIndices.push(index);
