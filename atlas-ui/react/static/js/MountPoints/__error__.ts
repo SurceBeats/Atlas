@@ -9,7 +9,7 @@ const versionHashMeta = document.querySelector('meta[name="atlas-version-hash"]'
 const messageMeta = document.querySelector('meta[name="error-message"]');
 
 const atlasConfig = {
-  version: (versionMeta && versionMeta.getAttribute("content")) || "3.0.1",
+  version: (versionMeta && versionMeta.getAttribute("content")) || "3.0.2",
   versionHash: (versionHashMeta && versionHashMeta.getAttribute("content")) || "",
   message: (messageMeta && messageMeta.getAttribute("content")) || null,
 };

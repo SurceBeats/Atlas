@@ -44,7 +44,7 @@ interface MultiverseData {
 const MultiverseLayout: React.FC = () => {
   const API_ENDPOINT = "/api/multiverse/peers";
   const REFRESH_INTERVAL = 30000;
-  const VERSION = "3.0.1";
+  const VERSION = "3.0.2";
 
   const [data, setData] = useState<MultiverseData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
